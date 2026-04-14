@@ -1,7 +1,6 @@
-import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
 import '../services/local_store.dart';
-import 'game_scene.dart';
+import 'game_screen.dart';
 
 /// Flutter-widget-based menu. Keeps name entry simple and native-feeling.
 class MenuScreen extends StatefulWidget {
@@ -38,9 +37,7 @@ class _MenuScreenState extends State<MenuScreen> {
     await _store.setName(name);
     if (!mounted) return;
     Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => Scaffold(body: GameWidget(game: GameScene())),
-      ),
+      MaterialPageRoute(builder: (_) => const GameScreen()),
     );
   }
 
