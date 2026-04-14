@@ -1,5 +1,4 @@
 import 'package:flame/components.dart';
-import 'package:flame/events.dart';
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
 import '../components/ground.dart';
@@ -12,7 +11,7 @@ import '../systems/obstacle_manager.dart';
 
 /// Top-level game. All sizes below derive from `size.y` (screen height) so
 /// the game scales 1:1 across phones of different densities.
-class GameScene extends FlameGame with TapCallbacks, HasCollisionDetection {
+class GameScene extends FlameGame with HasCollisionDetection {
   static const gameOverOverlayId = 'gameOver';
 
   late Gurgles gurgles;
@@ -142,19 +141,11 @@ class GameScene extends FlameGame with TapCallbacks, HasCollisionDetection {
     resumeEngine();
   }
 
-  @override
-  void onTapDown(TapDownEvent event) {
+  void handleJumpDown() {
     if (_gameOver) return;
-    final isRight = event.localPosition.x > size.x / 2;
-    if (isRight) {
-      gurgles.startJump();
-      balance.applyJumpImpulse();
-    }
+    gurgles.startJump();
+    balance.applyJumpImpulse();
   }
 
-  @override
-  void onTapUp(TapUpEvent event) => gurgles.endJump();
-
-  @override
-  void onTapCancel(TapCancelEvent event) => gurgles.endJump();
+  void handleJumpUp() => gurgles.endJump();
 }

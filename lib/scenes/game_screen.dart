@@ -17,14 +17,28 @@ class _GameScreenState extends State<GameScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      body: GameWidget<GameScene>(
-        game: _game,
-        overlayBuilderMap: {
-          GameScene.gameOverOverlayId: (ctx, game) => GameOverOverlay(
-                game: game,
-                onExitToMenu: () => Navigator.of(context).pop(),
-              ),
-        },
+      backgroundColor: const Color(0xFF87CEEB),
+      body: SizedBox.expand(
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTapDown: (d) {
+            final w = MediaQuery.of(context).size.width;
+            if (d.localPosition.dx > w / 2) {
+              _game.handleJumpDown();
+            }
+          },
+          onTapUp: (_) => _game.handleJumpUp(),
+          onTapCancel: () => _game.handleJumpUp(),
+          child: GameWidget<GameScene>(
+            game: _game,
+            overlayBuilderMap: {
+              GameScene.gameOverOverlayId: (ctx, game) => GameOverOverlay(
+                    game: game,
+                    onExitToMenu: () => Navigator.of(context).pop(),
+                  ),
+            },
+          ),
+        ),
       ),
     );
   }
