@@ -3,7 +3,7 @@ import 'package:flame/components.dart';
 import 'package:flame_svg/flame_svg.dart';
 import '../config/game_config.dart';
 
-/// Gurgles the runner. Uses the web game's SVG art via flame_svg.
+/// Gurgles the runner + the tankard of hooch riding above his head.
 class Gurgles extends PositionComponent with CollisionCallbacks {
   double velocityY = 0;
   bool get onGround => y >= _groundY;
@@ -13,6 +13,7 @@ class Gurgles extends PositionComponent with CollisionCallbacks {
 
   late SvgComponent _runSvg;
   late SvgComponent _jumpSvg;
+  late SvgComponent _tankard;
 
   void Function()? onObstacleHit;
 
@@ -30,10 +31,23 @@ class Gurgles extends PositionComponent with CollisionCallbacks {
   Future<void> onLoad() async {
     final runSvg = await Svg.load('svg/gurgles.svg');
     final jumpSvg = await Svg.load('svg/gurgles-jump.svg');
+    final hoochSvg = await Svg.load('svg/hooch.svg');
+
     _runSvg = SvgComponent(svg: runSvg, size: size);
     _jumpSvg = SvgComponent(svg: jumpSvg, size: size);
     add(_runSvg);
-    // Hitbox tuned slightly inside the silhouette so grazes don't register.
+
+    // Tankard sits above Gurgles' raised hands. hooch.svg viewBox is square-ish;
+    // render it at roughly 70% of his width, just above the top of his sprite.
+    final tankardSize = Vector2(size.x * 0.7, size.x * 0.55);
+    _tankard = SvgComponent(
+      svg: hoochSvg,
+      size: tankardSize,
+      position: Vector2(size.x / 2, -2),
+      anchor: Anchor.bottomCenter,
+    );
+    add(_tankard);
+
     add(RectangleHitbox(
       size: Vector2(size.x * 0.55, size.y * 0.85),
       position: Vector2(size.x * 0.22, size.y * 0.1),
@@ -64,7 +78,6 @@ class Gurgles extends PositionComponent with CollisionCallbacks {
   @override
   void update(double dt) {
     super.update(dt);
-
     if (_jumpHeld) {
       _jumpHeldMs += dt * 1000;
       final t = (_jumpHeldMs / GameConfig.jumpHoldMaxMs).clamp(0.0, 1.0);
@@ -72,16 +85,13 @@ class Gurgles extends PositionComponent with CollisionCallbacks {
           (GameConfig.jumpVelocityMax - GameConfig.jumpVelocityMin) * t;
       if (_jumpHeldMs >= GameConfig.jumpHoldMaxMs) _jumpHeld = false;
     }
-
     velocityY += GameConfig.gravity * dt;
     y += velocityY * dt;
-
     if (y >= _groundY) {
       y = _groundY;
       velocityY = 0;
       _jumpHeld = false;
     }
-
     _swapSprite(!onGround);
   }
 

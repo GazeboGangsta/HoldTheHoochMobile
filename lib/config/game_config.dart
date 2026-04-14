@@ -5,10 +5,10 @@ class GameConfig {
   static const double maxScrollSpeedMultiplier = 2.0;
   static const double difficultyRampSeconds = 180.0;
 
-  static const double gravity = 2400.0;
-  static const double jumpVelocityMin = -550.0;
-  static const double jumpVelocityMax = -850.0;
-  static const double jumpHoldMaxMs = 260.0;
+  static const double gravity = 2800.0;
+  static const double jumpVelocityMin = -480.0;
+  static const double jumpVelocityMax = -720.0;
+  static const double jumpHoldMaxMs = 220.0;
 
   static const double spillThreshold = 0.7;
   static const double spillDrainThreshold = 0.4;

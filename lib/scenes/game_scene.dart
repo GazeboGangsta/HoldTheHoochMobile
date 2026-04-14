@@ -10,6 +10,8 @@ import '../components/parallax_bg.dart';
 import '../config/game_config.dart';
 import '../systems/obstacle_manager.dart';
 
+/// Top-level game. All sizes below derive from `size.y` (screen height) so
+/// the game scales 1:1 across phones of different densities.
 class GameScene extends FlameGame with TapCallbacks, HasCollisionDetection {
   static const gameOverOverlayId = 'gameOver';
 
@@ -18,11 +20,14 @@ class GameScene extends FlameGame with TapCallbacks, HasCollisionDetection {
   late Ground ground;
   late ObstacleManager obstacleManager;
   late TextComponent scoreText;
+  TextComponent? _debugText;
 
   double _elapsed = 0;
   int score = 0;
   bool _gameOver = false;
   String? endReason;
+  late double _groundY;
+  late double _groundHeight;
 
   @override
   Color backgroundColor() => const Color(0xFF87CEEB);
@@ -37,35 +42,43 @@ class GameScene extends FlameGame with TapCallbacks, HasCollisionDetection {
   Future<void> onLoad() async {
     await super.onLoad();
 
-    final groundY = size.y - 120;
+    // All layout percentages keyed to the screen height.
+    _groundHeight = size.y * 0.08;
+    _groundY = size.y - _groundHeight;
+
+    final mountainsHeight = size.y * 0.42;
+    final treesHeight = size.y * 0.32;
 
     add(ParallaxLayer(
       assetPath: 'svg/bg-mountains.svg',
       speedFactor: 0.15,
       worldSpeedProvider: () => currentScrollSpeed,
       worldSize: size,
-      yPosition: groundY - 360,
-      height: 360,
+      yPosition: _groundY - mountainsHeight,
+      height: mountainsHeight,
     ));
     add(ParallaxLayer(
       assetPath: 'svg/bg-trees.svg',
       speedFactor: 0.45,
       worldSpeedProvider: () => currentScrollSpeed,
       worldSize: size,
-      yPosition: groundY - 240,
-      height: 240,
+      yPosition: _groundY - treesHeight,
+      height: treesHeight,
     ));
 
     ground = Ground(
       worldSize: size,
+      groundHeight: _groundHeight,
       scrollSpeedProvider: () => currentScrollSpeed,
     );
     add(ground);
 
+    final gurglesHeight = size.y * 0.18;
+    final gurglesWidth = gurglesHeight * 0.8;
     gurgles = Gurgles(
-      position: Vector2(size.x * 0.22, groundY),
-      groundY: groundY,
-    );
+      position: Vector2(size.x * 0.22, _groundY),
+      groundY: _groundY,
+    )..size = Vector2(gurglesWidth, gurglesHeight);
     gurgles.onObstacleHit = () => _end('Hit an obstacle!');
     add(gurgles);
 
@@ -75,13 +88,14 @@ class GameScene extends FlameGame with TapCallbacks, HasCollisionDetection {
     obstacleManager = ObstacleManager(
       scrollSpeedProvider: () => currentScrollSpeed,
       worldWidthProvider: () => size.x,
-      groundY: groundY,
+      groundY: _groundY,
+      sizeScale: size.y / 900,
     );
     add(obstacleManager);
 
     scoreText = TextComponent(
       text: '0',
-      position: Vector2(size.x / 2, 48),
+      position: Vector2(size.x / 2, size.y * 0.05),
       anchor: Anchor.topCenter,
       textRenderer: TextPaint(
         style: const TextStyle(
@@ -92,6 +106,16 @@ class GameScene extends FlameGame with TapCallbacks, HasCollisionDetection {
       ),
     );
     add(scoreText);
+
+    _debugText = TextComponent(
+      text: 'canvas ${size.x.toStringAsFixed(0)}x${size.y.toStringAsFixed(0)} '
+          'ground@${_groundY.toStringAsFixed(0)}',
+      position: Vector2(8, 8),
+      textRenderer: TextPaint(
+        style: const TextStyle(color: Colors.white70, fontSize: 10),
+      ),
+    );
+    add(_debugText!);
   }
 
   @override
@@ -112,10 +136,8 @@ class GameScene extends FlameGame with TapCallbacks, HasCollisionDetection {
     overlays.add(gameOverOverlayId);
   }
 
-  /// Called from the overlay Retry button.
   Future<void> restart() async {
     overlays.remove(gameOverOverlayId);
-    // Remove every obstacle from the last run.
     for (final ob in children.whereType<Obstacle>().toList()) {
       ob.removeFromParent();
     }
@@ -124,7 +146,7 @@ class GameScene extends FlameGame with TapCallbacks, HasCollisionDetection {
     _gameOver = false;
     endReason = null;
     gurgles.velocityY = 0;
-    gurgles.position.y = size.y - 120;
+    gurgles.position.y = _groundY;
     balance.tilt = 0;
     balance.spill = 0;
     resumeEngine();

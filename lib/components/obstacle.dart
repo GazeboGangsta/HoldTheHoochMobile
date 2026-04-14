@@ -12,9 +12,10 @@ class Obstacle extends PositionComponent with CollisionCallbacks {
     required this.kind,
     required Vector2 position,
     required this.scrollSpeed,
+    double sizeScale = 1.0,
   }) : super(
           position: position,
-          size: _sizeFor(kind),
+          size: _sizeFor(kind) * sizeScale,
           anchor: Anchor.bottomLeft,
         );
 

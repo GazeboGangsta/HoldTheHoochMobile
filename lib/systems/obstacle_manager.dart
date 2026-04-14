@@ -7,6 +7,7 @@ class ObstacleManager extends Component {
   final double Function() scrollSpeedProvider;
   final double Function() worldWidthProvider;
   final double groundY;
+  final double sizeScale;
   final Random _rng = Random();
 
   double _timeToNext = 1.5;
@@ -15,6 +16,7 @@ class ObstacleManager extends Component {
     required this.scrollSpeedProvider,
     required this.worldWidthProvider,
     required this.groundY,
+    this.sizeScale = 1.0,
   });
 
   @override
@@ -36,6 +38,7 @@ class ObstacleManager extends Component {
       kind: kind,
       position: Vector2(worldWidthProvider() + 80, groundY),
       scrollSpeed: scrollSpeedProvider(),
+      sizeScale: sizeScale,
     );
     parent?.add(ob);
   }
