@@ -1,9 +1,8 @@
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
+import 'game_over_overlay.dart';
 import 'game_scene.dart';
 
-/// Widget wrapper that hosts the Flame game and hands it a BuildContext so
-/// the game can navigate to GameOverScreen without smuggling widgets into Flame.
 class GameScreen extends StatefulWidget {
   const GameScreen({super.key});
 
@@ -12,17 +11,20 @@ class GameScreen extends StatefulWidget {
 }
 
 class _GameScreenState extends State<GameScreen> {
-  late final GameScene _game;
-
-  @override
-  void initState() {
-    super.initState();
-    _game = GameScene();
-  }
+  late final GameScene _game = GameScene();
 
   @override
   Widget build(BuildContext context) {
-    _game.attachContext(context);
-    return Scaffold(body: GameWidget(game: _game));
+    return Scaffold(
+      body: GameWidget<GameScene>(
+        game: _game,
+        overlayBuilderMap: {
+          GameScene.gameOverOverlayId: (ctx, game) => GameOverOverlay(
+                game: game,
+                onExitToMenu: () => Navigator.of(context).pop(),
+              ),
+        },
+      ),
+    );
   }
 }

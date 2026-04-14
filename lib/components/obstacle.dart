@@ -1,10 +1,10 @@
 import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
-import 'package:flutter/material.dart';
+import 'package:flame_svg/flame_svg.dart';
 
-enum ObstacleKind { root, rock, mushrooms, log }
+enum ObstacleKind { root, rock, mushroom, log }
 
-class Obstacle extends RectangleComponent with CollisionCallbacks {
+class Obstacle extends PositionComponent with CollisionCallbacks {
   final ObstacleKind kind;
   double scrollSpeed;
 
@@ -16,26 +16,30 @@ class Obstacle extends RectangleComponent with CollisionCallbacks {
           position: position,
           size: _sizeFor(kind),
           anchor: Anchor.bottomLeft,
-          paint: Paint()..color = _colorFor(kind),
         );
 
   static Vector2 _sizeFor(ObstacleKind k) => switch (k) {
-        ObstacleKind.root => Vector2(64, 40),
-        ObstacleKind.rock => Vector2(72, 72),
-        ObstacleKind.mushrooms => Vector2(96, 56),
-        ObstacleKind.log => Vector2(160, 48),
+        ObstacleKind.root => Vector2(72, 36),
+        ObstacleKind.rock => Vector2(72, 60),
+        ObstacleKind.mushroom => Vector2(72, 72),
+        ObstacleKind.log => Vector2(140, 48),
       };
 
-  static Color _colorFor(ObstacleKind k) => switch (k) {
-        ObstacleKind.root => const Color(0xFF6B4A1A),
-        ObstacleKind.rock => const Color(0xFF777777),
-        ObstacleKind.mushrooms => const Color(0xFFB83030),
-        ObstacleKind.log => const Color(0xFF4A2D12),
+  static String _svgFor(ObstacleKind k) => switch (k) {
+        ObstacleKind.root => 'svg/root.svg',
+        ObstacleKind.rock => 'svg/rock.svg',
+        ObstacleKind.mushroom => 'svg/mushroom.svg',
+        ObstacleKind.log => 'svg/log.svg',
       };
 
   @override
   Future<void> onLoad() async {
-    add(RectangleHitbox());
+    final svg = await Svg.load(_svgFor(kind));
+    add(SvgComponent(svg: svg, size: size));
+    add(RectangleHitbox(
+      size: Vector2(size.x * 0.8, size.y * 0.9),
+      position: Vector2(size.x * 0.1, size.y * 0.1),
+    ));
   }
 
   @override

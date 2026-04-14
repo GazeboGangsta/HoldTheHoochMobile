@@ -1,0 +1,157 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 728 90" width="728" height="90">
+  <defs>
+    <!-- Sparkle gradient -->
+    <linearGradient id="sparkle" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#FFD700"/>
+      <stop offset="50%" stop-color="#FFF8DC"/>
+      <stop offset="100%" stop-color="#FFD700"/>
+    </linearGradient>
+    <!-- Title gradient - hot pink to purple like MySpace -->
+    <linearGradient id="titleGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FF69B4"/>
+      <stop offset="50%" stop-color="#FF1493"/>
+      <stop offset="100%" stop-color="#8B008B"/>
+    </linearGradient>
+    <!-- Beveled border gradient -->
+    <linearGradient id="bevel" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#C0C0C0"/>
+      <stop offset="30%" stop-color="#FFFFFF"/>
+      <stop offset="70%" stop-color="#808080"/>
+      <stop offset="100%" stop-color="#404040"/>
+    </linearGradient>
+    <!-- Starry background -->
+    <radialGradient id="bgGlow" cx="50%" cy="50%">
+      <stop offset="0%" stop-color="#1a0033"/>
+      <stop offset="100%" stop-color="#000011"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Outer beveled border (classic Windows style) -->
+  <rect x="0" y="0" width="728" height="90" fill="url(#bevel)" rx="2"/>
+  <rect x="3" y="3" width="722" height="84" fill="url(#bgGlow)" rx="1"/>
+
+  <!-- Scrolling stars background -->
+  <circle cx="50" cy="15" r="1" fill="#fff" opacity="0.8">
+    <animate attributeName="opacity" values="0.2;1;0.2" dur="1.5s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="120" cy="65" r="1.5" fill="#FFD700" opacity="0.6">
+    <animate attributeName="opacity" values="0.3;1;0.3" dur="2s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="200" cy="25" r="1" fill="#fff" opacity="0.7">
+    <animate attributeName="opacity" values="0.1;0.9;0.1" dur="1.8s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="340" cy="12" r="1" fill="#FF69B4" opacity="0.5">
+    <animate attributeName="opacity" values="0.2;1;0.2" dur="1.3s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="480" cy="72" r="1.5" fill="#FFD700" opacity="0.6">
+    <animate attributeName="opacity" values="0.4;1;0.4" dur="1.7s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="560" cy="20" r="1" fill="#fff" opacity="0.8">
+    <animate attributeName="opacity" values="0.1;1;0.1" dur="2.2s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="650" cy="55" r="1" fill="#FF69B4" opacity="0.5">
+    <animate attributeName="opacity" values="0.3;0.9;0.3" dur="1.4s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="700" cy="30" r="1.5" fill="#FFD700" opacity="0.7">
+    <animate attributeName="opacity" values="0.2;1;0.2" dur="1.9s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="30" cy="50" r="1" fill="#00FFFF" opacity="0.6">
+    <animate attributeName="opacity" values="0.1;0.8;0.1" dur="2.1s" repeatCount="indefinite"/>
+  </circle>
+  <circle cx="410" cy="78" r="1" fill="#00FFFF" opacity="0.5">
+    <animate attributeName="opacity" values="0.3;1;0.3" dur="1.6s" repeatCount="indefinite"/>
+  </circle>
+
+  <!-- Mini Gurgles on the left -->
+  <g transform="translate(30, 12)">
+    <!-- Hat -->
+    <polygon points="22,2 14,20 30,20" fill="#c0392b"/>
+    <!-- Face -->
+    <circle cx="22" cy="26" r="7" fill="#f5cba7"/>
+    <!-- Eyes -->
+    <circle cx="19" cy="25" r="1.5" fill="#2c3e50"/>
+    <circle cx="25" cy="25" r="1.5" fill="#2c3e50"/>
+    <!-- Beard -->
+    <ellipse cx="22" cy="31" rx="5" ry="3" fill="#bdc3c7"/>
+    <!-- Body -->
+    <rect x="17" y="34" width="10" height="12" rx="2" fill="#27ae60"/>
+    <!-- Arms up -->
+    <line x1="18" y1="36" x2="14" y2="8" stroke="#f5cba7" stroke-width="3" stroke-linecap="round"/>
+    <line x1="26" y1="36" x2="30" y2="8" stroke="#f5cba7" stroke-width="3" stroke-linecap="round"/>
+    <!-- Hooch above head -->
+    <rect x="12" y="0" width="20" height="10" rx="3" fill="#8B4513"/>
+    <rect x="14" y="3" width="16" height="6" rx="1" fill="#D4A017"/>
+    <ellipse cx="22" cy="2" rx="10" ry="4" fill="#FFF9C4"/>
+    <!-- Legs -->
+    <rect x="18" y="46" width="4" height="7" rx="1" fill="#8B6914"/>
+    <rect x="23" y="46" width="4" height="7" rx="1" fill="#8B6914"/>
+    <!-- Wobble animation on the hooch -->
+    <animateTransform attributeName="transform" type="translate" values="30,12; 30,10; 30,12; 30,14; 30,12" dur="2s" repeatCount="indefinite" additive="replace"/>
+  </g>
+
+  <!-- ~*~ decorative tildes - peak MSN energy ~*~ -->
+  <text x="75" y="22" fill="#FF69B4" font-family="Comic Sans MS, cursive" font-size="11" opacity="0.8">~*~</text>
+  <text x="630" y="22" fill="#FF69B4" font-family="Comic Sans MS, cursive" font-size="11" opacity="0.8">~*~</text>
+  <text x="75" y="82" fill="#00FFFF" font-family="Comic Sans MS, cursive" font-size="11" opacity="0.8">~*~</text>
+  <text x="630" y="82" fill="#00FFFF" font-family="Comic Sans MS, cursive" font-size="11" opacity="0.8">~*~</text>
+
+  <!-- Main title - chunky outline text -->
+  <text x="365" y="38" text-anchor="middle" font-family="Impact, 'Arial Black', sans-serif" font-size="36" font-weight="bold" fill="none" stroke="#000" stroke-width="5">HOLD THE HOOCH</text>
+  <text x="365" y="38" text-anchor="middle" font-family="Impact, 'Arial Black', sans-serif" font-size="36" font-weight="bold" fill="url(#titleGrad)" stroke="#FFD700" stroke-width="1">HOLD THE HOOCH</text>
+
+  <!-- Subtitle in Comic Sans because it's the law -->
+  <text x="365" y="56" text-anchor="middle" font-family="Comic Sans MS, cursive" font-size="13" fill="#00FFFF">
+    !! sTaRriNg GuRgLeS tHe DrUiD bReWeR gNoMe !!
+  </text>
+
+  <!-- "PLAY NOW" button - classic web banner CTA -->
+  <g>
+    <rect x="570" y="58" width="130" height="24" rx="3" fill="#FFD700" stroke="#FF8C00" stroke-width="2">
+      <animate attributeName="fill" values="#FFD700;#FFA500;#FFD700" dur="1s" repeatCount="indefinite"/>
+    </rect>
+    <text x="635" y="75" text-anchor="middle" font-family="Impact, 'Arial Black', sans-serif" font-size="15" fill="#000" font-weight="bold">
+      &gt;&gt; PLAY NOW &lt;&lt;
+    </text>
+  </g>
+
+  <!-- Sparkle decorations -->
+  <!-- 4-point star sparkle left -->
+  <g transform="translate(95, 38)" fill="url(#sparkle)">
+    <polygon points="0,-6 1.5,-1.5 6,0 1.5,1.5 0,6 -1.5,1.5 -6,0 -1.5,-1.5">
+      <animate attributeName="opacity" values="0.3;1;0.3" dur="0.8s" repeatCount="indefinite"/>
+      <animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="4s" repeatCount="indefinite"/>
+    </polygon>
+  </g>
+  <!-- 4-point star sparkle right -->
+  <g transform="translate(620, 38)" fill="url(#sparkle)">
+    <polygon points="0,-6 1.5,-1.5 6,0 1.5,1.5 0,6 -1.5,1.5 -6,0 -1.5,-1.5">
+      <animate attributeName="opacity" values="1;0.3;1" dur="0.8s" repeatCount="indefinite"/>
+      <animateTransform attributeName="transform" type="rotate" from="360" to="0" dur="4s" repeatCount="indefinite"/>
+    </polygon>
+  </g>
+  <!-- Extra sparkles -->
+  <g transform="translate(140, 68)" fill="#FFD700">
+    <polygon points="0,-4 1,-1 4,0 1,1 0,4 -1,1 -4,0 -1,-1">
+      <animate attributeName="opacity" values="0.2;1;0.2" dur="1.2s" repeatCount="indefinite"/>
+    </polygon>
+  </g>
+  <g transform="translate(530, 15)" fill="#FF69B4">
+    <polygon points="0,-4 1,-1 4,0 1,1 0,4 -1,1 -4,0 -1,-1">
+      <animate attributeName="opacity" values="0.5;1;0.5" dur="0.9s" repeatCount="indefinite"/>
+    </polygon>
+  </g>
+  <g transform="translate(290, 75)" fill="#00FFFF">
+    <polygon points="0,-3 0.8,-0.8 3,0 0.8,0.8 0,3 -0.8,0.8 -3,0 -0.8,-0.8">
+      <animate attributeName="opacity" values="0.3;1;0.3" dur="1.5s" repeatCount="indefinite"/>
+    </polygon>
+  </g>
+
+  <!-- Tiny beer mugs border decoration -->
+  <text x="108" y="47" font-size="12" opacity="0.7">🍺</text>
+  <text x="610" y="47" font-size="12" opacity="0.7">🍺</text>
+
+  <!-- Bottom tagline -->
+  <text x="200" y="80" font-family="Comic Sans MS, cursive" font-size="9" fill="#808080">
+    a free browser game * no download required * tell ur friends!!1!
+  </text>
+</svg>

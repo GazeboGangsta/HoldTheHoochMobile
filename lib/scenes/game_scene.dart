@@ -5,22 +5,24 @@ import 'package:flutter/material.dart';
 import '../components/ground.dart';
 import '../components/gurgles.dart';
 import '../components/hooch_balance.dart';
+import '../components/obstacle.dart';
+import '../components/parallax_bg.dart';
 import '../config/game_config.dart';
 import '../systems/obstacle_manager.dart';
-import '../utils/routes.dart';
-import 'game_over_screen.dart';
 
 class GameScene extends FlameGame with TapCallbacks, HasCollisionDetection {
-  late final Gurgles gurgles;
-  late final HoochBalance balance;
-  late final Ground ground;
-  late final ObstacleManager obstacleManager;
-  late final TextComponent scoreText;
+  static const gameOverOverlayId = 'gameOver';
+
+  late Gurgles gurgles;
+  late HoochBalance balance;
+  late Ground ground;
+  late ObstacleManager obstacleManager;
+  late TextComponent scoreText;
 
   double _elapsed = 0;
   int score = 0;
   bool _gameOver = false;
-  BuildContext? _ctx;
+  String? endReason;
 
   @override
   Color backgroundColor() => const Color(0xFF87CEEB);
@@ -31,20 +33,39 @@ class GameScene extends FlameGame with TapCallbacks, HasCollisionDetection {
     return GameConfig.baseScrollSpeed * mult;
   }
 
-  void attachContext(BuildContext ctx) => _ctx = ctx;
-
   @override
   Future<void> onLoad() async {
     await super.onLoad();
 
     final groundY = size.y - 120;
-    ground = Ground(worldSize: size);
+
+    add(ParallaxLayer(
+      assetPath: 'svg/bg-mountains.svg',
+      speedFactor: 0.15,
+      worldSpeedProvider: () => currentScrollSpeed,
+      worldSize: size,
+      yPosition: groundY - 360,
+      height: 360,
+    ));
+    add(ParallaxLayer(
+      assetPath: 'svg/bg-trees.svg',
+      speedFactor: 0.45,
+      worldSpeedProvider: () => currentScrollSpeed,
+      worldSize: size,
+      yPosition: groundY - 240,
+      height: 240,
+    ));
+
+    ground = Ground(
+      worldSize: size,
+      scrollSpeedProvider: () => currentScrollSpeed,
+    );
     add(ground);
 
     gurgles = Gurgles(
-      position: Vector2(size.x * 0.25, groundY),
+      position: Vector2(size.x * 0.22, groundY),
       groundY: groundY,
-    )..paint = (Paint()..color = const Color(0xFF3D8B4A));
+    );
     gurgles.onObstacleHit = () => _end('Hit an obstacle!');
     add(gurgles);
 
@@ -60,7 +81,7 @@ class GameScene extends FlameGame with TapCallbacks, HasCollisionDetection {
 
     scoreText = TextComponent(
       text: '0',
-      position: Vector2(size.x / 2, 40),
+      position: Vector2(size.x / 2, 48),
       anchor: Anchor.topCenter,
       textRenderer: TextPaint(
         style: const TextStyle(
@@ -86,13 +107,27 @@ class GameScene extends FlameGame with TapCallbacks, HasCollisionDetection {
   void _end(String reason) {
     if (_gameOver) return;
     _gameOver = true;
+    endReason = reason;
     pauseEngine();
-    final ctx = _ctx;
-    if (ctx != null) {
-      Navigator.of(ctx).pushReplacement(
-        fadeRoute(GameOverScreen(score: score, reason: reason)),
-      );
+    overlays.add(gameOverOverlayId);
+  }
+
+  /// Called from the overlay Retry button.
+  Future<void> restart() async {
+    overlays.remove(gameOverOverlayId);
+    // Remove every obstacle from the last run.
+    for (final ob in children.whereType<Obstacle>().toList()) {
+      ob.removeFromParent();
     }
+    _elapsed = 0;
+    score = 0;
+    _gameOver = false;
+    endReason = null;
+    gurgles.velocityY = 0;
+    gurgles.position.y = size.y - 120;
+    balance.tilt = 0;
+    balance.spill = 0;
+    resumeEngine();
   }
 
   @override

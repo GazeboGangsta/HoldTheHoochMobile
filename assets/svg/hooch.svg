@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 36" width="40" height="36">
+  <!-- Big tankard/stein body -->
+  <rect x="4" y="8" width="28" height="24" rx="4" fill="#8B4513"/>
+  <!-- Handle -->
+  <path d="M32,12 Q40,12 40,20 Q40,28 32,28" stroke="#8B4513" stroke-width="4" fill="none"/>
+  <!-- Liquid -->
+  <rect x="7" y="14" width="22" height="16" rx="2" fill="#D4A017"/>
+  <!-- Foam top -->
+  <ellipse cx="18" cy="10" rx="14" ry="6" fill="#FFF9C4"/>
+  <ellipse cx="12" cy="9" rx="5" ry="4" fill="#FFFDE7"/>
+  <ellipse cx="24" cy="9" rx="5" ry="4" fill="#FFFDE7"/>
+  <!-- Foam bubbles -->
+  <circle cx="14" cy="7" r="2" fill="#fff" opacity="0.6"/>
+  <circle cx="22" cy="8" r="1.5" fill="#fff" opacity="0.5"/>
+</svg>

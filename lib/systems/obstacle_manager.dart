@@ -31,8 +31,7 @@ class ObstacleManager extends Component {
   }
 
   void _spawn() {
-    final kinds = ObstacleKind.values;
-    final kind = kinds[_rng.nextInt(kinds.length)];
+    final kind = ObstacleKind.values[_rng.nextInt(ObstacleKind.values.length)];
     final ob = Obstacle(
       kind: kind,
       position: Vector2(worldWidthProvider() + 80, groundY),
