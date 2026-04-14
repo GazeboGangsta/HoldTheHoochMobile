@@ -1,36 +1,31 @@
 import 'package:flame/components.dart';
 import 'package:flutter/material.dart';
 
-/// Infinite scrolling ground. Two tiles side-by-side, swapped as they scroll off.
+/// Static ground strip pinned to the bottom of the world. Parallax scrolling
+/// lands in M5; for now it's just a solid block so collisions and positioning
+/// are rock-simple.
 class Ground extends PositionComponent {
   final double groundHeight;
-  double _scrollOffset = 0;
-  final double tileWidth;
 
   Ground({
     required Vector2 worldSize,
     this.groundHeight = 120,
-    this.tileWidth = 256,
-  }) : super(size: worldSize);
+  }) : super(
+          position: Vector2(0, worldSize.y - groundHeight),
+          size: Vector2(worldSize.x, groundHeight),
+        );
+
+  double get topY => position.y;
 
   @override
   Future<void> onLoad() async {
-    position = Vector2(0, size.y - groundHeight);
-    final earth = RectangleComponent(
+    add(RectangleComponent(
       size: Vector2(size.x, groundHeight),
       paint: Paint()..color = const Color(0xFF5A3A1A),
-    );
-    add(earth);
-    final grass = RectangleComponent(
-      size: Vector2(size.x, 16),
+    ));
+    add(RectangleComponent(
+      size: Vector2(size.x, 8),
       paint: Paint()..color = const Color(0xFF3D8B4A),
-    );
-    add(grass);
+    ));
   }
-
-  void scroll(double dx) {
-    _scrollOffset = (_scrollOffset + dx) % tileWidth;
-  }
-
-  double get topY => position.y;
 }

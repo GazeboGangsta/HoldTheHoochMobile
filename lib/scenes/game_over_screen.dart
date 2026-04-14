@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/api_client.dart';
 import '../services/local_store.dart';
+import '../utils/routes.dart';
 import 'game_screen.dart';
 
 class GameOverScreen extends StatefulWidget {
@@ -45,9 +46,7 @@ class _GameOverScreenState extends State<GameOverScreen> {
   }
 
   void _retry() {
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (_) => const GameScreen()),
-    );
+    Navigator.of(context).pushReplacement(fadeRoute(const GameScreen()));
   }
 
   void _menu() {

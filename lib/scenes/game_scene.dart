@@ -7,6 +7,7 @@ import '../components/gurgles.dart';
 import '../components/hooch_balance.dart';
 import '../config/game_config.dart';
 import '../systems/obstacle_manager.dart';
+import '../utils/routes.dart';
 import 'game_over_screen.dart';
 
 class GameScene extends FlameGame with TapCallbacks, HasCollisionDetection {
@@ -36,9 +37,9 @@ class GameScene extends FlameGame with TapCallbacks, HasCollisionDetection {
   Future<void> onLoad() async {
     await super.onLoad();
 
+    final groundY = size.y - 120;
     ground = Ground(worldSize: size);
     add(ground);
-    final groundY = ground.topY;
 
     gurgles = Gurgles(
       position: Vector2(size.x * 0.25, groundY),
@@ -89,9 +90,7 @@ class GameScene extends FlameGame with TapCallbacks, HasCollisionDetection {
     final ctx = _ctx;
     if (ctx != null) {
       Navigator.of(ctx).pushReplacement(
-        MaterialPageRoute(
-          builder: (_) => GameOverScreen(score: score, reason: reason),
-        ),
+        fadeRoute(GameOverScreen(score: score, reason: reason)),
       );
     }
   }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/local_store.dart';
+import '../utils/routes.dart';
 import 'game_screen.dart';
 
 /// Flutter-widget-based menu. Keeps name entry simple and native-feeling.
@@ -36,9 +37,7 @@ class _MenuScreenState extends State<MenuScreen> {
     if (name.isEmpty) return;
     await _store.setName(name);
     if (!mounted) return;
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => const GameScreen()),
-    );
+    Navigator.of(context).push(fadeRoute(const GameScreen()));
   }
 
   @override
