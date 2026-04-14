@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <!-- Placeholder Gurgles: green gnome body with tankard overhead -->
+  <rect x="88" y="120" width="80" height="100" rx="12" fill="#3d8b4a"/>
+  <circle cx="128" cy="100" r="36" fill="#f3d1a3"/>
+  <polygon points="92,88 164,88 128,40" fill="#8b3a3a"/>
+  <rect x="96" y="16" width="64" height="40" rx="6" fill="#c0a060" stroke="#6b4a1a" stroke-width="4"/>
+  <rect x="104" y="22" width="48" height="8" fill="#d4a744"/>
+  <line x1="100" y1="60" x2="104" y2="96" stroke="#f3d1a3" stroke-width="12" stroke-linecap="round"/>
+  <line x1="156" y1="60" x2="152" y2="96" stroke="#f3d1a3" stroke-width="12" stroke-linecap="round"/>
+  <rect x="100" y="220" width="24" height="24" fill="#6b4a1a"/>
+  <rect x="132" y="220" width="24" height="24" fill="#6b4a1a"/>
+</svg>
