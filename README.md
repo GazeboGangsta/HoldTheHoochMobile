@@ -6,7 +6,9 @@ Built with **Flutter + Flame** for iOS and Android.
 
 ## Status
 
-V1 in planning. See [docs/ROADMAP.md](docs/ROADMAP.md).
+V1 in progress. Milestones M1–M3 complete (scaffold, core loop, balance mechanic). M4/M5 in flight (content + polish). Playable debug APK on Android.
+
+See [docs/STATUS.md](docs/STATUS.md) for a live snapshot and [docs/ROADMAP.md](docs/ROADMAP.md) for the milestone plan.
 
 ## Quick start
 

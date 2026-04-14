@@ -65,3 +65,7 @@ test/                    # widget + component tests
 
 - Web game: `HoldTheHooch` — Phaser 3, CDN-loaded, served from `gurgles.beer`.
 - This repo: `HoldTheHoochMobile` — Flutter + Flame, iOS + Android.
+
+## Current state (check before making changes)
+
+See [docs/STATUS.md](docs/STATUS.md) for the live snapshot. Contains what's playable, which milestones are done, known issues, and — importantly — a **Gotchas** section capturing non-obvious framework quirks already hit (Flame camera viewfinder defaults, `Theme.of` in `initState`, keyboard-resized GameWidget, etc.). Read it before diving in so you don't rediscover the same bugs.
