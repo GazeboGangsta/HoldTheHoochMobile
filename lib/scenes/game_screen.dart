@@ -18,27 +18,41 @@ class _GameScreenState extends State<GameScreen> {
     return Scaffold(
       resizeToAvoidBottomInset: false,
       backgroundColor: const Color(0xFF87CEEB),
-      body: SizedBox.expand(
-        child: GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onTapDown: (d) {
-            final w = MediaQuery.of(context).size.width;
-            if (d.localPosition.dx > w / 2) {
-              _game.handleJumpDown();
-            }
-          },
-          onTapUp: (_) => _game.handleJumpUp(),
-          onTapCancel: () => _game.handleJumpUp(),
-          child: GameWidget<GameScene>(
-            game: _game,
-            overlayBuilderMap: {
-              GameScene.gameOverOverlayId: (ctx, game) => GameOverOverlay(
-                    game: game,
-                    onExitToMenu: () => Navigator.of(context).pop(),
-                  ),
+      body: LayoutBuilder(
+        builder: (ctx, constraints) {
+          return Listener(
+            behavior: HitTestBehavior.opaque,
+            onPointerDown: (e) {
+              if (e.localPosition.dx > constraints.maxWidth / 2) {
+                _game.handleJumpDown();
+              } else {
+                _game.handleLeftPointerDown(e.localPosition);
+              }
             },
-          ),
-        ),
+            onPointerMove: (e) {
+              if (e.localPosition.dx <= constraints.maxWidth / 2) {
+                _game.handleLeftPointerMove(e.localPosition, e.delta);
+              }
+            },
+            onPointerUp: (_) {
+              _game.handleJumpUp();
+              _game.handleLeftPointerUp();
+            },
+            onPointerCancel: (_) {
+              _game.handleJumpUp();
+              _game.handleLeftPointerUp();
+            },
+            child: GameWidget<GameScene>(
+              game: _game,
+              overlayBuilderMap: {
+                GameScene.gameOverOverlayId: (c, g) => GameOverOverlay(
+                      game: g,
+                      onExitToMenu: () => Navigator.of(context).pop(),
+                    ),
+              },
+            ),
+          );
+        },
       ),
     );
   }

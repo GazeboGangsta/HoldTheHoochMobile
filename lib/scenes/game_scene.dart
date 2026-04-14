@@ -6,11 +6,10 @@ import '../components/gurgles.dart';
 import '../components/hooch_balance.dart';
 import '../components/obstacle.dart';
 import '../components/parallax_bg.dart';
+import '../components/spill_meter.dart';
 import '../config/game_config.dart';
 import '../systems/obstacle_manager.dart';
 
-/// Top-level game. All sizes below derive from `size.y` (screen height) so
-/// the game scales 1:1 across phones of different densities.
 class GameScene extends FlameGame with HasCollisionDetection {
   static const gameOverOverlayId = 'gameOver';
 
@@ -19,6 +18,7 @@ class GameScene extends FlameGame with HasCollisionDetection {
   late Ground ground;
   late ObstacleManager obstacleManager;
   late TextComponent scoreText;
+  late SpillMeter spillMeter;
 
   double _elapsed = 0;
   int score = 0;
@@ -39,8 +39,12 @@ class GameScene extends FlameGame with HasCollisionDetection {
   @override
   Future<void> onLoad() async {
     await super.onLoad();
+    // Flame 1.37's default CameraComponent has a viewfinder anchored at
+    // center; pin to top-left so our layout math (origin top-left) renders
+    // where we expect.
+    camera.viewfinder.anchor = Anchor.topLeft;
+    camera.viewfinder.position = Vector2.zero();
 
-    // All layout percentages keyed to the screen height.
     _groundHeight = size.y * 0.08;
     _groundY = size.y - _groundHeight;
 
@@ -76,7 +80,8 @@ class GameScene extends FlameGame with HasCollisionDetection {
     gurgles = Gurgles(
       position: Vector2(size.x * 0.22, _groundY),
       groundY: _groundY,
-    )..size = Vector2(gurglesWidth, gurglesHeight);
+      size: Vector2(gurglesWidth, gurglesHeight),
+    );
     gurgles.onObstacleHit = () => _end('Hit an obstacle!');
     add(gurgles);
 
@@ -105,6 +110,13 @@ class GameScene extends FlameGame with HasCollisionDetection {
     );
     add(scoreText);
 
+    spillMeter = SpillMeter(
+      size: Vector2(size.x * 0.6, 14),
+      position: Vector2(size.x * 0.5, size.y * 0.14),
+      anchor: Anchor.topCenter,
+      balance: balance,
+    );
+    add(spillMeter);
   }
 
   @override
@@ -148,4 +160,14 @@ class GameScene extends FlameGame with HasCollisionDetection {
   }
 
   void handleJumpUp() => gurgles.endJump();
+
+  // Balance controls — left half is a drag zone. Horizontal motion
+  // counter-tilts the hooch back towards center.
+  void handleLeftPointerDown(Offset pos) {}
+  void handleLeftPointerMove(Offset pos, Offset delta) {
+    if (_gameOver) return;
+    balance.applyCounterTorque(delta.dx);
+  }
+
+  void handleLeftPointerUp() {}
 }

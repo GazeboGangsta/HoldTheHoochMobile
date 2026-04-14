@@ -6,7 +6,10 @@ import '../config/game_config.dart';
 /// Gurgles the runner + the tankard of hooch riding above his head.
 class Gurgles extends PositionComponent with CollisionCallbacks {
   double velocityY = 0;
-  bool get onGround => y >= _groundY;
+  // 2px tolerance: floating-point arithmetic + size-change cascades leave
+  // Gurgles hovering sub-pixel amounts above groundY. A strict `y >= groundY`
+  // locks him out of jumping forever.
+  bool get onGround => y >= _groundY - 2;
   final double _groundY;
   bool _jumpHeld = false;
   double _jumpHeldMs = 0;
@@ -17,11 +20,14 @@ class Gurgles extends PositionComponent with CollisionCallbacks {
 
   void Function()? onObstacleHit;
 
-  Gurgles({required Vector2 position, required double groundY})
-      : _groundY = groundY,
+  Gurgles({
+    required Vector2 position,
+    required double groundY,
+    Vector2? size,
+  })  : _groundY = groundY,
         super(
           position: position,
-          size: Vector2(96, 120),
+          size: size ?? Vector2(96, 120),
           anchor: Anchor.bottomCenter,
         ) {
     y = groundY;
