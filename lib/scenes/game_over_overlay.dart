@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show defaultTargetPlatform;
 import 'package:flutter/material.dart';
 import '../services/api_client.dart';
 import '../services/local_store.dart';
@@ -28,7 +29,7 @@ class _GameOverOverlayState extends State<GameOverOverlay> {
   }
 
   Future<void> _submit() async {
-    final platform = Theme.of(context).platform.name.toLowerCase();
+    final platform = defaultTargetPlatform.name.toLowerCase();
     final score = widget.game.score;
     final best = await _store.getBestScore();
     if (score > best) await _store.setBestScore(score);

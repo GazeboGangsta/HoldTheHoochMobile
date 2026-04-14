@@ -20,7 +20,6 @@ class GameScene extends FlameGame with TapCallbacks, HasCollisionDetection {
   late Ground ground;
   late ObstacleManager obstacleManager;
   late TextComponent scoreText;
-  TextComponent? _debugText;
 
   double _elapsed = 0;
   int score = 0;
@@ -107,15 +106,6 @@ class GameScene extends FlameGame with TapCallbacks, HasCollisionDetection {
     );
     add(scoreText);
 
-    _debugText = TextComponent(
-      text: 'canvas ${size.x.toStringAsFixed(0)}x${size.y.toStringAsFixed(0)} '
-          'ground@${_groundY.toStringAsFixed(0)}',
-      position: Vector2(8, 8),
-      textRenderer: TextPaint(
-        style: const TextStyle(color: Colors.white70, fontSize: 10),
-      ),
-    );
-    add(_debugText!);
   }
 
   @override

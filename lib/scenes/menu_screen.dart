@@ -35,6 +35,7 @@ class _MenuScreenState extends State<MenuScreen> {
   Future<void> _start() async {
     final name = _nameCtl.text.trim();
     if (name.isEmpty) return;
+    FocusManager.instance.primaryFocus?.unfocus();
     await _store.setName(name);
     if (!mounted) return;
     Navigator.of(context).push(fadeRoute(const GameScreen()));
