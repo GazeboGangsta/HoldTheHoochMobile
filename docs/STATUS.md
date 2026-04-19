@@ -31,12 +31,12 @@ See [docs/ROADMAP.md](ROADMAP.md) for the detailed per-milestone plan.
 - **M1 — Scaffold** ✅ Complete.
 - **M2 — Core run loop** ✅ Complete.
 - **M3 — Hooch balance** ✅ Complete. (Wobble amplitude scaling per difficulty is missing — deferred to M4.)
-- **M4 — Content pass** ⏳ Partial.
+- **M4 — Content pass** ✅ Complete.
   - All 4 obstacle kinds: ✅ in, hitboxes tuned.
-  - Collectibles (herb/hops/potion): ⚠️ implemented but **crash on pickup** + potions are physically unreachable with current jump tuning.
-  - Score multiplier (+0.1x per 10s, capped 3x): ❌ not implemented.
-  - Potion spill-drain bonus: ❌ not implemented.
-  - Wobble amplitude scaling: ❌ not implemented.
+  - Collectibles (herb/hops/potion): ✅ working, three reachable tiers, score popup on pickup.
+  - Score multiplier (+0.1x per 10s, capped 3x): ✅ implemented.
+  - Potion spill-drain bonus: ✅ implemented (4× drain rate for 1 second).
+  - Wobble amplitude scaling: ✅ implemented (1.0× → 1.7× over difficultyRampSeconds).
 - **M5 — Polish & assets** ⏳ Partial. Real SVGs in, parallax in, spill meter UI in, score popup in (crashes). No SFX, no run-cycle animation, no particles, no tankard rotation tied to tilt, no leaderboard scene.
 - **M6 — Store prep** ❌ Not started.
 
@@ -112,9 +112,6 @@ iOS build hasn't been attempted yet. Intent per [docs/PLATFORM_NOTES.md](PLATFOR
 |---|-------|----------|-------|
 | 1 | **Collectible pickup crashes the game** | **Critical** | `lib/components/score_popup.dart:30` — `OpacityEffect` requires target to implement `OpacityProvider`; `TextComponent` does not. Fix: implement `OpacityProvider` on `ScorePopup` or drop the fade effect. |
 | 2 | **Potions are physically unreachable** | Critical | Peak jump height ≈ 92 px (`jumpVelocityMax² / (2·gravity)`), potion spawns at 260 px. Hops at 160 is marginal. Either raise jump ceiling or drop collectible height tiers. |
-| 3 | Score multiplier unimplemented | Med | Specced in [GAME_DESIGN.md](GAME_DESIGN.md) but `GameScene.update` just does `_elapsed*10 + collectiblePoints`. |
-| 4 | Potion spill-drain bonus unimplemented | Med | Specced: "Grants 1 second of spill-drain bonus." Not wired. |
-| 5 | Wobble amplitude doesn't ramp with difficulty | Med | `HoochBalance.applyDifficulty(double)` exists as a dead stub; never invoked. |
 | 6 | Score retry queue unimplemented | Med | [BACKEND.md](BACKEND.md) promises failed submissions are queued in SharedPreferences and retried. `ApiClient.submitScore` just returns false on failure. |
 | 7 | `ScorePopup`s mid-animation survive restart | Low | `GameScene.restart()` doesn't purge them. `balance._phase` also not reset. |
 | 8 | `sensors_plus` dependency unused | Low | Either wire up the accelerometer tilt control (optional input per [GAME_DESIGN.md](GAME_DESIGN.md)) or remove from `pubspec.yaml`. |

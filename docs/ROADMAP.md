@@ -30,7 +30,7 @@ Conventions:
 - [x] Spill meter UI + game-over-on-100%.
 - [x] Jump impulse feeds into tilt.
 
-## M4 — Content pass ⏳
+## M4 — Content pass ✅
 
 Goal: finish the gameplay systems the design doc calls for.
 
@@ -46,9 +46,9 @@ Goal: finish the gameplay systems the design doc calls for.
 
 ### M4b — Missing game systems
 
-- [ ] **Score multiplier** ([STATUS #3](STATUS.md)). `+0.1x per 10 seconds survived, capped at 3x`. Add `_multiplier` to `GameScene.update`; apply to per-tick and collectible points. Show multiplier in HUD.
-- [ ] **Potion spill-drain bonus** ([STATUS #4](STATUS.md)). `hooch_balance.dart` grows a `grantSpillDrain(Duration)` method that boosts the drain rate for N seconds. Collectible callback triggers on potion pickup.
-- [ ] **Wobble amplitude difficulty ramp** ([STATUS #5](STATUS.md)). `HoochBalance.applyDifficulty(double)` currently a dead stub. Wire into `GameScene.update`: `balance.applyDifficulty(_elapsed / GameConfig.difficultyRampSeconds)`. Scale `_wobble` calculation by that multiplier.
+- [x] **Score multiplier** ([STATUS #3](STATUS.md)). `+0.1x per 10 seconds survived, capped at 3x`. Add `_multiplier` to `GameScene.update`; apply to per-tick and collectible points. Show multiplier in HUD.
+- [x] **Potion spill-drain bonus** ([STATUS #4](STATUS.md)). `hooch_balance.dart` grows a `grantSpillDrain(Duration)` method that boosts the drain rate for N seconds. Collectible callback triggers on potion pickup.
+- [x] **Wobble amplitude difficulty ramp** ([STATUS #5](STATUS.md)). `HoochBalance.applyDifficulty(double)` currently a dead stub. Wire into `GameScene.update`: `balance.applyDifficulty(_elapsed / GameConfig.difficultyRampSeconds)`. Scale `_wobble` calculation by that multiplier.
 
 ### M4c — Minimum viable test suite
 

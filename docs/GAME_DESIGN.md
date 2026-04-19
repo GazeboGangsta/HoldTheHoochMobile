@@ -49,13 +49,14 @@ Float at three height tiers: **ground** (safe grab), **mid** (small jump needed)
 
 - **Herb** — 10 pts, ground tier, common.
 - **Golden hop** — 50 pts, mid tier, uncommon.
-- **Potion bottle** — 200 pts, high tier, rare. Grants 1 second of spill-drain bonus.
+- **Potion bottle** — 200 pts, high tier, rare. Grants 1 second of spill-drain bonus (4× drain rate during the bonus window).
 
 ## Scoring
 
 - Distance score: +1 per ~frame (tuned to feel like ~10/sec at start).
 - Collectibles: as above.
 - Multiplier: +0.1x per 10 seconds survived, capped at 3x.
+- Multiplier applies to time-based points only, not collectibles. Rationale: multiplier rewards survival; collectibles already have risk/reward built in.
 - Final score submitted to leaderboard on death.
 
 ## Difficulty curve
