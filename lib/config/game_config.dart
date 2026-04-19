@@ -44,4 +44,9 @@ class GameConfig {
   // toward driftRateMax at difficulty 1. Player must drag to counter.
   static const double driftRateBase = 0.05;
   static const double driftRateMax = 0.20;
+
+  // Tankard visually leans with balance.tilt so the player can see which
+  // way the hooch is tipping and which direction to counter-drag.
+  // 0.6 rad ~= 34 degrees at tilt = ±1.
+  static const double tankardMaxLeanRadians = 0.6;
 }

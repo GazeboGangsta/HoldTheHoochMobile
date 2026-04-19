@@ -161,6 +161,7 @@ class GameScene extends FlameGame with HasCollisionDetection {
     if (_gameOver) return;
     _elapsed += dt;
     balance.applyDifficulty(_elapsed / GameConfig.difficultyRampSeconds);
+    gurgles.setTankardAngle(Gurgles.tankardAngleForTilt(balance.tilt));
     final mult = currentMultiplier;
     score = (_elapsed * 10 * mult).floor() + _collectiblePoints;
     scoreText.text = mult > 1.0

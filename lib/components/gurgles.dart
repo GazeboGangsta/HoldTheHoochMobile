@@ -84,6 +84,18 @@ class Gurgles extends PositionComponent with CollisionCallbacks {
 
   void endJump() => _jumpHeld = false;
 
+  /// Pure function: how far the tankard should lean for a given balance tilt.
+  /// Tested in test/tankard_rotation_test.dart.
+  static double tankardAngleForTilt(double tilt) =>
+      tilt * GameConfig.tankardMaxLeanRadians;
+
+  /// Called from GameScene.update each frame to visually tilt the tankard in
+  /// sync with balance.tilt. Gives the player a clear cue about which way to
+  /// counter-drag to avoid spilling.
+  void setTankardAngle(double angle) {
+    _tankard.angle = angle;
+  }
+
   @override
   void update(double dt) {
     super.update(dt);
