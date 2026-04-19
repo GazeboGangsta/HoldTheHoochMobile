@@ -113,6 +113,7 @@ iOS build hasn't been attempted yet. Intent per [docs/PLATFORM_NOTES.md](PLATFOR
 
 | # | Issue | Severity | Where |
 |---|-------|----------|-------|
+| 18 | **Drift bias tuning + legibility** | Med | Drift implementation works, but as tuned: spill meter stays empty for first 10s, then fills steadily through the rest of the run — player reports they can't tell which direction to drag to counter. Needs (a) visible indicator of drift direction (e.g. tankard tilts toward the edge the hooch is drifting toward, or arrow hint overlay), (b) retuned constants so pressure ramps smoothly from t=0 rather than in a cliff, (c) drag input sensitivity audit so countering feels responsive. |
 | 6 | Score retry queue unimplemented | Med | [BACKEND.md](BACKEND.md) promises failed submissions are queued in SharedPreferences and retried. `ApiClient.submitScore` just returns false on failure. |
 | 8 | `sensors_plus` dependency unused | Low | Either wire up the accelerometer tilt control (optional input per [GAME_DESIGN.md](GAME_DESIGN.md)) or remove from `pubspec.yaml`. |
 | 9 | `Obstacle` / `CollectibleManager` are 90% duplicated | Low | Extract abstract `SpawnManager<T>` base before adding a third spawner. |

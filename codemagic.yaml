@@ -1,0 +1,237 @@
+# CodeMagic CI/CD configuration for HoldTheHoochMobile.
+#
+# Reference: https://docs.codemagic.io/yaml-basic-configuration/yaml-getting-started/
+#
+# Workflows:
+#   android-debug      Fast verification build. Triggered on push to main.
+#   ios-debug          iOS no-codesign compile check. Triggered on push to main.
+#   android-release    Signed release AAB. Triggered on git tag matching v*.
+#                      Requires env group `android_signing` (see SIGNING.md).
+#   ios-release        TestFlight upload. Triggered on git tag matching v*.
+#                      Requires env group `ios_signing` + App Store Connect key.
+#
+# Secrets / env groups (configure in CodeMagic UI under Teams -> Environment
+# variables), referenced below via `groups:`:
+#   android_signing    CM_KEYSTORE, CM_KEYSTORE_PASSWORD, CM_KEY_ALIAS,
+#                      CM_KEY_PASSWORD, GCLOUD_SERVICE_ACCOUNT_CREDENTIALS
+#   ios_signing        APP_STORE_CONNECT_ISSUER_ID, APP_STORE_CONNECT_KEY_IDENTIFIER,
+#                      APP_STORE_CONNECT_PRIVATE_KEY, CERTIFICATE_PRIVATE_KEY
+
+definitions:
+  instance_defaults: &instance_defaults
+    max_build_duration: 60
+    environment:
+      flutter: stable
+      vars:
+        APP_NAME: "Hold the Hooch"
+        ANDROID_PACKAGE_NAME: "beer.gurgles.hold_the_hooch"
+        IOS_BUNDLE_ID: "beer.gurgles.holdTheHooch"
+
+  scripts:
+    - &flutter_pub_get
+      name: Get Flutter packages
+      script: |
+        flutter pub get
+
+    - &flutter_analyze
+      name: Flutter analyze
+      script: |
+        flutter analyze
+
+    - &flutter_test
+      name: Flutter test
+      script: |
+        flutter test
+
+workflows:
+  # --------------------------------------------------------------------------
+  # Android debug build. Fast, cheap, no signing required. Verifies the
+  # Android project compiles and tests pass on every push to main.
+  # --------------------------------------------------------------------------
+  android-debug:
+    name: Android (debug)
+    <<: *instance_defaults
+    instance_type: linux_x2
+    triggering:
+      events:
+        - push
+      branch_patterns:
+        - pattern: main
+          include: true
+    scripts:
+      - *flutter_pub_get
+      - *flutter_analyze
+      - *flutter_test
+      - name: Build Android debug APK
+        script: |
+          flutter build apk --debug
+    artifacts:
+      - build/**/outputs/**/*.apk
+      - flutter_drive.log
+    publishing:
+      email:
+        recipients:
+          - callum.siciliano@gmail.com
+        notify:
+          success: false
+          failure: true
+
+  # --------------------------------------------------------------------------
+  # iOS no-codesign build. Confirms the iOS project compiles on CodeMagic's
+  # macOS runners without needing Apple Developer credentials. Will fail in
+  # a predictable way if we haven't run `flutter create` or generated pod
+  # files properly.
+  # --------------------------------------------------------------------------
+  ios-debug:
+    name: iOS (no-codesign verification)
+    <<: *instance_defaults
+    instance_type: mac_mini_m2
+    triggering:
+      events:
+        - push
+      branch_patterns:
+        - pattern: main
+          include: true
+    scripts:
+      - *flutter_pub_get
+      - *flutter_analyze
+      - *flutter_test
+      - name: Install CocoaPods
+        script: |
+          cd ios && pod install
+      - name: Flutter build ios (no codesign)
+        script: |
+          flutter build ios --debug --no-codesign
+    artifacts:
+      - build/ios/iphoneos/*.app
+    publishing:
+      email:
+        recipients:
+          - callum.siciliano@gmail.com
+        notify:
+          success: false
+          failure: true
+
+  # --------------------------------------------------------------------------
+  # Android release. Builds a signed AAB and (optionally) uploads to the
+  # Play Console internal testing track.
+  #
+  # Requires in CodeMagic env group `android_signing`:
+  #   CM_KEYSTORE                           (base64-encoded .jks file)
+  #   CM_KEYSTORE_PASSWORD
+  #   CM_KEY_ALIAS
+  #   CM_KEY_PASSWORD
+  #   GCLOUD_SERVICE_ACCOUNT_CREDENTIALS    (JSON service account with
+  #                                          Play Console publish permission)
+  #
+  # If the Play Console service account isn't set up yet, the `google_play`
+  # publisher can be left disabled; AAB will be produced as an artifact
+  # for manual upload.
+  # --------------------------------------------------------------------------
+  android-release:
+    name: Android (release AAB)
+    <<: *instance_defaults
+    instance_type: linux_x2
+    environment:
+      flutter: stable
+      groups:
+        - android_signing
+      vars:
+        APP_NAME: "Hold the Hooch"
+        ANDROID_PACKAGE_NAME: "beer.gurgles.hold_the_hooch"
+    triggering:
+      events:
+        - tag
+      tag_patterns:
+        - pattern: 'v*'
+          include: true
+    scripts:
+      - *flutter_pub_get
+      - *flutter_analyze
+      - *flutter_test
+      - name: Set up keystore
+        script: |
+          echo $CM_KEYSTORE | base64 --decode > "$CM_BUILD_DIR/upload-keystore.jks"
+          cat > "$CM_BUILD_DIR/android/key.properties" <<EOF
+          storePassword=$CM_KEYSTORE_PASSWORD
+          keyPassword=$CM_KEY_PASSWORD
+          keyAlias=$CM_KEY_ALIAS
+          storeFile=$CM_BUILD_DIR/upload-keystore.jks
+          EOF
+      - name: Build Android release AAB
+        script: |
+          flutter build appbundle --release
+    artifacts:
+      - build/**/outputs/**/*.aab
+      - build/**/outputs/**/mapping.txt
+    publishing:
+      email:
+        recipients:
+          - callum.siciliano@gmail.com
+        notify:
+          success: true
+          failure: true
+      # Uncomment once a Play Console service account is configured:
+      # google_play:
+      #   credentials: $GCLOUD_SERVICE_ACCOUNT_CREDENTIALS
+      #   track: internal
+
+  # --------------------------------------------------------------------------
+  # iOS release (TestFlight). Uses CodeMagic's managed code-signing with an
+  # App Store Connect API key.
+  #
+  # Requires:
+  #   Code signing identity (Distribution cert) registered in CodeMagic
+  #   App Store Connect integration (API key JSON) registered in CodeMagic
+  #   Bundle id `beer.gurgles.holdTheHooch` created in Apple Developer portal
+  #
+  # After the first successful run, delivery-to-TestFlight is automatic.
+  # --------------------------------------------------------------------------
+  ios-release:
+    name: iOS (TestFlight)
+    <<: *instance_defaults
+    instance_type: mac_mini_m2
+    integrations:
+      app_store_connect: "App Store Connect API Key"
+    environment:
+      flutter: stable
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: beer.gurgles.holdTheHooch
+      vars:
+        APP_NAME: "Hold the Hooch"
+        IOS_BUNDLE_ID: "beer.gurgles.holdTheHooch"
+    triggering:
+      events:
+        - tag
+      tag_patterns:
+        - pattern: 'v*'
+          include: true
+    scripts:
+      - *flutter_pub_get
+      - *flutter_analyze
+      - *flutter_test
+      - name: Install CocoaPods
+        script: |
+          cd ios && pod install
+      - name: Set Xcode build number from CodeMagic build id
+        script: |
+          cd $CM_BUILD_DIR/ios
+          agvtool new-version -all $(($BUILD_NUMBER + 1))
+      - name: Flutter build ipa
+        script: |
+          flutter build ipa --release \
+            --export-options-plist=/Users/builder/export_options.plist
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
+    publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true
+      email:
+        recipients:
+          - callum.siciliano@gmail.com
+        notify:
+          success: true
+          failure: true
