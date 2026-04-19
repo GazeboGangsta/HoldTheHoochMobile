@@ -156,6 +156,7 @@ class GameScene extends FlameGame with HasCollisionDetection {
     super.update(dt);
     if (_gameOver) return;
     _elapsed += dt;
+    balance.applyDifficulty(_elapsed / GameConfig.difficultyRampSeconds);
     final mult = currentMultiplier;
     score = (_elapsed * 10 * mult).floor() + _collectiblePoints;
     scoreText.text = mult > 1.0

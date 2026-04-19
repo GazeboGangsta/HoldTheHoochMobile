@@ -29,15 +29,22 @@ class HoochBalance extends Component {
     tilt = tilt.clamp(-1.0, 1.0);
   }
 
-  void applyDifficulty(double multiplier) {
-    // used to scale passive wobble in the future — placeholder hook.
+  double _difficulty = 0.0;
+
+  /// Called each frame from GameScene with elapsed/rampSeconds in [0, 1].
+  void applyDifficulty(double t) {
+    _difficulty = t.clamp(0.0, 1.0);
   }
+
+  double get _amplitudeMultiplier =>
+      1.0 + _difficulty * (GameConfig.wobbleAmplitudeMaxMultiplier - 1.0);
 
   @override
   void update(double dt) {
     super.update(dt);
     _phase += dt * GameConfig.wobbleBaseFrequency * 2 * pi;
-    final wobble = sin(_phase) * GameConfig.wobbleBaseAmplitude * dt;
+    final wobble =
+        sin(_phase) * GameConfig.wobbleBaseAmplitude * _amplitudeMultiplier * dt;
     tilt += wobble;
     tilt = tilt.clamp(-1.0, 1.0);
 
