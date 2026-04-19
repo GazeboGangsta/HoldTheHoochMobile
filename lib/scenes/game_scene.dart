@@ -44,6 +44,18 @@ class GameScene extends FlameGame with HasCollisionDetection {
     return GameConfig.baseScrollSpeed * mult;
   }
 
+  /// Score multiplier as a pure function of survival time.
+  /// Starts at 1.0, steps +0.1 every [GameConfig.scoreMultiplierIntervalSeconds],
+  /// capped at [GameConfig.scoreMultiplierMax].
+  static double multiplierFor(double elapsed) {
+    final raw = 1.0 +
+        (elapsed / GameConfig.scoreMultiplierIntervalSeconds).floor() *
+            GameConfig.scoreMultiplierStep;
+    return raw.clamp(1.0, GameConfig.scoreMultiplierMax);
+  }
+
+  double get currentMultiplier => multiplierFor(_elapsed);
+
   @override
   Future<void> onLoad() async {
     await super.onLoad();
@@ -144,8 +156,11 @@ class GameScene extends FlameGame with HasCollisionDetection {
     super.update(dt);
     if (_gameOver) return;
     _elapsed += dt;
-    score = (_elapsed * 10).floor() + _collectiblePoints;
-    scoreText.text = '$score';
+    final mult = currentMultiplier;
+    score = (_elapsed * 10 * mult).floor() + _collectiblePoints;
+    scoreText.text = mult > 1.0
+        ? '$score  ×${mult.toStringAsFixed(1)}'
+        : '$score';
     if (balance.hasSpilled) _end('You spilled the hooch!');
   }
 
