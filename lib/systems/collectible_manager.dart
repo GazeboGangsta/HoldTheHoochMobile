@@ -44,13 +44,18 @@ class CollectibleManager extends Component {
     return CollectibleKind.potion;
   }
 
-  /// Height tier per kind: herb low (just above ground, small jump),
-  /// hops mid (clean jump required), potion high (full jump required).
+  /// Height tier per kind. Tuned so Gurgles' hitbox top at peak jump
+  /// (gravity 2800, max velocity -720 → peak ~92px, plus ~116px of body
+  /// clearance above his feet = ~208px reach above ground) can intersect
+  /// each tier.
+  /// - herb: free grab at ground level
+  /// - hops: partial jump
+  /// - potion: full-hold jump
   double _heightForKind(CollectibleKind k) {
     return switch (k) {
-      CollectibleKind.herb => groundY - 70.0 * sizeScale,
-      CollectibleKind.hops => groundY - 160.0 * sizeScale,
-      CollectibleKind.potion => groundY - 260.0 * sizeScale,
+      CollectibleKind.herb => groundY - 50.0 * sizeScale,
+      CollectibleKind.hops => groundY - 120.0 * sizeScale,
+      CollectibleKind.potion => groundY - 180.0 * sizeScale,
     };
   }
 

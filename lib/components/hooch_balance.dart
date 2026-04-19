@@ -12,6 +12,10 @@ class HoochBalance extends Component {
   double get spillPercent => spill.clamp(0.0, 1.0);
   bool get hasSpilled => spill >= 1.0;
 
+  void resetPhase() {
+    _phase = 0.0;
+  }
+
   /// Called by the scene to apply player input (drag delta in screen-x units).
   void applyCounterTorque(double delta) {
     tilt -= delta * 0.004;

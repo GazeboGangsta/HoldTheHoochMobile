@@ -165,6 +165,9 @@ class GameScene extends FlameGame with HasCollisionDetection {
     for (final c in children.whereType<Collectible>().toList()) {
       c.removeFromParent();
     }
+    for (final p in children.whereType<ScorePopup>().toList()) {
+      p.removeFromParent();
+    }
     _elapsed = 0;
     _collectiblePoints = 0;
     score = 0;
@@ -174,6 +177,7 @@ class GameScene extends FlameGame with HasCollisionDetection {
     gurgles.position.y = _groundY;
     balance.tilt = 0;
     balance.spill = 0;
+    balance.resetPhase();
     resumeEngine();
   }
 
