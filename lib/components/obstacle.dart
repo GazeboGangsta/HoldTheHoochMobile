@@ -33,14 +33,41 @@ class Obstacle extends PositionComponent with CollisionCallbacks {
         ObstacleKind.log => 'svg/log.svg',
       };
 
+  /// Hitbox as fractions of the sprite bounds, tuned per-obstacle from the
+  /// actual SVG silhouette (see docs/GAME_DESIGN.md). Values here are
+  /// intentionally smaller than the visual — platformers feel fairer when
+  /// grazes don't register as hits.
+  static ({Vector2 pos, Vector2 size}) _hitboxFor(ObstacleKind k, Vector2 s) => switch (k) {
+        // Root: wide, low. Bulk sits in the bottom 60% of the viewBox.
+        ObstacleKind.root => (
+            pos: Vector2(s.x * 0.10, s.y * 0.40),
+            size: Vector2(s.x * 0.80, s.y * 0.60),
+          ),
+        // Rock: roughly elliptical, approximated with a middle rect.
+        ObstacleKind.rock => (
+            pos: Vector2(s.x * 0.10, s.y * 0.25),
+            size: Vector2(s.x * 0.80, s.y * 0.70),
+          ),
+        // Mushroom cluster: narrow danger column around the main cap+stem.
+        // Small right-side mushroom is short enough it's usually jumped over
+        // when the big one is cleared; we intentionally don't hitbox it.
+        ObstacleKind.mushroom => (
+            pos: Vector2(s.x * 0.12, s.y * 0.22),
+            size: Vector2(s.x * 0.45, s.y * 0.75),
+          ),
+        // Log: wide, flat. Hugs the full trunk body.
+        ObstacleKind.log => (
+            pos: Vector2(s.x * 0.05, s.y * 0.20),
+            size: Vector2(s.x * 0.90, s.y * 0.70),
+          ),
+      };
+
   @override
   Future<void> onLoad() async {
     final svg = await Svg.load(_svgFor(kind));
     add(SvgComponent(svg: svg, size: size));
-    add(RectangleHitbox(
-      size: Vector2(size.x * 0.8, size.y * 0.9),
-      position: Vector2(size.x * 0.1, size.y * 0.1),
-    ));
+    final hb = _hitboxFor(kind, size);
+    add(RectangleHitbox(size: hb.size, position: hb.pos));
   }
 
   @override

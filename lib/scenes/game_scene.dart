@@ -1,6 +1,7 @@
 import 'package:flame/components.dart';
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
+import '../components/collectible.dart';
 import '../components/ground.dart';
 import '../components/gurgles.dart';
 import '../components/hooch_balance.dart';
@@ -8,6 +9,7 @@ import '../components/obstacle.dart';
 import '../components/parallax_bg.dart';
 import '../components/spill_meter.dart';
 import '../config/game_config.dart';
+import '../systems/collectible_manager.dart';
 import '../systems/obstacle_manager.dart';
 
 class GameScene extends FlameGame with HasCollisionDetection {
@@ -17,10 +19,12 @@ class GameScene extends FlameGame with HasCollisionDetection {
   late HoochBalance balance;
   late Ground ground;
   late ObstacleManager obstacleManager;
+  late CollectibleManager collectibleManager;
   late TextComponent scoreText;
   late SpillMeter spillMeter;
 
   double _elapsed = 0;
+  int _collectiblePoints = 0;
   int score = 0;
   bool _gameOver = false;
   String? endReason;
@@ -99,6 +103,15 @@ class GameScene extends FlameGame with HasCollisionDetection {
     );
     add(obstacleManager);
 
+    collectibleManager = CollectibleManager(
+      scrollSpeedProvider: () => currentScrollSpeed,
+      worldWidthProvider: () => size.x,
+      groundY: _groundY,
+      sizeScale: size.y / 900,
+      onPickup: (points) => _collectiblePoints += points,
+    );
+    add(collectibleManager);
+
     scoreText = TextComponent(
       text: '0',
       position: Vector2(size.x / 2, size.y * 0.05),
@@ -127,7 +140,7 @@ class GameScene extends FlameGame with HasCollisionDetection {
     super.update(dt);
     if (_gameOver) return;
     _elapsed += dt;
-    score = (_elapsed * 10).floor();
+    score = (_elapsed * 10).floor() + _collectiblePoints;
     scoreText.text = '$score';
     if (balance.hasSpilled) _end('You spilled the hooch!');
   }
@@ -145,7 +158,11 @@ class GameScene extends FlameGame with HasCollisionDetection {
     for (final ob in children.whereType<Obstacle>().toList()) {
       ob.removeFromParent();
     }
+    for (final c in children.whereType<Collectible>().toList()) {
+      c.removeFromParent();
+    }
     _elapsed = 0;
+    _collectiblePoints = 0;
     score = 0;
     _gameOver = false;
     endReason = null;

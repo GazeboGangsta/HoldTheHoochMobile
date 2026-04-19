@@ -2,6 +2,7 @@ import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
 import 'package:flame_svg/flame_svg.dart';
 import '../config/game_config.dart';
+import 'obstacle.dart';
 
 /// Gurgles the runner + the tankard of hooch riding above his head.
 class Gurgles extends PositionComponent with CollisionCallbacks {
@@ -43,8 +44,7 @@ class Gurgles extends PositionComponent with CollisionCallbacks {
     _jumpSvg = SvgComponent(svg: jumpSvg, size: size);
     add(_runSvg);
 
-    // Tankard sits above Gurgles' raised hands. hooch.svg viewBox is square-ish;
-    // render it at roughly 70% of his width, just above the top of his sprite.
+    // Tankard sits above Gurgles' raised hands.
     final tankardSize = Vector2(size.x * 0.7, size.x * 0.55);
     _tankard = SvgComponent(
       svg: hoochSvg,
@@ -54,9 +54,12 @@ class Gurgles extends PositionComponent with CollisionCallbacks {
     );
     add(_tankard);
 
+    // Tight body hitbox: just the tunic + legs region of gurgles.svg
+    // (face+body+legs span roughly y=26..74 of 80, x=24..40 of 64).
+    // We exclude the raised arms, hat spike, and tankard so grazes feel fair.
     add(RectangleHitbox(
-      size: Vector2(size.x * 0.55, size.y * 0.85),
-      position: Vector2(size.x * 0.22, size.y * 0.1),
+      size: Vector2(size.x * 0.38, size.y * 0.62),
+      position: Vector2(size.x * 0.31, size.y * 0.30),
     ));
   }
 
@@ -104,6 +107,9 @@ class Gurgles extends PositionComponent with CollisionCallbacks {
   @override
   void onCollisionStart(Set<Vector2> intersectionPoints, PositionComponent other) {
     super.onCollisionStart(intersectionPoints, other);
-    onObstacleHit?.call();
+    // Only obstacles end the run — collectibles handle their own pickup.
+    if (other is Obstacle) {
+      onObstacleHit?.call();
+    }
   }
 }
