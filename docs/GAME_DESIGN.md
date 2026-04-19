@@ -68,7 +68,7 @@ Float at three height tiers: **ground** (safe grab), **mid** (small jump needed)
 | 120      | 1.75x        | 1.65x      | 1.5x             |
 | 180+     | 2.0x (cap)   | 1.8x (cap) | 1.7x (cap)       |
 
-Tuning lives in `lib/config/difficulty.dart`.
+Tuning lives in [lib/config/game_config.dart](../lib/config/game_config.dart).
 
 ## Scenes / states
 

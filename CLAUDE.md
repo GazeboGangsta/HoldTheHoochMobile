@@ -69,4 +69,43 @@ test/                    # widget + component tests
 
 ## Current state (check before making changes)
 
-See [docs/STATUS.md](docs/STATUS.md) for the live snapshot. Contains what's playable, which milestones are done, known issues, and — importantly — a **Gotchas** section capturing non-obvious framework quirks already hit (Flame camera viewfinder defaults, `Theme.of` in `initState`, keyboard-resized GameWidget, etc.). Read it before diving in so you don't rediscover the same bugs.
+See [docs/STATUS.md](docs/STATUS.md) for the live snapshot. Contains what's playable, which milestones are done, known issues, and — importantly — a **Gotchas** section capturing non-obvious framework quirks already hit (Flame camera viewfinder defaults, `Theme.of` in `initState`, keyboard-resized GameWidget, OpacityEffect on TextComponent, etc.). Read it before diving in so you don't rediscover the same bugs.
+
+## Workflow
+
+This project uses the `superpowers` plugin skills as standard practice. These are not optional "nice to have"s — they exist because earlier sessions burned hours on avoidable problems (shotgun fixing, untested claims of completion, silent doc drift). Apply them whenever they match.
+
+### When starting a new piece of work
+
+- **Feature / milestone:** invoke `superpowers:writing-plans`. Produce a concrete plan before touching code. Plan gets committed under `docs/superpowers/plans/` (create if missing).
+- **New gameplay system:** invoke `superpowers:brainstorming` first if requirements are fuzzy; otherwise go straight to `writing-plans`.
+- **Any non-trivial bug:** invoke `superpowers:systematic-debugging`. **The iron law: no fixes without root-cause investigation first.** Add diagnostic instrumentation, gather evidence, form a single hypothesis, test minimally, verify.
+
+### When writing code
+
+- **Before implementation code:** invoke `superpowers:test-driven-development`. Write the failing test first. This is especially important for component physics / balance logic / collision filtering — the places we've already regressed.
+- **Trust internal framework guarantees.** Don't add defensive null checks for things framework contracts forbid. Validate at boundaries (user input, network, SharedPreferences).
+- **No comments that restate the code.** Only comment the `WHY` when non-obvious — a hidden constraint, a subtle invariant, a workaround for a specific bug.
+
+### When claiming something is done
+
+- **Before saying "done":** invoke `superpowers:verification-before-completion`. Run `flutter analyze`, `flutter test`, and (for gameplay changes) **install on the device and play the affected flow**. Code that type-checks is not code that works.
+- **Before committing:** invoke `superpowers:requesting-code-review` for major features, or at least for any PR-equivalent chunk of work.
+
+### Debugging hard-earned lessons
+
+From past sessions, these are the failure modes we have already lost time to. Match and prevent:
+
+- **Shotgun fixing without evidence.** Symptom: proposing 4 different fixes in one response hoping one sticks. Remedy: return to Phase 1 of `systematic-debugging`. Add diagnostics; read logs; form ONE hypothesis at a time.
+- **`debugPrint` / `dev.log` doesn't reach `adb logcat` reliably on Android 15 debug APKs.** On-screen diagnostic HUD (e.g. a live `TextComponent` showing state) is a more reliable feedback loop than log-chasing. Don't sink 20 minutes into logcat filters; put a yellow text overlay on the screen.
+- **Doc drift is a silent tax.** At the end of each session, update `docs/STATUS.md` if state has changed. Update `docs/ROADMAP.md` if milestones have moved. Claims in docs become ground truth for the next session; keeping them honest is load-bearing.
+- **Don't claim a fix works without testing it on a device.** If the task is UI or gameplay, install on the phone and play the affected flow. If the task can't be device-tested (e.g. a CI tweak), say so explicitly rather than implying a build/test pass means it works.
+
+### Memory + persistence
+
+- Use `docs/STATUS.md` for current-state and known-issues (long-lived, shared across sessions).
+- Use `docs/ROADMAP.md` for milestone plans.
+- Use tasks (TodoWrite) within a session for step-by-step progress.
+- Use `memory/` (auto memory) for facts about the user or collaboration preferences that carry across sessions.
+
+Plans, tasks, and code don't belong in memory. Memory is for durable context about the human collaborator and their environment.
