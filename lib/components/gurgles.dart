@@ -17,7 +17,11 @@ class Gurgles extends PositionComponent with CollisionCallbacks {
 
   late SvgComponent _runSvg;
   late SvgComponent _jumpSvg;
-  late SvgComponent _tankard;
+  // Nullable because Gurgles.onLoad (which loads the SVG) may not have
+  // finished by the time GameScene.update calls setTankardAngle. Rather
+  // than await-ing add(gurgles) in the scene, we treat pre-load calls as
+  // no-ops.
+  SvgComponent? _tankard;
 
   void Function()? onObstacleHit;
 
@@ -46,13 +50,14 @@ class Gurgles extends PositionComponent with CollisionCallbacks {
 
     // Tankard sits above Gurgles' raised hands.
     final tankardSize = Vector2(size.x * 0.7, size.x * 0.55);
-    _tankard = SvgComponent(
+    final tankard = SvgComponent(
       svg: hoochSvg,
       size: tankardSize,
       position: Vector2(size.x / 2, -2),
       anchor: Anchor.bottomCenter,
     );
-    add(_tankard);
+    _tankard = tankard;
+    add(tankard);
 
     // Tight body hitbox: just the tunic + legs region of gurgles.svg
     // (face+body+legs span roughly y=26..74 of 80, x=24..40 of 64).
@@ -93,7 +98,7 @@ class Gurgles extends PositionComponent with CollisionCallbacks {
   /// sync with balance.tilt. Gives the player a clear cue about which way to
   /// counter-drag to avoid spilling.
   void setTankardAngle(double angle) {
-    _tankard.angle = angle;
+    _tankard?.angle = angle;
   }
 
   @override
