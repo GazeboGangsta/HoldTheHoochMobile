@@ -7,7 +7,7 @@ enum CollectibleKind { herb, hops, potion }
 
 class Collectible extends PositionComponent with CollisionCallbacks {
   final CollectibleKind kind;
-  final void Function(int points) onPickup;
+  final void Function(int points, Vector2 worldPos) onPickup;
   double scrollSpeed;
   bool _consumed = false;
 
@@ -45,10 +45,12 @@ class Collectible extends PositionComponent with CollisionCallbacks {
   Future<void> onLoad() async {
     final svg = await Svg.load(_svgFor(kind));
     add(SvgComponent(svg: svg, size: size));
+    // Active hitbox (default) so Collectible.onCollisionStart fires when
+    // Gurgles overlaps — with passive we'd only get the callback on
+    // Gurgles' side and onPickup would never run.
     add(RectangleHitbox(
       size: Vector2(size.x * 0.9, size.y * 0.9),
       position: Vector2(size.x * 0.05, size.y * 0.05),
-      collisionType: CollisionType.passive,
     ));
   }
 
@@ -64,7 +66,7 @@ class Collectible extends PositionComponent with CollisionCallbacks {
     super.onCollisionStart(intersectionPoints, other);
     if (_consumed || other is! Gurgles) return;
     _consumed = true;
-    onPickup(pointsFor(kind));
+    onPickup(pointsFor(kind), position.clone());
     removeFromParent();
   }
 }

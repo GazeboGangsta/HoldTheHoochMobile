@@ -10,7 +10,7 @@ class CollectibleManager extends Component {
   final double Function() worldWidthProvider;
   final double groundY;
   final double sizeScale;
-  final void Function(int points) onPickup;
+  final void Function(int points, Vector2 worldPos) onPickup;
   final Random _rng = Random();
 
   double _timeToNext = 3.0;

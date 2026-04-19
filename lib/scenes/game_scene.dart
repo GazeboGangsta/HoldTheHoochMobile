@@ -7,6 +7,7 @@ import '../components/gurgles.dart';
 import '../components/hooch_balance.dart';
 import '../components/obstacle.dart';
 import '../components/parallax_bg.dart';
+import '../components/score_popup.dart';
 import '../components/spill_meter.dart';
 import '../config/game_config.dart';
 import '../systems/collectible_manager.dart';
@@ -108,7 +109,10 @@ class GameScene extends FlameGame with HasCollisionDetection {
       worldWidthProvider: () => size.x,
       groundY: _groundY,
       sizeScale: size.y / 900,
-      onPickup: (points) => _collectiblePoints += points,
+      onPickup: (points, at) {
+        _collectiblePoints += points;
+        add(ScorePopup(points: points, position: at.clone()));
+      },
     );
     add(collectibleManager);
 
