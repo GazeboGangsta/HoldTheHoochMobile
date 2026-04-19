@@ -107,7 +107,7 @@ flutter build apk --debug
 flutter install -d <device-id> --debug
 ```
 
-iOS build hasn't been attempted yet. Intent per [docs/PLATFORM_NOTES.md](PLATFORM_NOTES.md): set up Xcode Cloud before M6 so TestFlight builds happen on push.
+**iOS + Android debug builds confirmed working through CodeMagic** (2026-04-20). Both workflows (`ios-debug`, `android-debug`) pass on push-to-main. Release workflows (`android-release`, `ios-release`) are configured but need signing credentials uploaded per [docs/SIGNING.md](SIGNING.md).
 
 ## Known issues & deferred work
 
@@ -124,7 +124,7 @@ iOS build hasn't been attempted yet. Intent per [docs/PLATFORM_NOTES.md](PLATFOR
 | 14 | Run cycle sprite swap is binary (run ↔ jump) | Low | Web game has one gurgles pose; a 6-frame cycle is in [ART-GUIDE.md](ART-GUIDE.md). Defer to polish pass. |
 | 15 | No SFX / music | Med | Brief in [AUDIO-GUIDE.md](AUDIO-GUIDE.md); nothing wired via `flame_audio`. |
 | 16 | Test suite is effectively empty | Med | One smoke test on `GameConfig`. Min viable set specced in [ROADMAP.md](ROADMAP.md) M4/M5. |
-| 17 | No iOS build attempted | High (for ship) | Requires a macOS session; Xcode Cloud plan in [PLATFORM_NOTES.md](PLATFORM_NOTES.md). |
+| ~~17~~ | ~~No iOS build attempted~~ | ~~High (for ship)~~ | **Closed 2026-04-20.** iOS no-codesign build passes via CodeMagic `ios-debug` workflow. Release workflow (`ios-release`) configured but needs Apple Developer signing credentials per [SIGNING.md](SIGNING.md). |
 
 ## Gotchas (don't repeat these)
 
@@ -151,6 +151,13 @@ iOS build hasn't been attempted yet. Intent per [docs/PLATFORM_NOTES.md](PLATFOR
 
 - GitHub repo: `https://github.com/GazeboGangsta/HoldTheHoochMobile` (public, default branch `main`).
 - GitHub wiki: `https://github.com/GazeboGangsta/HoldTheHoochMobile/wiki` (art + audio briefs mirrored).
-- CI: `.github/workflows/ci.yml` — analyze + test + debug APK on push/PR to main.
+- Local CI: `.github/workflows/ci.yml` — analyze + test + debug APK on push/PR to main. Still useful as fast PR gate.
+- **CodeMagic pipeline live** (2026-04-20). App id `69e5621f551ec5674ead805e`. Four workflows in `codemagic.yaml`:
+  - `android-debug` (linux_x2) — push to main, ~2 min, produces APK. ✅ verified.
+  - `ios-debug` (mac_mini_m2) — push to main, ~2m23s, produces `Runner.app.zip`. ✅ verified.
+  - `android-release` (linux_x2) — tag `v*` triggered. Needs env group `android_signing`. Not yet exercised.
+  - `ios-release` (mac_mini_m2) — tag `v*` triggered. Needs App Store Connect API key integration + bundle id registration. Not yet exercised.
+  See [docs/SIGNING.md](SIGNING.md) for one-time setup of the release paths.
 - Samsung S26 Ultra: connected at `192.168.4.25:38097` for wireless debugging. Will need re-pair next session.
 - All background build processes: stopped.
+- **Security:** the CodeMagic API token used this session was shared in the chat transcript. Rotate it at CodeMagic UI → Teams → Personal Access Tokens before sharing this conversation or moving on.
