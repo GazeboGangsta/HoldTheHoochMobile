@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'package:flame/components.dart';
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
@@ -106,6 +107,7 @@ class GameScene extends FlameGame with HasCollisionDetection {
     add(gurgles);
 
     balance = HoochBalance();
+    balance.setDriftDirection(Random().nextBool() ? 1.0 : -1.0);
     add(balance);
 
     obstacleManager = ObstacleManager(
@@ -196,6 +198,7 @@ class GameScene extends FlameGame with HasCollisionDetection {
     balance.tilt = 0;
     balance.spill = 0;
     balance.resetPhase();
+    balance.setDriftDirection(Random().nextBool() ? 1.0 : -1.0);
     resumeEngine();
   }
 

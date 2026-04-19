@@ -32,6 +32,7 @@ class HoochBalance extends Component {
 
   double _difficulty = 0.0;
   double _drainBonusRemainingSec = 0.0;
+  double _driftDirection = 0.0;
 
   /// Called each frame from GameScene with elapsed/rampSeconds in [0, 1].
   void applyDifficulty(double t) {
@@ -40,6 +41,17 @@ class HoochBalance extends Component {
 
   double get _amplitudeMultiplier =>
       1.0 + _difficulty * (GameConfig.wobbleAmplitudeMaxMultiplier - 1.0);
+
+  double get _driftRate =>
+      GameConfig.driftRateBase +
+      _difficulty * (GameConfig.driftRateMax - GameConfig.driftRateBase);
+
+  /// Direction the hooch naturally tips over time. Set once per run by the
+  /// scene (randomly ±1). 0 disables drift — useful for tests that want to
+  /// observe pure wobble behaviour.
+  void setDriftDirection(double dir) {
+    _driftDirection = dir;
+  }
 
   /// Boost the spill-meter drain rate for [duration]. Stacks by extension:
   /// if another bonus is already active, take the longer remaining time.
@@ -54,7 +66,8 @@ class HoochBalance extends Component {
     _phase += dt * GameConfig.wobbleBaseFrequency * 2 * pi;
     final wobble =
         sin(_phase) * GameConfig.wobbleBaseAmplitude * _amplitudeMultiplier * dt;
-    tilt += wobble;
+    final drift = _driftDirection * _driftRate * dt;
+    tilt += wobble + drift;
     tilt = tilt.clamp(-1.0, 1.0);
 
     if (tilt.abs() > GameConfig.spillThreshold) {

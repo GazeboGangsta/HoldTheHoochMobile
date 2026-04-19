@@ -104,4 +104,72 @@ void main() {
       expect((b.spill - baseline.spill).abs(), lessThan(0.01));
     });
   });
+
+  group('HoochBalance directional drift bias', () {
+    test('default (no drift direction set): tilt stays tiny (pure wobble)', () {
+      final b = HoochBalance()..applyDifficulty(1.0);
+      const dt = 1 / 60;
+      double peak = 0;
+      for (var i = 0; i < 120; i++) {
+        b.update(dt);
+        if (b.tilt.abs() > peak) peak = b.tilt.abs();
+      }
+      // Pure wobble at max amplitude ramp: 2 * 0.25 * 1.7 / 7.54 ≈ 0.113.
+      expect(peak, lessThan(0.2));
+    });
+
+    test('with positive drift direction, tilt drifts positive', () {
+      final b = HoochBalance()
+        ..setDriftDirection(1.0)
+        ..applyDifficulty(0.5);
+      const dt = 1 / 60;
+      for (var i = 0; i < 120; i++) {
+        b.update(dt);
+      }
+      // After 2s at mid-difficulty, tilt must be noticeably positive.
+      expect(b.tilt, greaterThan(0.1));
+    });
+
+    test('with negative drift direction, tilt drifts negative', () {
+      final b = HoochBalance()
+        ..setDriftDirection(-1.0)
+        ..applyDifficulty(0.5);
+      const dt = 1 / 60;
+      for (var i = 0; i < 120; i++) {
+        b.update(dt);
+      }
+      expect(b.tilt, lessThan(-0.1));
+    });
+
+    test('drift rate scales with difficulty', () {
+      final b0 = HoochBalance()
+        ..setDriftDirection(1.0)
+        ..applyDifficulty(0);
+      final b1 = HoochBalance()
+        ..setDriftDirection(1.0)
+        ..applyDifficulty(1.0);
+
+      const dt = 1 / 60;
+      for (var i = 0; i < 60; i++) {
+        b0.update(dt);
+        b1.update(dt);
+      }
+      // Higher difficulty must produce faster drift.
+      expect(b1.tilt, greaterThan(b0.tilt));
+    });
+
+    test('drift alone eventually crosses the spill threshold', () {
+      final b = HoochBalance()
+        ..setDriftDirection(1.0)
+        ..applyDifficulty(1.0);
+      const dt = 1 / 60;
+      // 10 seconds of pure drift at max difficulty should be enough to cross
+      // spill threshold (0.7) with no player intervention.
+      for (var i = 0; i < 600; i++) {
+        b.update(dt);
+        if (b.tilt.abs() > 0.7) break;
+      }
+      expect(b.tilt.abs(), greaterThan(0.7));
+    });
+  });
 }

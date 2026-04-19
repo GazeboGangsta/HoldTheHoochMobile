@@ -37,4 +37,11 @@ class GameConfig {
   // Passive wobble amplitude scales with difficulty curve up to this cap
   // (evaluated at the end of difficultyRampSeconds — matches spec's 1.7x).
   static const double wobbleAmplitudeMaxMultiplier = 1.7;
+
+  // Directional drift bias — the "bias toward outer edges as speed
+  // increases" half of the wobble spec. Each run picks a direction; tilt
+  // drifts toward that edge at driftRateBase at difficulty 0, lerping
+  // toward driftRateMax at difficulty 1. Player must drag to counter.
+  static const double driftRateBase = 0.05;
+  static const double driftRateMax = 0.20;
 }
