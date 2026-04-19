@@ -23,4 +23,18 @@ class GameConfig {
 
   static const String apiBaseUrl = 'https://gurgles.beer';
   static const int apiTimeoutSeconds = 5;
+
+  // Score multiplier: +0.1x per 10 survival seconds, capped 3x.
+  // See docs/GAME_DESIGN.md § Scoring.
+  static const double scoreMultiplierIntervalSeconds = 10.0;
+  static const double scoreMultiplierStep = 0.1;
+  static const double scoreMultiplierMax = 3.0;
+
+  // Potion pickup grants N seconds of boosted spill-meter drain.
+  static const double potionSpillDrainBonusSeconds = 1.0;
+  static const double potionSpillDrainBonusMultiplier = 4.0;
+
+  // Passive wobble amplitude scales with difficulty curve up to this cap
+  // (evaluated at the end of difficultyRampSeconds — matches spec's 1.7x).
+  static const double wobbleAmplitudeMaxMultiplier = 1.7;
 }
