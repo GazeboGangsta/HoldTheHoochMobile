@@ -1,12 +1,12 @@
 # Project Status — HoldTheHooch Mobile
 
-_Last updated: 2026-04-19 (post code-review audit)_
+_Last updated: 2026-04-19 (post M4 completion)_
 
 Snapshot of where the project is, what's working, what isn't, and what to pick up next session. Refreshed after a full-codebase review; known doc drift corrected.
 
 ## TL;DR
 
-Working Flutter + Flame 2D side-scrolling endless runner on Android. Installable debug APK running on Pixel 8 Pro + Samsung S26 Ultra via wireless debugging. Core loop is playable: tap right to jump, drag left to balance the hooch, don't hit obstacles, don't spill. Real SVG art from the web game is in, parallax backdrop scrolls, score submits to `gurgles.beer`. **Collectibles crash on pickup — root cause known, fix pending.** iOS not yet built.
+Working Flutter + Flame 2D side-scrolling endless runner on Android. Installable debug APK running on Pixel 8 Pro + Samsung S26 Ultra via wireless debugging. Core loop is playable: tap right to jump, drag left to balance the hooch, don't hit obstacles, don't spill. Real SVG art from the web game is in, parallax backdrop scrolls, score submits to `gurgles.beer`. iOS not yet built.
 
 ## What's playable today
 
@@ -17,11 +17,11 @@ Working Flutter + Flame 2D side-scrolling endless runner on Android. Installable
 - Passive hooch wobble builds tilt over time; every jump adds a random tilt impulse.
 - **Spill meter** (red bar below score) fills when `|tilt| > 0.7` and drains when `|tilt| < 0.4`. 100% = game over.
 - Obstacles (root / rock / mushroom / log) spawn at speed-dependent intervals and end the run on collision. Per-obstacle tight hitboxes are authored (see `lib/components/obstacle.dart:40-63`).
-- Collectibles (herb / hops / potion) spawn at three height tiers. **Pickup crashes today** (see Critical issues).
+- Collectibles (herb / hops / potion) spawn at three reachable height tiers; picking one up awards points and shows a floating +N popup.
 - Parallax: distant mountains (0.15x) + forest trees (0.45x) + tiled ground (1.0x).
 - Dark-navy night sky backdrop (matched to `bg-mountains.svg` gradient top to avoid horizontal seam).
 - Score: +10 per second elapsed + collectible points, shown top-center.
-- Difficulty curve: scroll speed ramps 1.0x → 2.0x over 180 seconds. **Wobble amplitude ramp is specced but not implemented.**
+- Difficulty curve: scroll speed ramps 1.0x → 2.0x and wobble amplitude ramps 1.0× → 1.7× over 180 seconds.
 - **Game Over** overlay shows score, persists best-score locally, submits to `gurgles.beer` (silently; offline still shows score but is **not** queued for retry despite [docs/BACKEND.md](BACKEND.md) promising otherwise).
 
 ## Milestone progress
@@ -30,14 +30,14 @@ See [docs/ROADMAP.md](ROADMAP.md) for the detailed per-milestone plan.
 
 - **M1 — Scaffold** ✅ Complete.
 - **M2 — Core run loop** ✅ Complete.
-- **M3 — Hooch balance** ✅ Complete. (Wobble amplitude scaling per difficulty is missing — deferred to M4.)
+- **M3 — Hooch balance** ✅ Complete.
 - **M4 — Content pass** ✅ Complete.
   - All 4 obstacle kinds: ✅ in, hitboxes tuned.
   - Collectibles (herb/hops/potion): ✅ working, three reachable tiers, score popup on pickup.
   - Score multiplier (+0.1x per 10s, capped 3x): ✅ implemented.
   - Potion spill-drain bonus: ✅ implemented (4× drain rate for 1 second).
   - Wobble amplitude scaling: ✅ implemented (1.0× → 1.7× over difficultyRampSeconds).
-- **M5 — Polish & assets** ⏳ Partial. Real SVGs in, parallax in, spill meter UI in, score popup in (crashes). No SFX, no run-cycle animation, no particles, no tankard rotation tied to tilt, no leaderboard scene.
+- **M5 — Polish & assets** ⏳ Partial. Real SVGs in, parallax in, spill meter UI in, score popup in. No SFX, no run-cycle animation, no particles, no tankard rotation tied to tilt, no leaderboard scene.
 - **M6 — Store prep** ❌ Not started.
 
 ## Tech stack (as built)
@@ -61,7 +61,7 @@ lib/
     collectible.dart                  # 3 kinds (herb/hops/potion), active hitbox
     parallax_bg.dart                  # hand-rolled tiled SVG parallax layer
     spill_meter.dart                  # red fill bar driven by balance.spillPercent
-    score_popup.dart                  # floating +N text on pickup (CRASHES, see below)
+    score_popup.dart                  # floating +N text on pickup
   scenes/
     menu_screen.dart                  # Flutter widget, name entry + Start
     game_screen.dart                  # hosts FlameGame, wires input via Listener
@@ -84,7 +84,10 @@ docs/
   CLAUDE.md (at root), GAME_DESIGN.md, ART-GUIDE.md, AUDIO-GUIDE.md,
   BACKEND.md, ROADMAP.md, PLATFORM_NOTES.md, STATUS.md (this file)
 test/
-  widget_test.dart                    # single smoke test against GameConfig
+  game_config_test.dart               # GameConfig invariants
+  hooch_balance_test.dart             # wobble ramp + spill-drain bonus
+  multiplier_test.dart                # score multiplier pure function
+  score_popup_test.dart               # pickup-animation regression guard
 android/ ios/                         # generated by flutter create
 .github/workflows/ci.yml              # analyze + test + debug APK on push/PR
 ```
@@ -110,10 +113,7 @@ iOS build hasn't been attempted yet. Intent per [docs/PLATFORM_NOTES.md](PLATFOR
 
 | # | Issue | Severity | Where |
 |---|-------|----------|-------|
-| 1 | **Collectible pickup crashes the game** | **Critical** | `lib/components/score_popup.dart:30` — `OpacityEffect` requires target to implement `OpacityProvider`; `TextComponent` does not. Fix: implement `OpacityProvider` on `ScorePopup` or drop the fade effect. |
-| 2 | **Potions are physically unreachable** | Critical | Peak jump height ≈ 92 px (`jumpVelocityMax² / (2·gravity)`), potion spawns at 260 px. Hops at 160 is marginal. Either raise jump ceiling or drop collectible height tiers. |
 | 6 | Score retry queue unimplemented | Med | [BACKEND.md](BACKEND.md) promises failed submissions are queued in SharedPreferences and retried. `ApiClient.submitScore` just returns false on failure. |
-| 7 | `ScorePopup`s mid-animation survive restart | Low | `GameScene.restart()` doesn't purge them. `balance._phase` also not reset. |
 | 8 | `sensors_plus` dependency unused | Low | Either wire up the accelerometer tilt control (optional input per [GAME_DESIGN.md](GAME_DESIGN.md)) or remove from `pubspec.yaml`. |
 | 9 | `Obstacle` / `CollectibleManager` are 90% duplicated | Low | Extract abstract `SpawnManager<T>` base before adding a third spawner. |
 | 10 | Spawn cadence formulas are opaque | Low | Magic numbers in `obstacle_manager.dart:28-31` and `collectible_manager.dart:33-36`. Pull into `GameConfig` with named constants. |
@@ -141,12 +141,10 @@ iOS build hasn't been attempted yet. Intent per [docs/PLATFORM_NOTES.md](PLATFOR
 
 ## Immediate next steps (in order)
 
-1. **Fix collectible crash** (#1) — minimal `ScorePopup` fix using `systematic-debugging` + `test-driven-development` per [CLAUDE.md](../CLAUDE.md).
-2. **Retune collectible heights or jump physics** (#2) so potions/hops are reachable.
-3. **Purge ScorePopups in restart()** (#7) — cheap, add while touching the popup code.
-4. **Minimum-viable test suite** (#16) — `HoochBalance` unit tests, GameConfig invariants, ScorePopup smoke test, hitbox bounds tests, restart cleanup test.
-5. **Implement score multiplier** (#3) + **potion spill-drain bonus** (#4) + **wobble ramp** (#5) — finish M4.
-6. **Doc drift audit** — this pass corrected several; keep STATUS.md current at every end-of-session.
+1. **On-device M4b verification** — play for 30+ seconds, observe multiplier in HUD; grab a potion and watch spill meter drain visibly faster; observe wobble getting more aggressive deep into a run.
+2. **Minimum-viable test suite expansion** (M4c) — `Obstacle._hitboxFor` / Collectible sizing bounds, `GameScene.restart()` cleanup integration test, Gurgles physics peak-jump integration via `flame_test`.
+3. **M5 polish** — tankard rotation tied to `balance.tilt`, splash particles on spill, sparkle on pickup, SFX pass.
+4. **First iOS build on the MacBook** ahead of M6 store prep.
 
 ## Infrastructure state (end of session)
 

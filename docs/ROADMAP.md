@@ -36,13 +36,13 @@ Goal: finish the gameplay systems the design doc calls for.
 
 ### M4a — Fix collectibles (first priority)
 
-- [ ] **Fix ScorePopup crash** ([STATUS #1](STATUS.md)). `OpacityEffect` on `TextComponent` throws at mount because TextComponent doesn't implement `OpacityProvider`. Either:
+- [x] **Fix ScorePopup crash** ([STATUS #1](STATUS.md)). `OpacityEffect` on `TextComponent` throws at mount because TextComponent doesn't implement `OpacityProvider`. Either:
   - mix in `HasPaint` and implement `OpacityProvider` so the fade works, or
   - drop the fade and just use `MoveByEffect` with `onComplete: removeFromParent`.
   Use `systematic-debugging` skill + add a failing test first via `test-driven-development`.
-- [ ] **Potion reachability** ([STATUS #2](STATUS.md)). Peak jump ≈ 92 px, potion spawned at 260 px. Options: raise `jumpVelocityMax` / lower `gravity`, or drop `CollectibleManager._heightForKind()` tiers. Tune with the device in hand.
-- [ ] **Purge `ScorePopup`s in `GameScene.restart()`** ([STATUS #7](STATUS.md)). Cheap fix while the popup code is open.
-- [ ] **Reset `HoochBalance._phase` in restart** ([STATUS #7](STATUS.md)).
+- [x] **Potion reachability** ([STATUS #2](STATUS.md)). Peak jump ≈ 92 px, potion spawned at 260 px. Options: raise `jumpVelocityMax` / lower `gravity`, or drop `CollectibleManager._heightForKind()` tiers. Tune with the device in hand.
+- [x] **Purge `ScorePopup`s in `GameScene.restart()`** ([STATUS #7](STATUS.md)). Cheap fix while the popup code is open.
+- [x] **Reset `HoochBalance._phase` in restart** ([STATUS #7](STATUS.md)).
 
 ### M4b — Missing game systems
 
