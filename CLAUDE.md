@@ -17,7 +17,7 @@ Floating collectibles (herbs, golden hops, potion bottles) at varying heights gi
 - **Language:** Dart
 - **Targets:** iOS + Android (single codebase)
 - **Backend:** Reuses the existing `gurgles.beer` Express + SQLite backend (`POST /api/scores`, global leaderboard). No auth — just a name and a score.
-- **Assets:** Auto-generated SVG placeholders for V1, swappable by dropping new files into `assets/svg/`. A formal asset requirements doc lives at `docs/ASSETS.md`.
+- **Assets:** SVG placeholders pulled from the web game for V1, swappable by dropping new files into `assets/svg/`. Art briefs live at `docs/ART-GUIDE.md` (drops into `assets/svg/` + `assets/images/`) and `docs/AUDIO-GUIDE.md` (drops into `assets/audio/`).
 
 ## Scope discipline
 
@@ -47,7 +47,8 @@ assets/
   audio/                 # sfx + (optional) music
 docs/
   GAME_DESIGN.md         # mechanics, tuning, progression
-  ASSETS.md              # asset requirements list (sizes, formats, per-asset spec)
+  ART-GUIDE.md           # art brief — per-asset design notes, sizes, colours
+  AUDIO-GUIDE.md         # audio brief — SFX list, music spec, format rules
   BACKEND.md             # contract with gurgles.beer API
   ROADMAP.md             # V1 plan → post-V1 ideas
 test/                    # widget + component tests

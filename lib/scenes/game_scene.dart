@@ -27,8 +27,11 @@ class GameScene extends FlameGame with HasCollisionDetection {
   late double _groundY;
   late double _groundHeight;
 
+  // Match bg-mountains.svg's gradient top color — otherwise you get a hard
+  // horizontal seam where the light sky-blue Flame backdrop meets the
+  // mountain layer's dark night sky.
   @override
-  Color backgroundColor() => const Color(0xFF87CEEB);
+  Color backgroundColor() => const Color(0xFF1A1A3E);
 
   double get currentScrollSpeed {
     final t = (_elapsed / GameConfig.difficultyRampSeconds).clamp(0.0, 1.0);

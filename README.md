@@ -22,6 +22,7 @@ Requires Flutter 3.x and the Flame 1.x game engine. See [CLAUDE.md](CLAUDE.md) f
 ## Docs
 
 - [Game design](docs/GAME_DESIGN.md)
-- [Asset requirements](docs/ASSETS.md)
+- [Art guide](docs/ART-GUIDE.md)
+- [Audio guide](docs/AUDIO-GUIDE.md)
 - [Backend contract](docs/BACKEND.md)
 - [Roadmap](docs/ROADMAP.md)

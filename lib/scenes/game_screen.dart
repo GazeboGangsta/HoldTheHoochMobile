@@ -17,7 +17,7 @@ class _GameScreenState extends State<GameScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      backgroundColor: const Color(0xFF87CEEB),
+      backgroundColor: const Color(0xFF1A1A3E),
       body: LayoutBuilder(
         builder: (ctx, constraints) {
           return Listener(

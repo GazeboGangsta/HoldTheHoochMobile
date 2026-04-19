@@ -71,7 +71,7 @@ assets/
   svg/                                # 14 SVGs pulled from web-game master
   images/, audio/                     # placeholders (.gitkeep)
 docs/
-  CLAUDE.md, GAME_DESIGN.md, ASSETS.md, BACKEND.md,
+  CLAUDE.md, GAME_DESIGN.md, ART-GUIDE.md, AUDIO-GUIDE.md, BACKEND.md,
   ROADMAP.md, PLATFORM_NOTES.md, STATUS.md (this file)
 test/
   widget_test.dart                    # single smoke test against GameConfig
@@ -104,8 +104,8 @@ iOS build hasn't been attempted yet; the intent (per [docs/PLATFORM_NOTES.md](PL
 | Gurgles lands 0.5px above `_groundY` | Low | Masked by 2-pixel tolerance in `onGround`. Root cause likely subpixel from anchor+size interaction. Safe to leave — cosmetic only. |
 | No collectibles yet | Med | `CollectibleManager` + collectible component not implemented. Web game has herb/hop/potion SVGs already downloaded. |
 | No scoring multiplier | Low | Design doc calls for +0.1x per 10s capped at 3x. Straight +10/sec currently. |
-| No SFX / music | Med | Asset list in [ASSETS.md](ASSETS.md) but nothing wired up. |
-| Run cycle sprite swap is binary (run ↔ jump) | Low | Web game has one gurgles pose; a run cycle would need 8 frames per [ASSETS.md](ASSETS.md). Ok to defer to polish pass. |
+| No SFX / music | Med | Brief in [AUDIO-GUIDE.md](AUDIO-GUIDE.md) but nothing wired up. |
+| Run cycle sprite swap is binary (run ↔ jump) | Low | Web game has one gurgles pose; a run cycle would need 6 frames per [ART-GUIDE.md](ART-GUIDE.md). Ok to defer to polish pass. |
 | `test/widget_test.dart` only covers GameConfig | Low | No component tests. Physics + balance logic would benefit. |
 | No iOS build | High (for ship) | Requires a macOS session; Xcode Cloud plan in [PLATFORM_NOTES.md](PLATFORM_NOTES.md). |
 
