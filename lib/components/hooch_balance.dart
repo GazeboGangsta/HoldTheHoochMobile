@@ -14,6 +14,7 @@ class HoochBalance extends Component {
 
   void resetPhase() {
     _phase = 0.0;
+    _drainBonusRemainingSec = 0.0;
   }
 
   /// Called by the scene to apply player input (drag delta in screen-x units).
@@ -30,6 +31,7 @@ class HoochBalance extends Component {
   }
 
   double _difficulty = 0.0;
+  double _drainBonusRemainingSec = 0.0;
 
   /// Called each frame from GameScene with elapsed/rampSeconds in [0, 1].
   void applyDifficulty(double t) {
@@ -38,6 +40,13 @@ class HoochBalance extends Component {
 
   double get _amplitudeMultiplier =>
       1.0 + _difficulty * (GameConfig.wobbleAmplitudeMaxMultiplier - 1.0);
+
+  /// Boost the spill-meter drain rate for [duration]. Stacks by extension:
+  /// if another bonus is already active, take the longer remaining time.
+  void grantSpillDrain(Duration duration) {
+    final sec = duration.inMilliseconds / 1000.0;
+    if (sec > _drainBonusRemainingSec) _drainBonusRemainingSec = sec;
+  }
 
   @override
   void update(double dt) {
@@ -52,7 +61,13 @@ class HoochBalance extends Component {
       final over = tilt.abs() - GameConfig.spillThreshold;
       spill += over * GameConfig.spillFillRate * dt;
     } else if (tilt.abs() < GameConfig.spillDrainThreshold) {
-      spill -= GameConfig.spillDrainRate * dt;
+      final drainMult = _drainBonusRemainingSec > 0
+          ? GameConfig.potionSpillDrainBonusMultiplier
+          : 1.0;
+      spill -= GameConfig.spillDrainRate * drainMult * dt;
+    }
+    if (_drainBonusRemainingSec > 0) {
+      _drainBonusRemainingSec = (_drainBonusRemainingSec - dt).clamp(0.0, double.infinity);
     }
     spill = spill.clamp(0.0, 1.0);
   }

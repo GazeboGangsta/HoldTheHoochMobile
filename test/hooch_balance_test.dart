@@ -47,4 +47,61 @@ void main() {
       expect(peak, lessThan(0.5));
     });
   });
+
+  group('HoochBalance spill-drain bonus', () {
+    test('bonus multiplies drain rate for the requested duration', () {
+      final b = HoochBalance();
+      // Seed: tilt below drain threshold so drain is active, spill at 1.0
+      // so we can observe how fast it drops.
+      b.tilt = 0.0;
+      b.spill = 1.0;
+
+      // Without bonus: drain rate is GameConfig.spillDrainRate per second.
+      // Over 0.5s spill should drop by ~0.125.
+      const halfSec = 0.5;
+      const dt = 1 / 60;
+      final baseline = HoochBalance()
+        ..tilt = 0.0
+        ..spill = 1.0;
+      for (var i = 0; i < (halfSec / dt).round(); i++) {
+        baseline.update(dt);
+      }
+      final baselineFinal = baseline.spill;
+
+      b.grantSpillDrain(Duration(milliseconds: 500));
+      for (var i = 0; i < (halfSec / dt).round(); i++) {
+        b.update(dt);
+      }
+
+      // With bonus active, spill must drop noticeably faster than baseline.
+      expect(b.spill, lessThan(baselineFinal));
+    });
+
+    test('bonus expires and drain returns to normal', () {
+      final b = HoochBalance();
+      b.tilt = 0.0;
+      b.spill = 1.0;
+      b.grantSpillDrain(Duration(milliseconds: 200));
+
+      const dt = 1 / 60;
+      // Advance past the bonus window.
+      for (var i = 0; i < 30; i++) {
+        b.update(dt);
+      }
+      final spillAfterBonusWindow = b.spill;
+
+      // Now drain rate should be back to baseline.
+      final baseline = HoochBalance()
+        ..tilt = 0.0
+        ..spill = spillAfterBonusWindow;
+
+      const followUpSeconds = 0.3;
+      for (var i = 0; i < (followUpSeconds / dt).round(); i++) {
+        b.update(dt);
+        baseline.update(dt);
+      }
+
+      expect((b.spill - baseline.spill).abs(), lessThan(0.01));
+    });
+  });
 }

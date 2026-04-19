@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'package:flame/components.dart';
+import 'package:flutter/foundation.dart' show VoidCallback;
 import '../components/collectible.dart';
 
 /// Spawns collectibles from just off the right edge at varying heights.
@@ -11,6 +12,7 @@ class CollectibleManager extends Component {
   final double groundY;
   final double sizeScale;
   final void Function(int points, Vector2 worldPos) onPickup;
+  final VoidCallback? onPotionBonus;
   final Random _rng = Random();
 
   double _timeToNext = 3.0;
@@ -20,6 +22,7 @@ class CollectibleManager extends Component {
     required this.worldWidthProvider,
     required this.groundY,
     required this.onPickup,
+    this.onPotionBonus,
     this.sizeScale = 1.0,
   });
 
@@ -66,6 +69,7 @@ class CollectibleManager extends Component {
       position: Vector2(worldWidthProvider() + 80, _heightForKind(kind)),
       scrollSpeed: scrollSpeedProvider(),
       onPickup: onPickup,
+      onPotionBonus: onPotionBonus,
       sizeScale: sizeScale,
     );
     parent?.add(c);

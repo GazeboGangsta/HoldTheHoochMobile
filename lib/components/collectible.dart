@@ -1,5 +1,6 @@
 import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
+import 'package:flutter/foundation.dart' show VoidCallback;
 import 'package:flame_svg/flame_svg.dart';
 import 'gurgles.dart';
 
@@ -8,6 +9,7 @@ enum CollectibleKind { herb, hops, potion }
 class Collectible extends PositionComponent with CollisionCallbacks {
   final CollectibleKind kind;
   final void Function(int points, Vector2 worldPos) onPickup;
+  final VoidCallback? _grantPotionBonus;
   double scrollSpeed;
   bool _consumed = false;
 
@@ -16,8 +18,10 @@ class Collectible extends PositionComponent with CollisionCallbacks {
     required Vector2 position,
     required this.scrollSpeed,
     required this.onPickup,
+    VoidCallback? onPotionBonus,
     double sizeScale = 1.0,
-  }) : super(
+  })  : _grantPotionBonus = onPotionBonus,
+        super(
           position: position,
           size: _sizeFor(kind) * sizeScale,
           anchor: Anchor.bottomCenter,
@@ -67,6 +71,9 @@ class Collectible extends PositionComponent with CollisionCallbacks {
     if (_consumed || other is! Gurgles) return;
     _consumed = true;
     onPickup(pointsFor(kind), position.clone());
+    if (kind == CollectibleKind.potion) {
+      _grantPotionBonus?.call();
+    }
     removeFromParent();
   }
 }

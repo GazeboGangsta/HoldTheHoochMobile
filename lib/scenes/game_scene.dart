@@ -125,6 +125,8 @@ class GameScene extends FlameGame with HasCollisionDetection {
         _collectiblePoints += points;
         add(ScorePopup(points: points, position: at.clone()));
       },
+      onPotionBonus: () =>
+          balance.grantSpillDrain(const Duration(milliseconds: 1000)),
     );
     add(collectibleManager);
 
