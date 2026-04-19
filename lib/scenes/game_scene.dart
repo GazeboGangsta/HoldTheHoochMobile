@@ -216,7 +216,7 @@ class GameScene extends FlameGame with HasCollisionDetection {
   void handleLeftPointerDown(Offset pos) {}
   void handleLeftPointerMove(Offset pos, Offset delta) {
     if (_gameOver) return;
-    balance.applyCounterTorque(delta.dx);
+    balance.applyDragInput(delta.dx);
   }
 
   void handleLeftPointerUp() {}

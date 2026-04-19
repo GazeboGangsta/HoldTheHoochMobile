@@ -17,11 +17,18 @@ class HoochBalance extends Component {
     _drainBonusRemainingSec = 0.0;
   }
 
-  /// Called by the scene to apply player input (drag delta in screen-x units).
-  void applyCounterTorque(double delta) {
-    tilt -= delta * 0.004;
+  /// Player drag input. Positive delta (finger moving right) pushes the
+  /// tankard right (positive tilt). Natural follow-finger mapping: to
+  /// correct a right-leaning tankard, drag left.
+  void applyDragInput(double delta) {
+    tilt += delta * 0.004;
     tilt = tilt.clamp(-1.0, 1.0);
   }
+
+  /// Legacy name. Kept for any callers/tests that still use the old word,
+  /// but forwards to [applyDragInput] with the corrected sign.
+  @Deprecated('Use applyDragInput — the old name was misleading')
+  void applyCounterTorque(double delta) => applyDragInput(delta);
 
   /// Called when Gurgles jumps — adds a destabilising impulse.
   void applyJumpImpulse() {

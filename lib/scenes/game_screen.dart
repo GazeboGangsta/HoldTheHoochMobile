@@ -13,6 +13,12 @@ class GameScreen extends StatefulWidget {
 class _GameScreenState extends State<GameScreen> {
   late final GameScene _game = GameScene();
 
+  // Per-pointer routing so the jump and balance inputs don't interfere
+  // when the player has both fingers down. Each pointer is either "jump"
+  // (right half tap) or "balance" (left half drag) for its lifetime.
+  final Set<int> _jumpPointers = {};
+  final Set<int> _balancePointers = {};
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -23,24 +29,33 @@ class _GameScreenState extends State<GameScreen> {
           return Listener(
             behavior: HitTestBehavior.opaque,
             onPointerDown: (e) {
-              if (e.localPosition.dx > constraints.maxWidth / 2) {
+              final isRight = e.localPosition.dx > constraints.maxWidth / 2;
+              if (isRight) {
+                _jumpPointers.add(e.pointer);
                 _game.handleJumpDown();
               } else {
+                _balancePointers.add(e.pointer);
                 _game.handleLeftPointerDown(e.localPosition);
               }
             },
             onPointerMove: (e) {
-              if (e.localPosition.dx <= constraints.maxWidth / 2) {
+              if (_balancePointers.contains(e.pointer)) {
                 _game.handleLeftPointerMove(e.localPosition, e.delta);
               }
             },
-            onPointerUp: (_) {
-              _game.handleJumpUp();
-              _game.handleLeftPointerUp();
+            onPointerUp: (e) {
+              if (_jumpPointers.remove(e.pointer)) {
+                _game.handleJumpUp();
+              } else if (_balancePointers.remove(e.pointer)) {
+                _game.handleLeftPointerUp();
+              }
             },
-            onPointerCancel: (_) {
-              _game.handleJumpUp();
-              _game.handleLeftPointerUp();
+            onPointerCancel: (e) {
+              if (_jumpPointers.remove(e.pointer)) {
+                _game.handleJumpUp();
+              } else if (_balancePointers.remove(e.pointer)) {
+                _game.handleLeftPointerUp();
+              }
             },
             child: GameWidget<GameScene>(
               game: _game,
