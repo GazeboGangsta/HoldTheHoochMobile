@@ -84,8 +84,8 @@ Goal: make it feel and sound finished.
 - [x] Dark-navy backdrop matched to mountains gradient (seamless sky).
 - [x] Score popup on collectible pickup (⚠️ crashes — fix in M4a).
 - [x] **Tankard rotation** tied to `balance.tilt` — visual feedback of how close to spilling. Rotate `_tankard` in `Gurgles.update`: `_tankard.angle = balance.tilt * 0.6` (~35° max lean).
-- [ ] **Splash particles** on spill (hooch-splash.svg emission when `|tilt| > threshold`).
-- [ ] **Sparkle particles** on collectible pickup (sparkle.svg from art guide).
+- [x] **Splash particles** on spill — programmatic emission via `SplashEmitter` (hybrid burst + reactive trickle + dramatic game-over flourish, all from the tankard rim).
+- [x] **Sparkle particles** on collectible pickup — programmatic, tinted + size-scaled per `CollectibleKind` via `SparkleBurst` (herb green / hops gold / potion blue + expanding halo).
 - [ ] **6-frame run cycle** sprite swap. Requires art delivery ([ART-GUIDE.md](ART-GUIDE.md)).
 - [ ] **Hurt pose** on game-over (gurgles-hurt.svg — needs art).
 
@@ -139,6 +139,7 @@ Per [AUDIO-GUIDE.md](AUDIO-GUIDE.md). Add `flame_audio` dep. Wire each as the SF
 - iPad / tablet layout pass.
 - Optional 2.5D / parallax-heavy visual upgrade.
 - Stats/achievements ("jumped 1000 times", "collected 100 potions", etc.).
+- **Game-over death-screen effect** — current game-over splash burst is subtle on-device. Consider a whole-screen flash / desaturation / slow-zoom / "YOU SPILLED IT" stinger when `balance.hasSpilled` fires, varying by end cause (obstacle hit vs spill). Would replace or augment the 30-particle splash burst added in M5a.
 
 ## Design ideas to consider (pre-ship, not committed)
 
