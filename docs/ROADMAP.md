@@ -32,6 +32,8 @@ Conventions:
 
 ## M4 — Content pass ✅
 
+_Closed 2026-04-20 — minimum-viable test suite (M4c) landed; M4a/M4b already done._
+
 Goal: finish the gameplay systems the design doc calls for.
 
 ### M4a — Fix collectibles (first priority)
@@ -53,12 +55,12 @@ Goal: finish the gameplay systems the design doc calls for.
 ### M4c — Minimum viable test suite
 
 Add before M5 polish. Prioritized by ROI (from code review):
-- [ ] `HoochBalance` unit tests: tilt clamping, spill fill/drain, wobble drift, jump impulse. (6 tests)
-- [ ] `GameConfig` invariants: `jumpVelocityMax < jumpVelocityMin < 0`, thresholds ordered, durations positive.
-- [ ] `Obstacle._hitboxFor` + `Collectible` sizing bounds: hitbox is strict subset of sprite size.
-- [ ] `ScorePopup` render smoke test (once fixed): mount without exception.
-- [ ] `GameScene.restart()` cleanup: no lingering Obstacles / Collectibles / ScorePopups after restart.
-- [ ] **Gurgles physics integration** using `flame_test`: peak jump height ≤ potion tier height (once #2 is retuned, this guards against regression).
+- [x] `HoochBalance` unit tests: tilt clamping, spill fill/drain, wobble drift, jump impulse. (6 tests)
+- [x] `GameConfig` invariants: `jumpVelocityMax < jumpVelocityMin < 0`, thresholds ordered, durations positive.
+- [x] `Obstacle._hitboxFor` + `Collectible` sizing bounds: hitbox is strict subset of sprite size.
+- [x] `ScorePopup` render smoke test (once fixed): mount without exception.
+- [x] `GameScene.restart()` cleanup: no lingering Obstacles / Collectibles / ScorePopups after restart.
+- [x] **Gurgles physics integration** using `flame_test`: peak jump height ≤ potion tier height (once #2 is retuned, this guards against regression).
 
 Add `flame_test` to dev_dependencies.
 
