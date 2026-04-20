@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'game_over_overlay.dart';
 import 'game_scene.dart';
 
+enum _PointerIntent { jump, tiltLeft, tiltRight }
+
 class GameScreen extends StatefulWidget {
   const GameScreen({super.key});
 
@@ -13,11 +15,57 @@ class GameScreen extends StatefulWidget {
 class _GameScreenState extends State<GameScreen> {
   late final GameScene _game = GameScene();
 
-  // Per-pointer routing so the jump and balance inputs don't interfere
-  // when the player has both fingers down. Each pointer is either "jump"
-  // (right half tap) or "balance" (left half drag) for its lifetime.
-  final Set<int> _jumpPointers = {};
-  final Set<int> _balancePointers = {};
+  /// Each active pointer's intent for its lifetime. Prevents the
+  /// multi-touch interference we had when the up-event handler didn't
+  /// know which pointer started which action.
+  final Map<int, _PointerIntent> _pointerIntents = {};
+
+  _PointerIntent? _intentFor(Offset localPos, double width) {
+    // Tilt buttons first — they sit in the bottom-left and need to
+    // take priority over any broad zone.
+    final leftRect = _game.isLoaded ? _game.tiltLeftButton.hitRect : null;
+    final rightRect = _game.isLoaded ? _game.tiltRightButton.hitRect : null;
+    if (leftRect != null && leftRect.contains(localPos)) return _PointerIntent.tiltLeft;
+    if (rightRect != null && rightRect.contains(localPos)) return _PointerIntent.tiltRight;
+    // Right half of screen (outside buttons) = jump.
+    if (localPos.dx > width / 2) return _PointerIntent.jump;
+    // Left half outside buttons is unused now (used to be drag-to-balance).
+    return null;
+  }
+
+  void _onDown(int pointer, Offset localPos, double width) {
+    final intent = _intentFor(localPos, width);
+    if (intent == null) return;
+    _pointerIntents[pointer] = intent;
+    switch (intent) {
+      case _PointerIntent.jump:
+        _game.handleJumpDown();
+        break;
+      case _PointerIntent.tiltLeft:
+        _game.handleTiltLeftDown();
+        break;
+      case _PointerIntent.tiltRight:
+        _game.handleTiltRightDown();
+        break;
+    }
+  }
+
+  void _onUp(int pointer) {
+    final intent = _pointerIntents.remove(pointer);
+    switch (intent) {
+      case _PointerIntent.jump:
+        _game.handleJumpUp();
+        break;
+      case _PointerIntent.tiltLeft:
+        _game.handleTiltLeftUp();
+        break;
+      case _PointerIntent.tiltRight:
+        _game.handleTiltRightUp();
+        break;
+      case null:
+        break;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -28,35 +76,9 @@ class _GameScreenState extends State<GameScreen> {
         builder: (ctx, constraints) {
           return Listener(
             behavior: HitTestBehavior.opaque,
-            onPointerDown: (e) {
-              final isRight = e.localPosition.dx > constraints.maxWidth / 2;
-              if (isRight) {
-                _jumpPointers.add(e.pointer);
-                _game.handleJumpDown();
-              } else {
-                _balancePointers.add(e.pointer);
-                _game.handleLeftPointerDown(e.localPosition);
-              }
-            },
-            onPointerMove: (e) {
-              if (_balancePointers.contains(e.pointer)) {
-                _game.handleLeftPointerMove(e.localPosition, e.delta);
-              }
-            },
-            onPointerUp: (e) {
-              if (_jumpPointers.remove(e.pointer)) {
-                _game.handleJumpUp();
-              } else if (_balancePointers.remove(e.pointer)) {
-                _game.handleLeftPointerUp();
-              }
-            },
-            onPointerCancel: (e) {
-              if (_jumpPointers.remove(e.pointer)) {
-                _game.handleJumpUp();
-              } else if (_balancePointers.remove(e.pointer)) {
-                _game.handleLeftPointerUp();
-              }
-            },
+            onPointerDown: (e) => _onDown(e.pointer, e.localPosition, constraints.maxWidth),
+            onPointerUp: (e) => _onUp(e.pointer),
+            onPointerCancel: (e) => _onUp(e.pointer),
             child: GameWidget<GameScene>(
               game: _game,
               overlayBuilderMap: {

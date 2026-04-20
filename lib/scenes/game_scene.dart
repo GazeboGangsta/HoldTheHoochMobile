@@ -10,6 +10,7 @@ import '../components/obstacle.dart';
 import '../components/parallax_bg.dart';
 import '../components/score_popup.dart';
 import '../components/spill_meter.dart';
+import '../components/tilt_button.dart';
 import '../config/game_config.dart';
 import '../systems/collectible_manager.dart';
 import '../systems/obstacle_manager.dart';
@@ -24,6 +25,11 @@ class GameScene extends FlameGame with HasCollisionDetection {
   late CollectibleManager collectibleManager;
   late TextComponent scoreText;
   late SpillMeter spillMeter;
+  late TiltButton tiltLeftButton;
+  late TiltButton tiltRightButton;
+
+  bool _tiltLeftHeld = false;
+  bool _tiltRightHeld = false;
 
   double _elapsed = 0;
   int _collectiblePoints = 0;
@@ -153,6 +159,24 @@ class GameScene extends FlameGame with HasCollisionDetection {
       balance: balance,
     );
     add(spillMeter);
+
+    final btnSize = Vector2.all(GameConfig.tiltButtonSize);
+    final btnY = size.y - GameConfig.tiltButtonInset - btnSize.y;
+    tiltLeftButton = TiltButton(
+      position: Vector2(GameConfig.tiltButtonInset, btnY),
+      size: btnSize,
+      pointsLeft: true,
+    );
+    tiltRightButton = TiltButton(
+      position: Vector2(
+        GameConfig.tiltButtonInset + btnSize.x + GameConfig.tiltButtonGap,
+        btnY,
+      ),
+      size: btnSize,
+      pointsLeft: false,
+    );
+    add(tiltLeftButton);
+    add(tiltRightButton);
   }
 
   @override
@@ -161,6 +185,12 @@ class GameScene extends FlameGame with HasCollisionDetection {
     if (_gameOver) return;
     _elapsed += dt;
     balance.applyDifficulty(_elapsed / GameConfig.difficultyRampSeconds);
+    if (_tiltLeftHeld) {
+      balance.applyTiltTorque(-GameConfig.tiltButtonTorqueRate * dt);
+    }
+    if (_tiltRightHeld) {
+      balance.applyTiltTorque(GameConfig.tiltButtonTorqueRate * dt);
+    }
     gurgles.setTankardAngle(Gurgles.tankardAngleForTilt(balance.tilt));
     final mult = currentMultiplier;
     score = (_elapsed * 10 * mult).floor() + _collectiblePoints;
@@ -211,13 +241,28 @@ class GameScene extends FlameGame with HasCollisionDetection {
 
   void handleJumpUp() => gurgles.endJump();
 
-  // Balance controls — left half is a drag zone. Horizontal motion
-  // counter-tilts the hooch back towards center.
-  void handleLeftPointerDown(Offset pos) {}
-  void handleLeftPointerMove(Offset pos, Offset delta) {
+  /// Bottom-left tilt-correction buttons. GameScreen's pointer routing
+  /// hit-tests against [tiltLeftButton.hitRect] / [tiltRightButton.hitRect]
+  /// and calls these.
+  void handleTiltLeftDown() {
     if (_gameOver) return;
-    balance.applyDragInput(delta.dx);
+    _tiltLeftHeld = true;
+    tiltLeftButton.held = true;
   }
 
-  void handleLeftPointerUp() {}
+  void handleTiltLeftUp() {
+    _tiltLeftHeld = false;
+    tiltLeftButton.held = false;
+  }
+
+  void handleTiltRightDown() {
+    if (_gameOver) return;
+    _tiltRightHeld = true;
+    tiltRightButton.held = true;
+  }
+
+  void handleTiltRightUp() {
+    _tiltRightHeld = false;
+    tiltRightButton.held = false;
+  }
 }

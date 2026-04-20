@@ -17,13 +17,17 @@ class HoochBalance extends Component {
     _drainBonusRemainingSec = 0.0;
   }
 
+  /// Directly add [delta] to tilt (clamped). Used by discrete controls
+  /// (tilt buttons) that already compute a desired per-frame delta.
+  void applyTiltTorque(double delta) {
+    tilt += delta;
+    tilt = tilt.clamp(-1.0, 1.0);
+  }
+
   /// Player drag input. Positive delta (finger moving right) pushes the
   /// tankard right (positive tilt). Natural follow-finger mapping: to
   /// correct a right-leaning tankard, drag left.
-  void applyDragInput(double delta) {
-    tilt += delta * 0.004;
-    tilt = tilt.clamp(-1.0, 1.0);
-  }
+  void applyDragInput(double delta) => applyTiltTorque(delta * 0.004);
 
   /// Legacy name. Kept for any callers/tests that still use the old word,
   /// but forwards to [applyDragInput] with the corrected sign.

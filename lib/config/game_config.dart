@@ -49,4 +49,16 @@ class GameConfig {
   // way the hooch is tipping and which direction to counter-drag.
   // 0.6 rad ~= 34 degrees at tilt = ±1.
   static const double tankardMaxLeanRadians = 0.6;
+
+  // On-screen tilt-correction buttons (bottom-left corner). Replacing
+  // drag-on-left-half because that collided with the system back-gesture
+  // on Android/iOS.
+  static const double tiltButtonSize = 84.0;
+  static const double tiltButtonInset = 24.0;
+  static const double tiltButtonGap = 16.0;
+
+  /// Tilt change per second while a tilt-correction button is held.
+  /// Order of magnitude faster than driftRateMax so the player can
+  /// always out-correct the drift.
+  static const double tiltButtonTorqueRate = 1.5;
 }
