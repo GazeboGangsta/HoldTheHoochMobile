@@ -17,6 +17,11 @@ class Gurgles extends PositionComponent with CollisionCallbacks {
 
   late SvgComponent _runSvg;
   late SvgComponent _jumpSvg;
+  // Guard for test stubs that override onLoad without loading SVGs.
+  // _swapSprite no-ops until onLoad assigns both fields and sets this true.
+  // Production behavior is unchanged: the flag becomes true before the first
+  // physics update runs post-load.
+  bool _spritesLoaded = false;
   // Nullable because Gurgles.onLoad (which loads the SVG) may not have
   // finished by the time GameScene.update calls setTankardAngle. Rather
   // than await-ing add(gurgles) in the scene, we treat pre-load calls as
@@ -66,9 +71,11 @@ class Gurgles extends PositionComponent with CollisionCallbacks {
       size: Vector2(size.x * 0.38, size.y * 0.62),
       position: Vector2(size.x * 0.31, size.y * 0.30),
     ));
+    _spritesLoaded = true;
   }
 
   void _swapSprite(bool jumping) {
+    if (!_spritesLoaded) return;
     final hasRun = contains(_runSvg);
     final hasJump = contains(_jumpSvg);
     if (jumping && hasRun) {
