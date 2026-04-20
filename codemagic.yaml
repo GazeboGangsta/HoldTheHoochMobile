@@ -195,13 +195,9 @@ workflows:
       app_store_connect: "GZBO"
     environment:
       flutter: stable
-      # NOTE: no `ios_signing:` declarative block on purpose. That block
-      # triggers a strict pre-flight profile-existence check which blocks
-      # the build before scripts run — fatal for a first-time account
-      # where the Distribution cert + App Store profile don't yet exist.
-      # Instead, the `Set up code signing` script below uses
-      # `app-store-connect fetch-signing-files --create` to create them
-      # on-the-fly via the API-key integration.
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: beer.gurgles.holdTheHooch
       vars:
         APP_NAME: "Hold the Hooch"
         IOS_BUNDLE_ID: "beer.gurgles.holdTheHooch"
@@ -222,29 +218,13 @@ workflows:
         script: |
           cd $CM_BUILD_DIR/ios
           agvtool new-version -all $(($BUILD_NUMBER + 1))
-      # Explicit signing fetch-or-create. The ios_signing block above is
-      # declarative metadata; this step does the actual work of creating
-      # the Distribution cert + App Store provisioning profile via the
-      # App Store Connect API if they don't already exist, then wires
-      # them into Xcode. Required on first-run for a brand-new Apple
-      # Developer account with no Distribution cert yet.
-      - name: Set up code signing
+      # Apply the provisioning profile CodeMagic's managed signing
+      # fetched from the team-level Code signing identity store. Requires
+      # a Distribution cert (.p12) to have been uploaded at:
+      #   CodeMagic UI -> Teams -> Code signing identities -> iOS -> Add
+      # See docs/SIGNING.md for the OpenSSL + Apple portal + p12 steps.
+      - name: Apply provisioning profile
         script: |
-          keychain initialize
-          # Fetch BOTH development + app-store signing files. Flutter's
-          # `flutter build ipa --release` internally runs `flutter build
-          # ios --release` first, which requires a development signing
-          # identity to exist even though the final IPA will be signed
-          # with the distribution cert. Creating both via the API key
-          # on first run avoids the "No development certificates
-          # available" failure mid-archive.
-          app-store-connect fetch-signing-files "$IOS_BUNDLE_ID" \
-            --type IOS_APP_DEVELOPMENT \
-            --create
-          app-store-connect fetch-signing-files "$IOS_BUNDLE_ID" \
-            --type IOS_APP_STORE \
-            --create
-          keychain add-certificates
           xcode-project use-profiles
       - name: Flutter build ipa
         script: |
