@@ -11,7 +11,7 @@ class CollectibleManager extends Component {
   final double Function() worldWidthProvider;
   final double groundY;
   final double sizeScale;
-  final void Function(int points, Vector2 worldPos) onPickup;
+  final void Function(int points, Vector2 worldPos, CollectibleKind kind) onPickup;
   final VoidCallback? onPotionBonus;
   final Random _rng = Random();
 
@@ -68,7 +68,7 @@ class CollectibleManager extends Component {
       kind: kind,
       position: Vector2(worldWidthProvider() + 80, _heightForKind(kind)),
       scrollSpeed: scrollSpeedProvider(),
-      onPickup: onPickup,
+      onPickup: (pts, at) => onPickup(pts, at, kind),
       onPotionBonus: onPotionBonus,
       sizeScale: sizeScale,
     );

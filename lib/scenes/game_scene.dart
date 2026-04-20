@@ -11,6 +11,7 @@ import '../components/hooch_balance.dart';
 import '../components/obstacle.dart';
 import '../components/parallax_bg.dart';
 import '../components/score_popup.dart';
+import '../components/sparkle_burst.dart';
 import '../components/spill_meter.dart';
 import '../components/tilt_button.dart' show TiltButton, ControlButtonKind;
 import '../config/game_config.dart';
@@ -148,9 +149,10 @@ class GameScene extends FlameGame with HasCollisionDetection {
       worldWidthProvider: () => size.x,
       groundY: _groundY,
       sizeScale: size.y / 900,
-      onPickup: (points, at) {
+      onPickup: (points, at, kind) {
         _collectiblePoints += points;
         add(ScorePopup(points: points, position: at.clone()));
+        add(SparkleBurst.emit(kind, at.clone()));
       },
       onPotionBonus: () =>
           balance.grantSpillDrain(const Duration(milliseconds: 1000)),
