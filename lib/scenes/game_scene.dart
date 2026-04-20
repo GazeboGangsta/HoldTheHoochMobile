@@ -243,15 +243,15 @@ class GameScene extends FlameGame with HasCollisionDetection {
     endReason = reason;
 
     if (fromSpill) {
-      // Dramatic splash burst, then let it animate before the overlay covers it.
-      // _gameOver = true above already blocks further update() logic during the
-      // delay window; we deliberately keep the engine running so the particles
-      // can animate.
+      // Keep the engine running through the delay so the burst animates.
+      // _gameOver (set above) blocks further update() logic, and the
+      // game-over overlay hasn't been added yet, so the player can't
+      // retry mid-delay.
       splashEmitter.emitGameOverBurst();
       Future.delayed(
         Duration(milliseconds: GameConfig.splashGameOverDelayMs),
         () {
-          if (!isMounted) return;
+          if (!isAttached) return;
           pauseEngine();
           overlays.add(gameOverOverlayId);
         },
