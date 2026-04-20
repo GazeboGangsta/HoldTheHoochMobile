@@ -1,5 +1,6 @@
 import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
+import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:flame_svg/flame_svg.dart';
 
 enum ObstacleKind { root, rock, mushroom, log }
@@ -37,7 +38,8 @@ class Obstacle extends PositionComponent with CollisionCallbacks {
   /// actual SVG silhouette (see docs/GAME_DESIGN.md). Values here are
   /// intentionally smaller than the visual — platformers feel fairer when
   /// grazes don't register as hits.
-  static ({Vector2 pos, Vector2 size}) _hitboxFor(ObstacleKind k, Vector2 s) => switch (k) {
+  @visibleForTesting
+  static ({Vector2 pos, Vector2 size}) hitboxFor(ObstacleKind k, Vector2 s) => switch (k) {
         // Root: wide, low. Bulk sits in the bottom 60% of the viewBox.
         ObstacleKind.root => (
             pos: Vector2(s.x * 0.10, s.y * 0.40),
@@ -66,7 +68,7 @@ class Obstacle extends PositionComponent with CollisionCallbacks {
   Future<void> onLoad() async {
     final svg = await Svg.load(_svgFor(kind));
     add(SvgComponent(svg: svg, size: size));
-    final hb = _hitboxFor(kind, size);
+    final hb = hitboxFor(kind, size);
     add(RectangleHitbox(size: hb.size, position: hb.pos));
   }
 

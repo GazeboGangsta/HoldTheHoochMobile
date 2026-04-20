@@ -1,6 +1,6 @@
 import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
-import 'package:flutter/foundation.dart' show VoidCallback;
+import 'package:flutter/foundation.dart' show VoidCallback, visibleForTesting;
 import 'package:flame_svg/flame_svg.dart';
 import 'gurgles.dart';
 
@@ -45,6 +45,15 @@ class Collectible extends PositionComponent with CollisionCallbacks {
         CollectibleKind.potion => 200,
       };
 
+  /// Active hitbox for pickup detection. 90% of sprite, centered via 5% inset
+  /// on each side, so edge-grazes don't award points and clipping-in visually
+  /// always corresponds to a real pickup.
+  @visibleForTesting
+  static ({Vector2 pos, Vector2 size}) hitboxFor(Vector2 spriteSize) => (
+        pos: Vector2(spriteSize.x * 0.05, spriteSize.y * 0.05),
+        size: Vector2(spriteSize.x * 0.9, spriteSize.y * 0.9),
+      );
+
   @override
   Future<void> onLoad() async {
     final svg = await Svg.load(_svgFor(kind));
@@ -52,10 +61,8 @@ class Collectible extends PositionComponent with CollisionCallbacks {
     // Active hitbox (default) so Collectible.onCollisionStart fires when
     // Gurgles overlaps — with passive we'd only get the callback on
     // Gurgles' side and onPickup would never run.
-    add(RectangleHitbox(
-      size: Vector2(size.x * 0.9, size.y * 0.9),
-      position: Vector2(size.x * 0.05, size.y * 0.05),
-    ));
+    final hb = hitboxFor(size);
+    add(RectangleHitbox(size: hb.size, position: hb.pos));
   }
 
   @override
