@@ -34,19 +34,19 @@ class SparkleBurst {
       switch (kind) {
         CollectibleKind.herb => (
             count: 6,
-            radius: 2.0,
+            radius: 4.0,
             colour: const Color(0xFF4CAF50),
             lifespan: 0.5,
           ),
         CollectibleKind.hops => (
             count: 10,
-            radius: 3.0,
+            radius: 6.0,
             colour: const Color(0xFFFFD700),
             lifespan: 0.7,
           ),
         CollectibleKind.potion => (
             count: 16,
-            radius: 4.0,
+            radius: 8.0,
             colour: const Color(0xFF00BFFF),
             lifespan: 1.0,
           ),
@@ -77,11 +77,11 @@ class SparkleBurst {
     );
   }
 
-  /// Potion-only expanding ring halo: radius 0 → 40 px over 0.4s,
+  /// Potion-only expanding ring halo: radius 0 → 60 px over 0.4s,
   /// stroke alpha 180 → 0. Sits behind the sparkles.
   static Particle _potionHalo(Vector2 at) {
     const haloLifespan = 0.4;
-    const haloMaxRadius = 40.0;
+    const haloMaxRadius = 60.0;
     const haloMaxAlpha = 180;
     const haloColour = Color(0xFF00BFFF);
     return ComputedParticle(

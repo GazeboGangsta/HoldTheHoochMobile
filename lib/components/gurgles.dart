@@ -126,9 +126,10 @@ class Gurgles extends PositionComponent with CollisionCallbacks {
   Vector2 tankardRimWorldPosition(double tilt) {
     final t = _tankard;
     if (t == null) return position.clone();
-    final tankardRadius = t.size.x / 2;
-    final tankardCenterLocal = Vector2(size.x / 2, -2 - t.size.y / 2);
-    return position + tankardCenterLocal + rimOffsetFromTankardCenter(tilt, tankardRadius);
+    // absoluteCenter handles Gurgles' bottomCenter-anchor math correctly;
+    // the visible rim sits at half the tankard height above center (the
+    // sprite is wider than tall, so size.y/2 is the right rotation radius).
+    return t.absoluteCenter + rimOffsetFromTankardCenter(tilt, t.size.y / 2);
   }
 
   @override
