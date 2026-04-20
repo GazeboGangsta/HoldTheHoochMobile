@@ -39,14 +39,24 @@ class _LeaderboardScreenState extends State<LeaderboardScreen> {
 
   Widget _buildList(List<LeaderboardEntry> scores) {
     if (scores.isEmpty) {
-      return const Center(
-        child: Padding(
-          padding: EdgeInsets.all(24),
-          child: Text(
-            'No scores yet — be the first!',
-            style: TextStyle(color: Colors.white70, fontSize: 18),
-            textAlign: TextAlign.center,
-          ),
+      return RefreshIndicator(
+        onRefresh: _refresh,
+        color: const Color(0xFFD4A744),
+        child: ListView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          children: const [
+            SizedBox(height: 120),
+            Center(
+              child: Padding(
+                padding: EdgeInsets.all(24),
+                child: Text(
+                  'No scores yet — be the first!',
+                  style: TextStyle(color: Colors.white70, fontSize: 18),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ),
+          ],
         ),
       );
     }
