@@ -50,9 +50,13 @@ class GameConfig {
   // 0.6 rad ~= 34 degrees at tilt = ±1.
   static const double tankardMaxLeanRadians = 0.6;
 
-  // On-screen tilt-correction buttons (bottom-left corner). Replacing
-  // drag-on-left-half because that collided with the system back-gesture
-  // on Android/iOS.
+  // Bottom control strip. The play area sits above this strip; ground
+  // visually terminates at the top of the strip; the strip itself is an
+  // "underground" panel hosting the three control buttons.
+  static const double controlStripHeightFraction = 0.14;
+
+  // On-screen control buttons (left-tilt, right-tilt, jump). Sized so
+  // they're thumb-friendly without crowding the strip.
   static const double tiltButtonSize = 84.0;
   static const double tiltButtonInset = 24.0;
   static const double tiltButtonGap = 16.0;

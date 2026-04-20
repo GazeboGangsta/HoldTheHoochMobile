@@ -10,7 +10,7 @@ import '../components/obstacle.dart';
 import '../components/parallax_bg.dart';
 import '../components/score_popup.dart';
 import '../components/spill_meter.dart';
-import '../components/tilt_button.dart';
+import '../components/tilt_button.dart' show TiltButton, ControlButtonKind;
 import '../config/game_config.dart';
 import '../systems/collectible_manager.dart';
 import '../systems/obstacle_manager.dart';
@@ -27,6 +27,7 @@ class GameScene extends FlameGame with HasCollisionDetection {
   late SpillMeter spillMeter;
   late TiltButton tiltLeftButton;
   late TiltButton tiltRightButton;
+  late TiltButton jumpButton;
 
   bool _tiltLeftHeld = false;
   bool _tiltRightHeld = false;
@@ -72,8 +73,17 @@ class GameScene extends FlameGame with HasCollisionDetection {
     camera.viewfinder.anchor = Anchor.topLeft;
     camera.viewfinder.position = Vector2.zero();
 
-    _groundHeight = size.y * 0.08;
-    _groundY = size.y - _groundHeight;
+    final controlStripHeight = size.y * GameConfig.controlStripHeightFraction;
+    final controlStripTop = size.y - controlStripHeight;
+    _groundHeight = size.y * 0.06;
+    _groundY = controlStripTop - _groundHeight;
+
+    // "Underground" backdrop for the control strip.
+    add(RectangleComponent(
+      position: Vector2(0, controlStripTop),
+      size: Vector2(size.x, controlStripHeight),
+      paint: Paint()..color = const Color(0xFF2D1A0E),
+    ));
 
     final mountainsHeight = size.y * 0.42;
     final treesHeight = size.y * 0.32;
@@ -95,8 +105,10 @@ class GameScene extends FlameGame with HasCollisionDetection {
       height: treesHeight,
     ));
 
+    // Pass a truncated worldSize so Ground pins to the top of the control
+    // strip instead of the bottom of the screen.
     ground = Ground(
-      worldSize: size,
+      worldSize: Vector2(size.x, controlStripTop),
       groundHeight: _groundHeight,
       scrollSpeedProvider: () => currentScrollSpeed,
     );
@@ -160,12 +172,14 @@ class GameScene extends FlameGame with HasCollisionDetection {
     );
     add(spillMeter);
 
+    // Three control buttons: tilt-left, tilt-right on the left side of the
+    // strip; jump on the right. All vertically centered in the strip.
     final btnSize = Vector2.all(GameConfig.tiltButtonSize);
-    final btnY = size.y - GameConfig.tiltButtonInset - btnSize.y;
+    final btnY = controlStripTop + (controlStripHeight - btnSize.y) / 2;
     tiltLeftButton = TiltButton(
       position: Vector2(GameConfig.tiltButtonInset, btnY),
       size: btnSize,
-      pointsLeft: true,
+      kind: ControlButtonKind.tiltLeft,
     );
     tiltRightButton = TiltButton(
       position: Vector2(
@@ -173,10 +187,19 @@ class GameScene extends FlameGame with HasCollisionDetection {
         btnY,
       ),
       size: btnSize,
-      pointsLeft: false,
+      kind: ControlButtonKind.tiltRight,
+    );
+    jumpButton = TiltButton(
+      position: Vector2(
+        size.x - GameConfig.tiltButtonInset - btnSize.x,
+        btnY,
+      ),
+      size: btnSize,
+      kind: ControlButtonKind.jump,
     );
     add(tiltLeftButton);
     add(tiltRightButton);
+    add(jumpButton);
   }
 
   @override
@@ -235,11 +258,15 @@ class GameScene extends FlameGame with HasCollisionDetection {
 
   void handleJumpDown() {
     if (_gameOver) return;
+    jumpButton.held = true;
     gurgles.startJump();
     balance.applyJumpImpulse();
   }
 
-  void handleJumpUp() => gurgles.endJump();
+  void handleJumpUp() {
+    jumpButton.held = false;
+    gurgles.endJump();
+  }
 
   /// Bottom-left tilt-correction buttons. GameScreen's pointer routing
   /// hit-tests against [tiltLeftButton.hitRect] / [tiltRightButton.hitRect]

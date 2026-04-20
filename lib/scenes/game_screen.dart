@@ -21,15 +21,18 @@ class _GameScreenState extends State<GameScreen> {
   final Map<int, _PointerIntent> _pointerIntents = {};
 
   _PointerIntent? _intentFor(Offset localPos, double width) {
-    // Tilt buttons first — they sit in the bottom-left and need to
-    // take priority over any broad zone.
-    final leftRect = _game.isLoaded ? _game.tiltLeftButton.hitRect : null;
-    final rightRect = _game.isLoaded ? _game.tiltRightButton.hitRect : null;
-    if (leftRect != null && leftRect.contains(localPos)) return _PointerIntent.tiltLeft;
-    if (rightRect != null && rightRect.contains(localPos)) return _PointerIntent.tiltRight;
-    // Right half of screen (outside buttons) = jump.
-    if (localPos.dx > width / 2) return _PointerIntent.jump;
-    // Left half outside buttons is unused now (used to be drag-to-balance).
+    if (!_game.isLoaded) return null;
+    if (_game.tiltLeftButton.hitRect.contains(localPos)) {
+      return _PointerIntent.tiltLeft;
+    }
+    if (_game.tiltRightButton.hitRect.contains(localPos)) {
+      return _PointerIntent.tiltRight;
+    }
+    if (_game.jumpButton.hitRect.contains(localPos)) {
+      return _PointerIntent.jump;
+    }
+    // No more full-right-half fallback — all control is via explicit
+    // buttons in the control strip.
     return null;
   }
 

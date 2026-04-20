@@ -1,12 +1,14 @@
 import 'package:flame/components.dart';
 import 'package:flutter/material.dart';
 
-/// Visual-only button rendered in the bottom-left of the game scene. Hit
-/// testing is done in [GameScreen] against the button's rect — this
-/// component doesn't handle its own input, because our pointer routing
-/// (Listener) lives one layer up in the Flutter widget tree.
+enum ControlButtonKind { tiltLeft, tiltRight, jump }
+
+/// Visual-only button rendered in the bottom control strip. Hit testing is
+/// done in [GameScreen] against the button's rect — this component doesn't
+/// handle its own input because our pointer routing (Listener) lives one
+/// layer up in the Flutter widget tree.
 class TiltButton extends PositionComponent {
-  final bool pointsLeft;
+  final ControlButtonKind kind;
 
   /// External flag toggled by the scene. Controls whether the button
   /// renders as pressed.
@@ -15,7 +17,7 @@ class TiltButton extends PositionComponent {
   TiltButton({
     required super.position,
     required Vector2 size,
-    required this.pointsLeft,
+    required this.kind,
   }) : super(size: size);
 
   @override
@@ -41,14 +43,22 @@ class TiltButton extends PositionComponent {
     final cy = size.y / 2;
     final w = size.x * 0.28;
     final h = size.y * 0.34;
-    if (pointsLeft) {
-      arrow.moveTo(cx - w, cy);
-      arrow.lineTo(cx + w / 2, cy - h);
-      arrow.lineTo(cx + w / 2, cy + h);
-    } else {
-      arrow.moveTo(cx + w, cy);
-      arrow.lineTo(cx - w / 2, cy - h);
-      arrow.lineTo(cx - w / 2, cy + h);
+    switch (kind) {
+      case ControlButtonKind.tiltLeft:
+        arrow.moveTo(cx - w, cy);
+        arrow.lineTo(cx + w / 2, cy - h);
+        arrow.lineTo(cx + w / 2, cy + h);
+        break;
+      case ControlButtonKind.tiltRight:
+        arrow.moveTo(cx + w, cy);
+        arrow.lineTo(cx - w / 2, cy - h);
+        arrow.lineTo(cx - w / 2, cy + h);
+        break;
+      case ControlButtonKind.jump:
+        arrow.moveTo(cx, cy - h);
+        arrow.lineTo(cx - w, cy + h / 2);
+        arrow.lineTo(cx + w, cy + h / 2);
+        break;
     }
     arrow.close();
 
