@@ -1,6 +1,7 @@
 import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
 import 'package:flame_svg/flame_svg.dart';
+import 'package:flutter/foundation.dart' show visibleForTesting;
 import '../config/game_config.dart';
 import 'obstacle.dart';
 
@@ -101,11 +102,33 @@ class Gurgles extends PositionComponent with CollisionCallbacks {
   static double tankardAngleForTilt(double tilt) =>
       tilt * GameConfig.tankardMaxLeanRadians;
 
+  /// Pure function: offset from tankard center to the point on the rim
+  /// pointing in the tilt direction. When [tilt] is 0, that's straight up
+  /// at `(0, -tankardRadius)`; the vector rotates by
+  /// `tilt * GameConfig.tankardMaxLeanRadians` so the emission point
+  /// tracks the lean. Tested in test/tankard_rotation_test.dart.
+  @visibleForTesting
+  static Vector2 rimOffsetFromTankardCenter(double tilt, double tankardRadius) =>
+      Vector2(0, -tankardRadius)..rotate(tilt * GameConfig.tankardMaxLeanRadians);
+
   /// Called from GameScene.update each frame to visually tilt the tankard in
   /// sync with balance.tilt. Gives the player a clear cue about which way to
   /// counter-drag to avoid spilling.
   void setTankardAngle(double angle) {
     _tankard?.angle = angle;
+  }
+
+  /// World-space position of the tankard rim on the tilt side.
+  /// Used by [SplashEmitter] to spawn droplets where the hooch would
+  /// physically spill out. Returns Gurgles' own position if the tankard
+  /// hasn't loaded yet (pre-onLoad), matching the existing null-safe
+  /// pattern for _tankard.
+  Vector2 tankardRimWorldPosition(double tilt) {
+    final t = _tankard;
+    if (t == null) return position.clone();
+    final tankardRadius = t.size.x / 2;
+    final tankardCenterLocal = Vector2(size.x / 2, -2 - t.size.y / 2);
+    return position + tankardCenterLocal + rimOffsetFromTankardCenter(tilt, tankardRadius);
   }
 
   @override

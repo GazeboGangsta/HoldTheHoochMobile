@@ -27,4 +27,31 @@ void main() {
       expect(GameConfig.tankardMaxLeanRadians, greaterThan(0.5));
     });
   });
+
+  group('Gurgles.rimOffsetFromTankardCenter', () {
+    test('at tilt=0, rim offset is straight up (y negative, x zero)', () {
+      final offset = Gurgles.rimOffsetFromTankardCenter(0, 10);
+      expect(offset.x, closeTo(0, 1e-9));
+      expect(offset.y, closeTo(-10, 1e-9));
+    });
+
+    test('at positive tilt, rim offset rotates toward +x', () {
+      final offset = Gurgles.rimOffsetFromTankardCenter(1.0, 10);
+      expect(offset.x, greaterThan(0), reason: 'positive tilt → rim shifts right');
+      expect(offset.y, lessThan(0), reason: 'rim stays above center');
+    });
+
+    test('at negative tilt, rim offset rotates toward -x', () {
+      final offset = Gurgles.rimOffsetFromTankardCenter(-1.0, 10);
+      expect(offset.x, lessThan(0));
+      expect(offset.y, lessThan(0));
+    });
+
+    test('magnitude equals tankardRadius regardless of tilt', () {
+      for (final tilt in [-1.0, -0.5, 0.0, 0.5, 1.0]) {
+        final offset = Gurgles.rimOffsetFromTankardCenter(tilt, 10);
+        expect(offset.length, closeTo(10, 1e-6), reason: 'tilt=$tilt');
+      }
+    });
+  });
 }
