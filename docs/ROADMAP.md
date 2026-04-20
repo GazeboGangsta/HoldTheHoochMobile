@@ -55,7 +55,7 @@ Goal: finish the gameplay systems the design doc calls for.
 ### M4c — Minimum viable test suite
 
 Add before M5 polish. Prioritized by ROI (from code review):
-- [x] `HoochBalance` unit tests: tilt clamping, spill fill/drain, wobble drift, jump impulse. (6 tests)
+- [x] `HoochBalance` unit tests: tilt clamping, spill fill/drain, wobble drift, jump impulse. (16 tests across 5 groups)
 - [x] `GameConfig` invariants: `jumpVelocityMax < jumpVelocityMin < 0`, thresholds ordered, durations positive.
 - [x] `Obstacle._hitboxFor` + `Collectible` sizing bounds: hitbox is strict subset of sprite size.
 - [x] `ScorePopup` render smoke test (once fixed): mount without exception.
@@ -83,7 +83,7 @@ Goal: make it feel and sound finished.
 - [x] Spill meter bar.
 - [x] Dark-navy backdrop matched to mountains gradient (seamless sky).
 - [x] Score popup on collectible pickup (⚠️ crashes — fix in M4a).
-- [ ] **Tankard rotation** tied to `balance.tilt` — visual feedback of how close to spilling. Rotate `_tankard` in `Gurgles.update`: `_tankard.angle = balance.tilt * 0.6` (~35° max lean).
+- [x] **Tankard rotation** tied to `balance.tilt` — visual feedback of how close to spilling. Rotate `_tankard` in `Gurgles.update`: `_tankard.angle = balance.tilt * 0.6` (~35° max lean).
 - [ ] **Splash particles** on spill (hooch-splash.svg emission when `|tilt| > threshold`).
 - [ ] **Sparkle particles** on collectible pickup (sparkle.svg from art guide).
 - [ ] **6-frame run cycle** sprite swap. Requires art delivery ([ART-GUIDE.md](ART-GUIDE.md)).
