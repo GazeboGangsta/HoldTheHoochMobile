@@ -40,6 +40,11 @@ class GameScene extends FlameGame with HasCollisionDetection {
   late double _groundY;
   late double _groundHeight;
 
+  // Allows test stubs to initialise _groundY without triggering the full
+  // SVG-loading onLoad() path.
+  @visibleForTesting
+  set groundYForTesting(double v) => _groundY = v;
+
   // Match bg-mountains.svg's gradient top color — otherwise you get a hard
   // horizontal seam where the light sky-blue Flame backdrop meets the
   // mountain layer's dark night sky.
