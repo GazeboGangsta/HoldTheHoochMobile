@@ -195,9 +195,14 @@ workflows:
       app_store_connect: "GZBO"
     environment:
       flutter: stable
-      ios_signing:
-        distribution_type: app_store
-        bundle_identifier: beer.gurgles.holdTheHooch
+      # Script-based signing (no ios_signing block): that block's strict
+      # pre-flight profile-existence check rejects builds even when the
+      # profile IS registered at Apple — CodeMagic only checks its own
+      # storage, not the API. Instead we pass our pre-generated private
+      # key via env var and let fetch-signing-files resolve cert+profile
+      # from Apple via the GZBO API key integration.
+      groups:
+        - ios_signing   # holds CERTIFICATE_PRIVATE_KEY (PEM-encoded RSA)
       vars:
         APP_NAME: "Hold the Hooch"
         IOS_BUNDLE_ID: "beer.gurgles.holdTheHooch"
@@ -218,13 +223,20 @@ workflows:
         script: |
           cd $CM_BUILD_DIR/ios
           agvtool new-version -all $(($BUILD_NUMBER + 1))
-      # Apply the provisioning profile CodeMagic's managed signing
-      # fetched from the team-level Code signing identity store. Requires
-      # a Distribution cert (.p12) to have been uploaded at:
-      #   CodeMagic UI -> Teams -> Code signing identities -> iOS -> Add
-      # See docs/SIGNING.md for the OpenSSL + Apple portal + p12 steps.
-      - name: Apply provisioning profile
+      - name: Set up code signing
         script: |
+          keychain initialize
+          # Pair the pre-generated RSA private key (env-var) with the
+          # existing Apple Distribution cert + App Store provisioning
+          # profile registered in Apple Developer portal. The GZBO
+          # integration supplies the API key; fetch-signing-files uses
+          # it to find the cert matching this private key, download the
+          # profile, and persist both locally. NO --create flag — the
+          # profile already exists; attempting to create duplicates it.
+          app-store-connect fetch-signing-files "$IOS_BUNDLE_ID" \
+            --type IOS_APP_STORE \
+            --certificate-key=@env:CERTIFICATE_PRIVATE_KEY
+          keychain add-certificates
           xcode-project use-profiles
       - name: Flutter build ipa
         script: |
