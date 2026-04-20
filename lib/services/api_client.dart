@@ -42,19 +42,17 @@ class ApiClient {
   }
 
   Future<List<LeaderboardEntry>> fetchTop({int limit = 50}) async {
-    try {
-      final res = await http.get(
-        Uri.parse('${GameConfig.apiBaseUrl}/api/scores/top?limit=$limit'),
-      ).timeout(_timeout);
-      if (res.statusCode != 200) return [];
-      final body = jsonDecode(res.body) as Map<String, dynamic>;
-      final list = (body['scores'] as List? ?? []);
-      return list
-          .whereType<Map<String, dynamic>>()
-          .map(LeaderboardEntry.fromJson)
-          .toList();
-    } catch (_) {
-      return [];
+    final res = await http.get(
+      Uri.parse('${GameConfig.apiBaseUrl}/api/scores/top?limit=$limit'),
+    ).timeout(_timeout);
+    if (res.statusCode != 200) {
+      throw Exception('Leaderboard request failed: HTTP ${res.statusCode}');
     }
+    final body = jsonDecode(res.body) as Map<String, dynamic>;
+    final list = (body['scores'] as List? ?? []);
+    return list
+        .whereType<Map<String, dynamic>>()
+        .map(LeaderboardEntry.fromJson)
+        .toList();
   }
 }
