@@ -218,6 +218,20 @@ workflows:
         script: |
           cd $CM_BUILD_DIR/ios
           agvtool new-version -all $(($BUILD_NUMBER + 1))
+      # Explicit signing fetch-or-create. The ios_signing block above is
+      # declarative metadata; this step does the actual work of creating
+      # the Distribution cert + App Store provisioning profile via the
+      # App Store Connect API if they don't already exist, then wires
+      # them into Xcode. Required on first-run for a brand-new Apple
+      # Developer account with no Distribution cert yet.
+      - name: Set up code signing
+        script: |
+          keychain initialize
+          app-store-connect fetch-signing-files "$IOS_BUNDLE_ID" \
+            --type IOS_APP_STORE \
+            --create
+          keychain add-certificates
+          xcode-project use-profiles
       - name: Flutter build ipa
         script: |
           flutter build ipa --release \
