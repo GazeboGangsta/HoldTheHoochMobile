@@ -2,6 +2,7 @@ import 'dart:math';
 import 'dart:ui';
 import 'package:flame/components.dart';
 import 'package:flame/particles.dart';
+import 'package:flutter/foundation.dart' show visibleForTesting;
 import '../config/game_config.dart';
 import 'gurgles.dart';
 import 'hooch_balance.dart';
@@ -22,12 +23,14 @@ class SplashEmitter extends Component {
 
   bool _wasOverThreshold = false;
   double _continuousAccum = 0;
+  int _totalEmitted = 0;
 
   /// Running count of [ParticleSystemComponent]s ever emitted. Each call to
   /// [_emitBurst] increments this by 1 regardless of how many droplet
   /// particles the burst carries. Useful for rate-verification in tests where
   /// expired PSCs have already been removed from the component tree.
-  int totalEmitted = 0;
+  @visibleForTesting
+  int get totalEmitted => _totalEmitted;
 
   // Emissions built during update() are deferred and added in updateTree()
   // AFTER the children-iteration loop, preventing concurrent-modification
@@ -94,20 +97,27 @@ class SplashEmitter extends Component {
   void reset() {
     _wasOverThreshold = false;
     _continuousAccum = 0;
-    totalEmitted = 0;
+    _totalEmitted = 0;
+    // Clear in-flight particle systems we own. Because PSCs are children of
+    // this emitter (not GameScene), GameScene.restart()'s own cleanup loop
+    // does not reach them — responsibility lives here.
+    for (final psc in children.whereType<ParticleSystemComponent>().toList()) {
+      psc.removeFromParent();
+    }
+    _pendingEmissions.clear();
   }
 
   /// Queues a burst into [_pendingEmissions] for deferred add after the
   /// current children-iteration completes (called from [update]).
   void _emitBurst(int count, {required bool gameOver}) {
     _pendingEmissions.add(_buildBurst(count, gameOver: gameOver));
-    totalEmitted++;
+    _totalEmitted++;
   }
 
   /// Immediately adds a burst as a child (safe to call outside [updateTree]).
   void _emitBurstNow(int count, {required bool gameOver}) {
     add(_buildBurst(count, gameOver: gameOver));
-    totalEmitted++;
+    _totalEmitted++;
   }
 
   ParticleSystemComponent _buildBurst(int count, {required bool gameOver}) {
