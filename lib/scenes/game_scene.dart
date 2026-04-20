@@ -234,13 +234,31 @@ class GameScene extends FlameGame with HasCollisionDetection {
     scoreText.text = mult > 1.0
         ? '$score  ×${mult.toStringAsFixed(1)}'
         : '$score';
-    if (balance.hasSpilled) _end('You spilled the hooch!');
+    if (balance.hasSpilled) _end('You spilled the hooch!', fromSpill: true);
   }
 
-  void _end(String reason) {
+  void _end(String reason, {bool fromSpill = false}) {
     if (_gameOver) return;
     _gameOver = true;
     endReason = reason;
+
+    if (fromSpill) {
+      // Dramatic splash burst, then let it animate before the overlay covers it.
+      // _gameOver = true above already blocks further update() logic during the
+      // delay window; we deliberately keep the engine running so the particles
+      // can animate.
+      splashEmitter.emitGameOverBurst();
+      Future.delayed(
+        Duration(milliseconds: GameConfig.splashGameOverDelayMs),
+        () {
+          if (!isMounted) return;
+          pauseEngine();
+          overlays.add(gameOverOverlayId);
+        },
+      );
+      return;
+    }
+
     pauseEngine();
     overlays.add(gameOverOverlayId);
   }
