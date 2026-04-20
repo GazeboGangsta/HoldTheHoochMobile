@@ -172,4 +172,64 @@ void main() {
       expect(b.tilt.abs(), greaterThan(0.7));
     });
   });
+
+  group('HoochBalance applyTiltTorque clamp', () {
+    test('positive torque past 1.0 clamps at 1.0', () {
+      final b = HoochBalance();
+      b.applyTiltTorque(1.5);
+      expect(b.tilt, 1.0);
+    });
+
+    test('negative torque past -1.0 clamps at -1.0', () {
+      final b = HoochBalance();
+      b.applyTiltTorque(-1.5);
+      expect(b.tilt, -1.0);
+    });
+
+    test('small torque accumulates without clamp', () {
+      final b = HoochBalance();
+      b.applyTiltTorque(0.3);
+      b.applyTiltTorque(0.3);
+      expect((b.tilt - 0.6).abs(), lessThan(1e-9));
+    });
+  });
+
+  group('HoochBalance applyJumpImpulse', () {
+    test('impulse moves tilt by exactly 0.18 in some direction', () {
+      // applyJumpImpulse picks a random direction, so run enough trials that
+      // we cover both signs; every single call must move |tilt| by 0.18.
+      for (var i = 0; i < 20; i++) {
+        final b = HoochBalance();
+        b.applyJumpImpulse();
+        expect(b.tilt.abs(), closeTo(0.18, 1e-9));
+      }
+    });
+
+    test('impulse applied near +1.0 clamps rather than overshooting', () {
+      // Seed tilt so any positive-direction impulse would push past the clamp.
+      // We re-try until the random direction is positive (usually in <5 tries).
+      for (var i = 0; i < 50; i++) {
+        final b = HoochBalance();
+        b.tilt = 0.95;
+        b.applyJumpImpulse();
+        // If the random direction was negative, tilt fell to 0.77 — retry.
+        if (b.tilt < 0.95) continue;
+        expect(b.tilt, 1.0);
+        return;
+      }
+      fail('applyJumpImpulse never rolled a positive direction in 50 trials');
+    });
+
+    test('impulse applied near -1.0 clamps rather than overshooting', () {
+      for (var i = 0; i < 50; i++) {
+        final b = HoochBalance();
+        b.tilt = -0.95;
+        b.applyJumpImpulse();
+        if (b.tilt > -0.95) continue;
+        expect(b.tilt, -1.0);
+        return;
+      }
+      fail('applyJumpImpulse never rolled a negative direction in 50 trials');
+    });
+  });
 }
