@@ -24,7 +24,7 @@ Working Flutter + Flame 2D side-scrolling endless runner on Android. Installable
 - Difficulty curve: scroll speed ramps 1.0x → 2.0x and wobble amplitude ramps 1.0× → 1.7× over 180 seconds.
 - **Game Over** overlay shows score, persists best-score locally, submits to `gurgles.beer` (silently; offline still shows score but is **not** queued for retry despite [docs/BACKEND.md](BACKEND.md) promising otherwise).
 - **Leaderboard** — menu button → scrollable top-50 list from `gurgles.beer`, pull-to-refresh, current player rows highlighted.
-- **Splash particles** — amber droplets with occasional cream highlights burst from the tankard rim whenever the hooch tilts into the spill zone; emission rate scales with how far past threshold the tilt sits. A 30-particle dramatic burst fires on spill-death and animates for 600ms before the game-over overlay covers it.
+- **Splash particles** — amber droplets with occasional cream highlights burst from the tankard rim whenever the hooch tilts into the spill zone; emission rate scales with how far past threshold the tilt sits. On spill-death a 30-droplet burst plays for 600ms before the game-over overlay appears — currently subtle on-device, a full-screen "death" effect is queued in [ROADMAP.md § Post-V1 ideas](ROADMAP.md).
 - **Sparkle particles** — kind-specific bursts on collectible pickup: 6 small green for herb, 10 mid gold for hops, 16 large blue plus an expanding halo ring for potion.
 
 ## Milestone progress
@@ -40,7 +40,7 @@ See [docs/ROADMAP.md](ROADMAP.md) for the detailed per-milestone plan.
   - Score multiplier (+0.1x per 10s, capped 3x): ✅ implemented.
   - Potion spill-drain bonus: ✅ implemented (4× drain rate for 1 second).
   - Wobble amplitude scaling: ✅ implemented (1.0× → 1.7× over difficultyRampSeconds).
-- **M5 — Polish & assets** ⏳ Partial. Real SVGs in, parallax in, spill meter UI in, score popup in, tankard rotation tied to tilt, dedicated control strip with tilt + jump buttons, leaderboard scene live. Still missing: SFX, run-cycle animation, splash/sparkle particles, tutorial overlay, settings.
+- **M5 — Polish & assets** ⏳ Partial. Real SVGs in, parallax in, spill meter UI in, score popup in, tankard rotation tied to tilt, dedicated control strip with tilt + jump buttons, leaderboard scene live, splash + sparkle particles live (M5a). Still missing: SFX, run-cycle animation, hurt pose, tutorial overlay, settings.
 - **M6 — Store prep** ❌ Not started.
 
 ## Tech stack (as built)
@@ -154,6 +154,7 @@ flutter install -d <device-id> --debug
 - **Passive hitboxes only notify the active-side component.** If you want both sides to get the callback (e.g. collectible self-removing on pickup), both hitboxes need to be active.
 - **Match Flame `backgroundColor()` to layered-SVG gradient tops.** `bg-mountains.svg` gradient starts at `#1A1A3E`; if Flame's canvas bg is anything else, you get a horizontal seam where the mountains layer begins.
 - **`ApiClient.fetchTop` now throws on failure** (used to silently return `[]`). Callers must catch or wrap in a `FutureBuilder` with error handling.
+- **Calling `parent?.add(child)` from inside `update()` causes `ConcurrentModificationError` in the test harness.** In tests without `GameWidget`, `FlameGame.isMounted` stays false so `Component.add` takes the direct-modify branch instead of the lifecycle queue. If you're already iterating the parent's children (and Flame is iterating yours via `updateTree`), the add mutates the live set. Workaround used in `SplashEmitter`: override `updateTree`, buffer adds in a `_pendingEmissions` list, flush after the children-iteration loop. Same class of issue `ScorePopup` sidesteps by computing motion in a custom `update` override rather than effects on `TextComponent`.
 
 ## Immediate next steps (in order)
 
