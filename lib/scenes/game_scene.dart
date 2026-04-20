@@ -12,6 +12,7 @@ import '../components/obstacle.dart';
 import '../components/parallax_bg.dart';
 import '../components/score_popup.dart';
 import '../components/sparkle_burst.dart';
+import '../components/splash_emitter.dart';
 import '../components/spill_meter.dart';
 import '../components/tilt_button.dart' show TiltButton, ControlButtonKind;
 import '../config/game_config.dart';
@@ -23,6 +24,7 @@ class GameScene extends FlameGame with HasCollisionDetection {
 
   late Gurgles gurgles;
   late HoochBalance balance;
+  late SplashEmitter splashEmitter;
   late Ground ground;
   late ObstacleManager obstacleManager;
   late CollectibleManager collectibleManager;
@@ -135,6 +137,9 @@ class GameScene extends FlameGame with HasCollisionDetection {
     balance = HoochBalance();
     balance.setDriftDirection(Random().nextBool() ? 1.0 : -1.0);
     add(balance);
+
+    splashEmitter = SplashEmitter(gurgles: gurgles, balance: balance);
+    add(splashEmitter);
 
     obstacleManager = ObstacleManager(
       scrollSpeedProvider: () => currentScrollSpeed,
@@ -251,6 +256,10 @@ class GameScene extends FlameGame with HasCollisionDetection {
     for (final p in children.whereType<ScorePopup>().toList()) {
       p.removeFromParent();
     }
+    for (final p in children.whereType<ParticleSystemComponent>().toList()) {
+      p.removeFromParent();
+    }
+    splashEmitter.reset();
     _elapsed = 0;
     _collectiblePoints = 0;
     score = 0;

@@ -5,6 +5,8 @@ import 'package:hold_the_hooch/components/gurgles.dart';
 import 'package:hold_the_hooch/components/hooch_balance.dart';
 import 'package:hold_the_hooch/components/obstacle.dart';
 import 'package:hold_the_hooch/components/score_popup.dart';
+import 'package:hold_the_hooch/components/sparkle_burst.dart';
+import 'package:hold_the_hooch/components/splash_emitter.dart';
 import 'package:hold_the_hooch/scenes/game_scene.dart';
 
 /// Regression guard: restart() must clear every spawned entity type.
@@ -20,7 +22,7 @@ import 'package:hold_the_hooch/scenes/game_scene.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  test('GameScene.restart() removes obstacles, collectibles, and score popups',
+  test('GameScene.restart() removes obstacles, collectibles, score popups, and particle systems',
       () async {
     final game = _StubGameScene();
     game.onGameResize(Vector2(400, 800));
@@ -31,10 +33,13 @@ void main() {
     game.add(_StubCollectible());
     game.add(ScorePopup(points: 10, position: Vector2(50, 50)));
     await game.ready();
+    game.add(SparkleBurst.emit(CollectibleKind.herb, Vector2(25, 25)));
+    await game.ready();
 
     expect(game.children.whereType<Obstacle>(), isNotEmpty);
     expect(game.children.whereType<Collectible>(), isNotEmpty);
     expect(game.children.whereType<ScorePopup>(), isNotEmpty);
+    expect(game.descendants().whereType<ParticleSystemComponent>(), isNotEmpty);
 
     await game.restart();
     await game.ready();
@@ -42,6 +47,7 @@ void main() {
     expect(game.children.whereType<Obstacle>(), isEmpty);
     expect(game.children.whereType<Collectible>(), isEmpty);
     expect(game.children.whereType<ScorePopup>(), isEmpty);
+    expect(game.descendants().whereType<ParticleSystemComponent>(), isEmpty);
   });
 }
 
@@ -62,6 +68,7 @@ class _StubGameScene extends GameScene {
       size: Vector2(80, 144),
     );
     balance = HoochBalance();
+    splashEmitter = SplashEmitter(gurgles: gurgles, balance: balance);
   }
 }
 
