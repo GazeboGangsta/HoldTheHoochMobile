@@ -38,3 +38,5 @@ android/key.properties
 # Env / secrets
 .env
 .env.local
+secret.md
+secrets/
