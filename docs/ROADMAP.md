@@ -137,3 +137,19 @@ Per [AUDIO-GUIDE.md](AUDIO-GUIDE.md). Add `flame_audio` dep. Wire each as the SF
 - iPad / tablet layout pass.
 - Optional 2.5D / parallax-heavy visual upgrade.
 - Stats/achievements ("jumped 1000 times", "collected 100 potions", etc.).
+
+## Design ideas to consider (pre-ship, not committed)
+
+### "Finite hooch" spill model (alternative to current auto-drain)
+
+Current model: spill meter fills on tilt, **auto-drains** when level. Reaching 100% ends the run. Potion pickup gives 1s of 4× drain.
+
+Proposed reframe: cup starts with **100 hooch**. Tilts spill hooch out (same as today). The meter does **not** auto-refill — it's a finite resource. Collectibles *replenish* hooch, because Gurgles is a brewer druid gnome literally brewing more as he runs.
+
+- Inverts the bar semantics: "spill meter filling up" → "hooch level draining down". Run ends at 0, not 100.
+- Makes collectibles dual-purpose (points AND survival resource) — raises the stakes of the jump/grab risk/reward already in the design.
+- Narratively tighter: "druid brewer brewing on the run" is a fresher hook than "hooch mysteriously un-spills itself".
+- Tuning implications: per-pickup hooch restore becomes a key knob (herb = small, hops = medium, potion = large?). Retire the potion spill-drain bonus since the potion's effect is now intrinsic.
+- UI: swap the red fill bar for a tankard-fill visual (liquid level inside the tankard sprite), or keep the bar but flip direction + recolour.
+
+Consider before M6 ship. Decision point: does auto-drain or finite-with-refill produce the more engaging risk/reward curve in 30–60s play sessions?
