@@ -23,6 +23,7 @@ Working Flutter + Flame 2D side-scrolling endless runner on Android. Installable
 - Score: +10 per second elapsed + collectible points, shown top-center.
 - Difficulty curve: scroll speed ramps 1.0x → 2.0x and wobble amplitude ramps 1.0× → 1.7× over 180 seconds.
 - **Game Over** overlay shows score, persists best-score locally, submits to `gurgles.beer` (silently; offline still shows score but is **not** queued for retry despite [docs/BACKEND.md](BACKEND.md) promising otherwise).
+- **Leaderboard** — menu button → scrollable top-50 list from `gurgles.beer`, pull-to-refresh, current player rows highlighted.
 
 ## Milestone progress
 
@@ -139,6 +140,7 @@ flutter install -d <device-id> --debug
 - **`OpacityEffect` requires its target to implement `OpacityProvider`.** `TextComponent` does not — applying `OpacityEffect` to one throws on mount. Either mix in `HasPaint` + implement `OpacityProvider`, or skip the fade.
 - **Passive hitboxes only notify the active-side component.** If you want both sides to get the callback (e.g. collectible self-removing on pickup), both hitboxes need to be active.
 - **Match Flame `backgroundColor()` to layered-SVG gradient tops.** `bg-mountains.svg` gradient starts at `#1A1A3E`; if Flame's canvas bg is anything else, you get a horizontal seam where the mountains layer begins.
+- **`ApiClient.fetchTop` now throws on failure** (used to silently return `[]`). Callers must catch or wrap in a `FutureBuilder` with error handling.
 
 ## Immediate next steps (in order)
 

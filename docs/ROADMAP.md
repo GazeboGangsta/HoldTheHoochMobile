@@ -102,7 +102,7 @@ Per [AUDIO-GUIDE.md](AUDIO-GUIDE.md). Add `flame_audio` dep. Wire each as the SF
 
 ### M5c — Scenes + UX
 
-- [ ] **Leaderboard scene** — `GET /api/scores/top`, list top 50. Add Leaderboard button on menu.
+- [x] **Leaderboard scene** — `GET /api/scores/top`, list top 50. Menu button pushes a new scene with loading / error / empty states and current-player highlighting.
 - [ ] **Tutorial overlay** — first 1–2 seconds of first run only. `tap-hint.svg` on right, `drag-hint.svg` on left. Dismiss on first input.
 - [ ] **Settings** (lightweight) — music toggle, haptics toggle, accelerometer vs drag toggle.
 
