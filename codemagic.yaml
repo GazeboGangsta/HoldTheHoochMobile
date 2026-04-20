@@ -231,6 +231,16 @@ workflows:
       - name: Set up code signing
         script: |
           keychain initialize
+          # Fetch BOTH development + app-store signing files. Flutter's
+          # `flutter build ipa --release` internally runs `flutter build
+          # ios --release` first, which requires a development signing
+          # identity to exist even though the final IPA will be signed
+          # with the distribution cert. Creating both via the API key
+          # on first run avoids the "No development certificates
+          # available" failure mid-archive.
+          app-store-connect fetch-signing-files "$IOS_BUNDLE_ID" \
+            --type IOS_APP_DEVELOPMENT \
+            --create
           app-store-connect fetch-signing-files "$IOS_BUNDLE_ID" \
             --type IOS_APP_STORE \
             --create
