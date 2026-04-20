@@ -195,9 +195,13 @@ workflows:
       app_store_connect: "GZBO"
     environment:
       flutter: stable
-      ios_signing:
-        distribution_type: app_store
-        bundle_identifier: beer.gurgles.holdTheHooch
+      # NOTE: no `ios_signing:` declarative block on purpose. That block
+      # triggers a strict pre-flight profile-existence check which blocks
+      # the build before scripts run — fatal for a first-time account
+      # where the Distribution cert + App Store profile don't yet exist.
+      # Instead, the `Set up code signing` script below uses
+      # `app-store-connect fetch-signing-files --create` to create them
+      # on-the-fly via the API-key integration.
       vars:
         APP_NAME: "Hold the Hooch"
         IOS_BUNDLE_ID: "beer.gurgles.holdTheHooch"
