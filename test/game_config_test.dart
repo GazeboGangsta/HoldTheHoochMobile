@@ -80,5 +80,20 @@ void main() {
       final theoreticalMinPeak = (v0 * v0) / (2 * g);
       expect(theoreticalMinPeak, greaterThan(30.0));
     });
+
+    test('M5a splash constants are positive and correctly ordered', () {
+      expect(GameConfig.splashBurstCount, greaterThan(0));
+      expect(GameConfig.splashGameOverBurstCount, greaterThan(GameConfig.splashBurstCount));
+      expect(GameConfig.splashTrickleRateBase, greaterThan(0));
+      expect(GameConfig.splashTrickleRateMax, greaterThan(GameConfig.splashTrickleRateBase));
+      expect(GameConfig.splashGameOverDelayMs, greaterThan(0));
+      expect(GameConfig.splashGravity, greaterThan(0));
+      expect(GameConfig.splashSpeedMin, greaterThan(0));
+      expect(GameConfig.splashSpeedMax, greaterThan(GameConfig.splashSpeedMin));
+    });
+
+    test('sparkleDecelerationRate is positive', () {
+      expect(GameConfig.sparkleDecelerationRate, greaterThan(0));
+    });
   });
 }

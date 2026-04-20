@@ -65,4 +65,18 @@ class GameConfig {
   /// Order of magnitude faster than driftRateMax so the player can
   /// always out-correct the drift.
   static const double tiltButtonTorqueRate = 1.5;
+
+  // M5a — splash emitter tuning (see docs/superpowers/specs/2026-04-20-m5a-particles-design.md).
+  static const int splashBurstCount = 6;
+  static const int splashGameOverBurstCount = 30;
+  static const double splashTrickleRateBase = 5.0;   // particles/sec at tilt == spillThreshold
+  static const double splashTrickleRateMax = 15.0;   // particles/sec at tilt == 1.0
+  static const int splashGameOverDelayMs = 600;      // hold the overlay this long so the burst animates
+  static const double splashGravity = 800.0;         // px/s² pulling splash droplets down
+  static const double splashSpeedMin = 60.0;         // px/s min initial droplet speed
+  static const double splashSpeedMax = 120.0;        // px/s max initial droplet speed
+
+  // M5a — sparkle burst tuning. Deceleration is dt-based so feel is stable across
+  // framerates. 4.8/s gives the familiar 0.92-per-frame decay at 60fps.
+  static const double sparkleDecelerationRate = 4.8;
 }
