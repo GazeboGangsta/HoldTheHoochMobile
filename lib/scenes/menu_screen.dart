@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../services/local_store.dart';
 import '../utils/routes.dart';
 import 'game_screen.dart';
+import 'leaderboard_screen.dart';
 
 /// Flutter-widget-based menu. Keeps name entry simple and native-feeling.
 class MenuScreen extends StatefulWidget {
@@ -86,6 +87,19 @@ class _MenuScreenState extends State<MenuScreen> {
                   foregroundColor: Colors.black,
                 ),
                 child: const Text('Start', style: TextStyle(fontSize: 22)),
+              ),
+              const SizedBox(height: 12),
+              OutlinedButton(
+                onPressed: () => Navigator.of(context).push(
+                  fadeRoute(const LeaderboardScreen()),
+                ),
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 48, vertical: 14),
+                  side: const BorderSide(color: Color(0xFFD4A744)),
+                  foregroundColor: const Color(0xFFD4A744),
+                ),
+                child: const Text('Leaderboard', style: TextStyle(fontSize: 18)),
               ),
             ],
           ),
