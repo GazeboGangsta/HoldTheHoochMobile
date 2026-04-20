@@ -70,5 +70,15 @@ void main() {
       // would spin wildly. Guard: value must be well under π.
       expect(GameConfig.tankardMaxLeanRadians, inExclusiveRange(0.0, 1.5));
     });
+
+    test('jumpVelocityMin produces a theoretical minimum peak above 30px', () {
+      // peak_min = v0² / (2g) — minimum peak from an instant-release
+      // short hop. If this drops below 30 px, someone has turned jumps
+      // into nudges and short-tap gameplay loses its role.
+      final v0 = GameConfig.jumpVelocityMin.abs();
+      final g = GameConfig.gravity;
+      final theoreticalMinPeak = (v0 * v0) / (2 * g);
+      expect(theoreticalMinPeak, greaterThan(30.0));
+    });
   });
 }
