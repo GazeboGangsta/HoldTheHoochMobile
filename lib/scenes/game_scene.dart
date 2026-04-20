@@ -1,6 +1,8 @@
 import 'dart:math';
 import 'package:flame/components.dart';
 import 'package:flame/game.dart';
+// ignore: unnecessary_import (explicit import for consistency with obstacle.dart, collectible.dart)
+import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:flutter/material.dart';
 import '../components/collectible.dart';
 import '../components/ground.dart';
