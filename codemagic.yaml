@@ -192,7 +192,7 @@ workflows:
     <<: *instance_defaults
     instance_type: mac_mini_m2
     integrations:
-      app_store_connect: "App Store Connect API Key"
+      app_store_connect: "GZBO"
     environment:
       flutter: stable
       ios_signing:

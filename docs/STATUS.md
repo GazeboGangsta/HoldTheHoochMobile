@@ -47,7 +47,7 @@ See [docs/ROADMAP.md](ROADMAP.md) for the detailed per-milestone plan.
 
 - Flutter 3.41.4 stable, Dart 3.11.1.
 - Flame 1.37, flame_svg 1.12, flutter_svg, shared_preferences, http, sensors_plus (**unused — candidate for removal**).
-- App id: `beer.gurgles.hold_the_hooch`, display name "Hold the Hooch".
+- App id: `beer.gurgles.holdTheHooch`, display name "Hold the Hooch".
 - Targets: Android (tested on Pixel 8 Pro + Samsung S26 Ultra), iOS (scaffolded, not yet built).
 - Backend: existing `gurgles.beer` Express+SQLite, reused unchanged.
 
