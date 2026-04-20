@@ -4,12 +4,12 @@ Mobile companion to the web game at [gurgles.beer](https://gurgles.beer) (repo: 
 
 ## The game
 
-**HoldTheHooch (Mobile V1)** — a 2D side-scrolling endless runner. Gurgles the Druid Brewer Gnome sprints through an enchanted forest holding a giant tankard of hooch above his head. Two simultaneous concerns:
+**HoldTheHooch (Mobile V1)** — a 2D side-scrolling endless runner. Gurgles the Druid Brewer Gnome sprints through an enchanted forest holding a giant tankard of hooch above his head. Two simultaneous concerns, mapped to a dedicated bottom control strip:
 
-- **Tap/tap-hold (right side of screen):** jump over ground obstacles (roots, rocks, mushrooms, fallen logs).
-- **Tilt/drag (left side of screen):** keep the hooch balanced. Tilt past threshold → spill meter fills. 100% spill = run ends. Obstacle hit = instant end.
+- **▲ Jump button (right of strip):** tap-and-hold to clear ground obstacles (roots, rocks, mushrooms, fallen logs). Hold duration = jump height.
+- **◀ ▶ Tilt buttons (left of strip):** tap-and-hold to push the hooch left/right and counter the passive drift + wobble. Tilt past threshold → spill meter fills. 100% spill = run ends. Obstacle hit = instant end.
 
-Floating collectibles (herbs, golden hops, potion bottles) at varying heights give risk/reward bonuses (jumping disturbs the hooch). Speed and wobble intensity scale up over time.
+The tankard visually leans with the current tilt so the player can see which way it's drifting at a glance. Floating collectibles (herbs, golden hops, potion bottles) at three height tiers give risk/reward bonuses (jumping disturbs the hooch). Speed and wobble intensity scale up over 3 minutes.
 
 ## Tech stack
 
@@ -34,24 +34,35 @@ Things that are **out of scope** for V1: accounts, auth, IAP, ads, power-ups, ch
 
 ```
 lib/
-  main.dart              # app entry point
-  components/            # Flame components (Gurgles, HoochBalance, Obstacle, Collectible, Ground, Parallax)
-  scenes/                # Flame "worlds" — Boot, Menu, Game, GameOver, Leaderboard
-  systems/               # ObstacleManager, CollectibleManager, WobbleSystem, DifficultyCurve, ScoreTracker
-  services/              # ApiClient (score submission + leaderboard fetch), LocalStore (best score, player name)
-  config/                # game constants (speeds, thresholds, spawn tables)
-  utils/                 # helpers
+  main.dart              # app entry point, MaterialApp, portrait-only
+  components/            # Flame components (Gurgles, HoochBalance, Obstacle,
+                         #   Collectible, Ground, ParallaxLayer, SpillMeter,
+                         #   ScorePopup, TiltButton)
+  scenes/                # menu_screen, game_screen, game_scene,
+                         #   game_over_overlay, leaderboard_screen
+  systems/               # ObstacleManager, CollectibleManager
+  services/              # ApiClient, LocalStore
+  widgets/               # Flutter widgets used outside Flame
+                         #   (LeaderboardEntryRow)
+  config/                # game_config.dart — all tuning constants
+  utils/                 # routes.dart (fadeRoute), format_score.dart
 assets/
   images/                # raster fallbacks / exported SVGs
   svg/                   # primary art — drop-in replaceable
   audio/                 # sfx + (optional) music
+  third_party/           # licensed asset packs (with LICENSE.txt)
 docs/
+  STATUS.md              # live end-of-session snapshot + known issues
   GAME_DESIGN.md         # mechanics, tuning, progression
   ART-GUIDE.md           # art brief — per-asset design notes, sizes, colours
   AUDIO-GUIDE.md         # audio brief — SFX list, music spec, format rules
   BACKEND.md             # contract with gurgles.beer API
   ROADMAP.md             # V1 plan → post-V1 ideas
+  PLATFORM_NOTES.md      # Windows-dev + Mac-signing workflow notes
+  SIGNING.md             # one-time Play Store + TestFlight setup
+  superpowers/plans/     # per-milestone implementation plans
 test/                    # widget + component tests
+codemagic.yaml           # CI/CD: debug + release workflows for both stores
 ```
 
 ## Working agreements
@@ -60,7 +71,8 @@ test/                    # widget + component tests
 - Placeholder art is fine. Do NOT block on art — the engine reads from `assets/svg/` and assets are swappable without code changes.
 - Reuse the existing backend. Do not build new server infrastructure for V1.
 - Every new gameplay system gets a short note in `docs/GAME_DESIGN.md` so tuning values live alongside rationale.
-- Prefer Flame's built-in components over hand-rolled game loops.
+- Prefer Flame's built-in components over hand-rolled game loops — *except* where they've been fought and lost (parallax of SVGs, effects on `TextComponent`); see `STATUS.md` gotchas before reaching for them.
+- **CI/CD is CodeMagic** (`codemagic.yaml` at the repo root). Push to `main` runs Android + iOS debug builds. Release builds trigger on git tags `v*` and need the signing setup in `docs/SIGNING.md`.
 
 ## Related repos
 
