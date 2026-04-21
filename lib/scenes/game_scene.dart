@@ -208,6 +208,20 @@ class GameScene extends FlameGame with HasCollisionDetection {
     ));
 
 
+    // 11 front_trees1 added BEFORE Gurgles → renders behind him. Gives the
+    // scene a midground-tree beat without occluding the player. Layer 12
+    // is still added after Gurgles for one layer of depth occlusion.
+    add(RasterParallaxLayer(
+      assetPath: '../third_party/pine_hills/png/11_front_trees1.png',
+      speedFactor: 0.85,
+      worldSpeedProvider: () => currentScrollSpeed,
+      worldSize: size,
+      yPosition: playAreaHeight * 0.50,
+      height: playAreaHeight * 0.50,
+      sourceWidth: srcW,
+      sourceHeight: srcH,
+    ));
+
     final gurglesHeight = size.y * 0.18;
     final gurglesWidth = gurglesHeight * 0.8;
     gurgles = Gurgles(
@@ -238,16 +252,6 @@ class GameScene extends FlameGame with HasCollisionDetection {
       worldSize: size,
       yPosition: playAreaHeight * 0.80,
       height: playAreaHeight * 0.20,
-      sourceWidth: srcW,
-      sourceHeight: srcH,
-    ));
-    add(RasterParallaxLayer(
-      assetPath: '../third_party/pine_hills/png/11_front_trees1.png',
-      speedFactor: 0.85,
-      worldSpeedProvider: () => currentScrollSpeed,
-      worldSize: size,
-      yPosition: playAreaHeight * 0.50,
-      height: playAreaHeight * 0.50,
       sourceWidth: srcW,
       sourceHeight: srcH,
     ));
