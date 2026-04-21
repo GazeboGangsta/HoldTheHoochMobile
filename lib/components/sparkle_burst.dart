@@ -7,10 +7,8 @@ import '../config/game_config.dart';
 import 'collectible.dart';
 
 /// Fire-and-forget sparkle burst played on collectible pickup. Tinted and
-/// sized per [CollectibleKind]: fruitCommon = small green, fruitMedium = medium gold,
-/// potion = large blue plus an expanding halo ring.
-/// fruitRare and crystal temporarily share the potion config — Task 5 adds
-/// fully-fleshed configs for them.
+/// sized per [CollectibleKind]: fruitCommon = small red, fruitMedium = medium orange,
+/// fruitRare = medium gold, crystal = large purple plus halo, potion = largest blue plus halo.
 class SparkleBurst {
   static final Random _rng = Random();
 
@@ -22,7 +20,9 @@ class SparkleBurst {
       for (var i = 0; i < cfg.count; i++) _sparkle(cfg, at),
     ];
     if (kind == CollectibleKind.potion) {
-      particles.add(_potionHalo(at));
+      particles.add(_haloBurst(at, const Color(0xFF00BFFF)));
+    } else if (kind == CollectibleKind.crystal) {
+      particles.add(_haloBurst(at, const Color(0xFFB266FF)));
     }
     return ParticleSystemComponent(
       particle: ComposedParticle(children: particles),
@@ -37,23 +37,31 @@ class SparkleBurst {
         CollectibleKind.fruitCommon => (
             count: 6,
             radius: 4.0,
-            colour: const Color(0xFF4CAF50),
+            colour: const Color(0xFFE57373), // red (strawberry/cherry/tomato)
             lifespan: 0.5,
           ),
         CollectibleKind.fruitMedium => (
+            count: 8,
+            radius: 5.0,
+            colour: const Color(0xFFFF9800), // orange (apple/orange/pumpkin)
+            lifespan: 0.6,
+          ),
+        CollectibleKind.fruitRare => (
             count: 10,
             radius: 6.0,
-            colour: const Color(0xFFFFD700),
+            colour: const Color(0xFFFFD700), // gold (golden apple)
             lifespan: 0.7,
           ),
-        // fruitRare and crystal get proper configs in Task 5; use potion config
-        // as a temporary fallback so the tree compiles and existing tests pass.
-        CollectibleKind.fruitRare ||
-        CollectibleKind.crystal ||
+        CollectibleKind.crystal => (
+            count: 14,
+            radius: 7.0,
+            colour: const Color(0xFFB266FF), // purple (gem/amethyst)
+            lifespan: 0.8,
+          ),
         CollectibleKind.potion => (
             count: 16,
             radius: 8.0,
-            colour: const Color(0xFF00BFFF),
+            colour: const Color(0xFF00BFFF), // blue (Onocentaur potion)
             lifespan: 1.0,
           ),
       };
@@ -83,13 +91,12 @@ class SparkleBurst {
     );
   }
 
-  /// Potion-only expanding ring halo: radius 0 → 60 px over 0.4s,
+  /// Expanding ring halo: radius 0 → 60 px over 0.4s,
   /// stroke alpha 180 → 0. Sits behind the sparkles.
-  static Particle _potionHalo(Vector2 at) {
+  static Particle _haloBurst(Vector2 at, Color haloColour) {
     const haloLifespan = 0.4;
     const haloMaxRadius = 60.0;
     const haloMaxAlpha = 180;
-    const haloColour = Color(0xFF00BFFF);
     return ComputedParticle(
       lifespan: haloLifespan,
       renderer: (canvas, particle) {
