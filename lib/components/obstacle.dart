@@ -25,7 +25,7 @@ class Obstacle extends PositionComponent with CollisionCallbacks {
 
   static Vector2 _sizeFor(ObstacleKind k) => switch (k) {
         ObstacleKind.stone => Vector2(60, 49),
-        ObstacleKind.rock => Vector2(180, 160),
+        ObstacleKind.rock => Vector2(109, 124),
         ObstacleKind.mushroom => Vector2(82, 82),
         ObstacleKind.log => Vector2(150, 82),
       };
