@@ -170,10 +170,11 @@ flutter install -d <device-id> --debug
 1. **Collect TestFlight feedback** — `v0.1.1` (build 2) shipped 2026-04-21; IPA in Apple processing. Your iPhone friend is the first external tester. Their feedback steers priorities.
 2. **M5c remaining UX** — tutorial overlay (first 1–2s of first run), settings (music / haptics / control toggles). Pure code, no asset blocker.
 3. **M7a — Leaderboard integrity** (device-bound identity + server HMAC + admin endpoint). Before M6 public release. See [ROADMAP.md § M7a](ROADMAP.md).
-4. **M5b audio pass** — wire SFX per [AUDIO-GUIDE.md](AUDIO-GUIDE.md). Blocked on audio delivery.
-5. **M6b remaining** — splash screen, privacy policy, store listings. App icon ✅.
-6. **Investigate CodeMagic webhook** — tag-push trigger didn't fire on `v0.1.1`. Check app → repository integrations. Workaround in place (manual API trigger).
-7. **Design call on finite-hooch spill model** (see [ROADMAP.md § Design ideas to consider](ROADMAP.md)) — decide before M6 ship.
+4. **Obstacle + collectible asset refresh** — current root / rock / mushroom / log and herb / hops / potion SVGs (carried over from the web game) are the main visual mismatch against the Pine Hills pixel-art backdrop + gnome-pack character. Likely sourcing a free itch.io pixel-art prop pack and following the same curation workflow as gnomes / Pine Hills. Scope may expand to new obstacle/collectible kinds. See [ROADMAP.md § M5a](ROADMAP.md).
+5. **M5b audio pass** — wire SFX per [AUDIO-GUIDE.md](AUDIO-GUIDE.md). Blocked on audio delivery.
+6. **M6b remaining** — splash screen, privacy policy, store listings. App icon ✅.
+7. **Investigate CodeMagic webhook** — tag-push trigger didn't fire on `v0.1.1`. Check app → repository integrations. Workaround in place (manual API trigger).
+8. **Design call on finite-hooch spill model** (see [ROADMAP.md § Design ideas to consider](ROADMAP.md)) — decide before M6 ship.
 
 ## Infrastructure state (end of session)
 

@@ -88,6 +88,11 @@ Goal: make it feel and sound finished.
 - [x] **Sparkle particles** on collectible pickup — programmatic, tinted + size-scaled per `CollectibleKind` via `SparkleBurst` (herb green / hops gold / potion blue + expanding halo).
 - [x] **8-frame run cycle + full jump/hurt/dead arc** — derivative of `no_hat_gnome` frames from the purchased Game Developer Studio gnome pack. See [ART-PACK-INVENTORY.md](ART-PACK-INVENTORY.md) for license + inventory. Pipeline: `dart run tools/build_gurgles_sprites.dart` curates raw frames into `assets/images/gurgles/<anim>/`. Rendering is driven by `GurglesAnimator` state machine (`lib/components/gurgles_animator.dart`).
 - [x] **Hurt pose + dead pose** on game-over — 6-frame hurt animation plays after obstacle hit or spill, then holds on a single-frame dead pose until the overlay appears (unified 600 ms delay via `GameConfig.gameOverHurtDelayMs`).
+- [ ] **Obstacle + collectible visual refresh.** Current obstacle art (root / rock / mushroom / log SVGs from the web game) and collectible art (herb / hops / potion) are the main visual mismatch against the Pine Hills pixel-art parallax + gnome-pack character. Goal: source or commission new art that matches the pixel-art aesthetic. Likely path: find a free/commercial pixel-art asset pack on itch.io with forest props (mushrooms, rocks, logs, crystals, fruits) + drop relevant pieces into `assets/images/obstacles/` and `assets/images/collectibles/`. Scope may expand:
+  - Adding **new obstacle kinds** (e.g. thorns, puddles, falling branches, hanging vines) — requires new `ObstacleKind` enum values + hitbox authoring.
+  - Adding **new collectible kinds** (e.g. berries, mushrooms of different colours, crystal shards) — requires new `CollectibleKind` enum values + per-kind sparkle config + score values.
+  - Reusing the asset-curation pattern from [tools/build_gurgles_sprites.dart](../tools/build_gurgles_sprites.dart) if the new pack needs trimming/resizing.
+  - Art discipline per [ART-GUIDE.md](ART-GUIDE.md): maintain the hybrid pixel-art-background / smooth-cartoon-character style, OR commit fully to pixel-art for obstacles/collectibles (likely the cleaner choice given Pine Hills is already pixel-art).
 
 ### M5b — Audio
 
