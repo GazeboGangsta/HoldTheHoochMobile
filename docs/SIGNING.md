@@ -60,7 +60,7 @@ CodeMagic picks up the tag, runs `android-release`, publishes AAB.
 
 ### 2. Register the integration in CodeMagic
 
-CodeMagic UI → Teams → Integrations → App Store Connect → **Add**. Name it **`App Store Connect API Key`** (matches what `codemagic.yaml` references). Paste the Issuer ID, Key ID, and .p8 file contents.
+CodeMagic UI → Teams → Integrations → App Store Connect → **Add**. Name it **`GZBO`** (matches what `codemagic.yaml:195` references — was renamed 2026-04-20 to match the team-level integration). Paste the Issuer ID, Key ID, and .p8 file contents.
 
 ### 3. Ensure bundle id is registered
 
@@ -88,10 +88,50 @@ git push origin v1.0.0
 
 CodeMagic picks up the tag, runs `ios-release`, uploads the IPA to TestFlight. First upload takes 10–30 minutes for Apple to process before it's visible in TestFlight.
 
-### 6. First-build gotchas
+### 6. First-build signing (manual cert + profile uploads — do this BEFORE step 5)
 
-- Flutter iOS projects typically need `ios/Runner.xcodeproj` bundle identifier to match **exactly** what's in Apple Developer + App Store Connect. Our project pbxproj has `beer.gurgles.holdTheHooch` — double-check if iTunes rejects.
-- If `flutter build ipa` fails on missing provisioning profile, CodeMagic's managed-signing should auto-generate one. If it doesn't, switch `distribution_type` to `development` for the first run, confirm build works, then switch back.
+**CodeMagic's "automatic iOS code signing" does NOT work for first-time Apple Developer accounts** (confirmed 2026-04-21 — private-key generation silently fails, build loop burns hours). Skip the auto flow. Do this one-time manual setup instead:
+
+**Step A — Generate private key + CSR on Windows (OpenSSL, no Mac needed).**
+
+```bash
+# In a directory that's gitignored (we use ios-signing/ in the repo):
+openssl genrsa -out ios_distribution.key 2048
+MSYS_NO_PATHCONV=1 openssl req -new -key ios_distribution.key -out ios_distribution.csr \
+  -subj "/emailAddress=callum.siciliano@gmail.com/CN=Callum Siciliano/C=GB"
+```
+
+The `MSYS_NO_PATHCONV=1` prefix stops Git Bash from mangling the `/subj=` string into a path.
+
+**Step B — Get the cert from Apple.** Apple Developer portal → Certificates → **+** → Apple Distribution → upload `ios_distribution.csr` → download the resulting `ios_distribution.cer`.
+
+**Step C — Bundle cert + key into .p12 with a random password.**
+
+```bash
+openssl x509 -inform DER -in ios_distribution.cer -out ios_distribution.pem
+P12_PASS=$(openssl rand -base64 16 | tr -d '/+=')
+echo "$P12_PASS" > p12_password.txt   # save for the next step
+openssl pkcs12 -export -legacy \
+  -inkey ios_distribution.key \
+  -in ios_distribution.pem \
+  -out ios_distribution.p12 \
+  -passout pass:$P12_PASS
+```
+
+The `-legacy` flag is needed with OpenSSL 3+ for CodeMagic compatibility.
+
+**Step D — Upload .p12 to CodeMagic.** CodeMagic UI → Teams → **Code signing identities** → iOS certificates → **Add certificate**. Upload `ios_distribution.p12`, paste the password from `p12_password.txt`.
+
+**Step E — Create App Store provisioning profile at Apple.** Apple Developer portal → Profiles → **+** → Distribution → **App Store** → select bundle id → select the Apple Distribution cert from Step B → name it `HoldTheHooch App Store` → Generate. Download the `.mobileprovision`.
+
+**Step F — Upload .mobileprovision to CodeMagic.** CodeMagic UI → Teams → **Code signing identities** → iOS provisioning profiles → Upload the `.mobileprovision` from Step E.
+
+Now step 5 (tag + push) works — the canonical `ios_signing` block in `codemagic.yaml` finds both cert and profile in CodeMagic's team store and signs the IPA.
+
+### 7. Other first-build gotchas
+
+- Flutter iOS projects need `ios/Runner.xcodeproj` bundle identifier to match **exactly** what's in Apple Developer + App Store Connect. Our project pbxproj has `beer.gurgles.holdTheHooch` — double-check if Apple rejects.
+- If `fetch-signing-files --create` orphans a cert on Apple (creates it but can't save the private key), you'll see it in Apple Developer → Certificates with no local private key to pair it with. Revoke it before retrying or it'll get reused.
 
 ---
 

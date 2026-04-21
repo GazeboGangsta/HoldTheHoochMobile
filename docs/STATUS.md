@@ -1,6 +1,6 @@
 # Project Status — HoldTheHooch Mobile
 
-_Last updated: 2026-04-20 (post M5a particles close)_
+_Last updated: 2026-04-21 (first TestFlight IPA shipped; M7 leaderboard-integrity milestone added)_
 
 Snapshot of where the project is, what's working, what isn't, and what to pick up next session. Refreshed after a full-codebase review; known doc drift corrected.
 
@@ -41,7 +41,8 @@ See [docs/ROADMAP.md](ROADMAP.md) for the detailed per-milestone plan.
   - Potion spill-drain bonus: ✅ implemented (4× drain rate for 1 second).
   - Wobble amplitude scaling: ✅ implemented (1.0× → 1.7× over difficultyRampSeconds).
 - **M5 — Polish & assets** ⏳ Partial. Real SVGs in, parallax in, spill meter UI in, score popup in, tankard rotation tied to tilt, dedicated control strip with tilt + jump buttons, leaderboard scene live, splash + sparkle particles live (M5a). Still missing: SFX, run-cycle animation, hurt pose, tutorial overlay, settings.
-- **M6 — Store prep** ❌ Not started.
+- **M6 — Store prep** ⏳ First iOS build shipped to TestFlight on 2026-04-21 (closes M6a #1). Signing pipeline on CodeMagic (canonical `ios_signing` managed flow) now verified end-to-end with cert + profile uploaded to CodeMagic's team-level stores. Remaining M6a: decision on Xcode Cloud vs Actions macOS runner. M6b (branding + metadata) and M6c (release) not started.
+- **M7 — Leaderboard integrity** ❌ Not started. Planned before public M6 release — leaderboard currently accepts any unauthenticated `POST /api/scores`.
 
 ## Tech stack (as built)
 
@@ -155,26 +156,31 @@ flutter install -d <device-id> --debug
 - **Match Flame `backgroundColor()` to layered-SVG gradient tops.** `bg-mountains.svg` gradient starts at `#1A1A3E`; if Flame's canvas bg is anything else, you get a horizontal seam where the mountains layer begins.
 - **`ApiClient.fetchTop` now throws on failure** (used to silently return `[]`). Callers must catch or wrap in a `FutureBuilder` with error handling.
 - **Calling `parent?.add(child)` from inside `update()` causes `ConcurrentModificationError` in the test harness.** In tests without `GameWidget`, `FlameGame.isMounted` stays false so `Component.add` takes the direct-modify branch instead of the lifecycle queue. If you're already iterating the parent's children (and Flame is iterating yours via `updateTree`), the add mutates the live set. Workaround used in `SplashEmitter`: override `updateTree`, buffer adds in a `_pendingEmissions` list, flush after the children-iteration loop. Same class of issue `ScorePopup` sidesteps by computing motion in a custom `update` override rather than effects on `TextComponent`.
+- **CodeMagic's "automatic iOS code signing" is broken for first-time Apple Developer accounts.** The `ios_signing` declarative block claims it auto-creates the Distribution cert + App Store provisioning profile via the App Store Connect API key integration. In practice: (a) the pre-flight profile-existence check runs before any script does, (b) `app-store-connect fetch-signing-files --create` silently fails to save the generated private key (`"Cannot save Signing Certificates without certificate private key"`), leaving orphaned certs on Apple's side that can't be used for signing on subsequent runs. **The working path** (proven 2026-04-21): generate the RSA private key + CSR on Windows with OpenSSL, upload CSR to Apple Developer Portal → download `.cer` → combine cert+key into `.p12` → upload `.p12` to CodeMagic Code signing identities → manually create the App Store provisioning profile at Apple Developer Portal → upload the `.mobileprovision` to CodeMagic's profile store. Then the canonical `ios_signing` block finds both and just works. See [SIGNING.md](SIGNING.md) + `ios-signing/` for the full OpenSSL commands + files.
 
 ## Immediate next steps (in order)
 
-1. **M5a remaining polish** — 6-frame run cycle + hurt pose. Both art-dependent per [ART-GUIDE.md](ART-GUIDE.md); unblocked only when art lands.
-2. **M5b audio pass** — wire SFX per [AUDIO-GUIDE.md](AUDIO-GUIDE.md). Blocked on audio delivery.
-3. **M5c remaining UX** — tutorial overlay (first 1–2s of first run), settings (music / haptics / control toggles).
-4. **First iOS build on the MacBook** ahead of M6 store prep.
-5. **Design call on finite-hooch spill model** (see [ROADMAP.md § Design ideas to consider](ROADMAP.md)) — decide before M6 ship whether to swap the auto-drain spill mechanic for a finite-resource refill-via-collectibles model.
+1. **Collect TestFlight feedback** — first IPA (`1.0.0 (N)`, tag `v0.1.0`) shipped to App Store Connect on 2026-04-21; friend on iPhone is the first external tester. What they flag steers everything below.
+2. **M5c remaining UX** — tutorial overlay (first 1–2s of first run), settings (music / haptics / control toggles). Pure code, no asset blocker.
+3. **M7a — Leaderboard integrity (device-bound identity + server HMAC + admin endpoint)** — add before M6 public release. Covers the unauthenticated-submission + no-admin-tooling gaps surfaced on 2026-04-21. See [ROADMAP.md § M7a](ROADMAP.md).
+4. **M5b audio pass** — wire SFX per [AUDIO-GUIDE.md](AUDIO-GUIDE.md). Blocked on audio delivery.
+5. **M5a remaining polish** — 6-frame run cycle + hurt pose. Art-dependent per [ART-GUIDE.md](ART-GUIDE.md); unblocked only when art lands.
+6. **M6b store metadata** — app icon, splash screen, privacy policy, store listings. Blocked on having something worth publishing (TestFlight feedback loop).
+7. **Design call on finite-hooch spill model** (see [ROADMAP.md § Design ideas to consider](ROADMAP.md)) — decide before M6 ship whether to swap the auto-drain spill mechanic for a finite-resource refill-via-collectibles model.
 
 ## Infrastructure state (end of session)
 
 - GitHub repo: `https://github.com/GazeboGangsta/HoldTheHoochMobile` (public, default branch `main`).
 - GitHub wiki: `https://github.com/GazeboGangsta/HoldTheHoochMobile/wiki` (art + audio briefs mirrored).
 - Local CI: `.github/workflows/ci.yml` — analyze + test + debug APK on push/PR to main. Still useful as fast PR gate.
-- **CodeMagic pipeline live** (2026-04-20). App id `69e5621f551ec5674ead805e`. Four workflows in `codemagic.yaml`:
+- **CodeMagic pipeline live**. App id `69e5621f551ec5674ead805e`. Four workflows in `codemagic.yaml`:
   - `android-debug` (linux_x2) — push to main, ~2 min, produces APK. ✅ verified.
   - `ios-debug` (mac_mini_m2) — push to main, ~2m23s, produces `Runner.app.zip`. ✅ verified.
   - `android-release` (linux_x2) — tag `v*` triggered. Needs env group `android_signing`. Not yet exercised.
-  - `ios-release` (mac_mini_m2) — tag `v*` triggered. Needs App Store Connect API key integration + bundle id registration. Not yet exercised.
-  See [docs/SIGNING.md](SIGNING.md) for one-time setup of the release paths.
-- Samsung S26 Ultra: connected at `192.168.4.25:38097` for wireless debugging. Will need re-pair next session.
+  - `ios-release` (mac_mini_m2) — tag `v*` triggered. ✅ **verified end-to-end on 2026-04-21** — tag `v0.1.0` produces a signed IPA that uploads to TestFlight. Uses canonical `ios_signing` managed flow + manual one-time uploads of (a) `ios_distribution.p12` to CodeMagic Code signing identities and (b) the `beer.gurgles.holdTheHooch` App Store provisioning profile to CodeMagic's profile store (CodeMagic's documented auto-creation-via-API-key is broken for first-time accounts — see [Gotchas](#gotchas-dont-repeat-these)).
+  See [docs/SIGNING.md](SIGNING.md) for the one-time setup of the release paths.
+- Samsung S26 Ultra: connected at `adb-R5GL12X3ZXH-fontbc._adb-tls-connect._tcp` via mDNS auto-discovery (IP:port changes per wireless-debugging session; mDNS hostname is stable). Will need re-enable wireless debugging next session.
+- **Local signing artefacts** at `c:\apps\HoldTheHoochMobile\ios-signing\` (gitignored): `ios_distribution.key` (RSA private key, keep safe!), `ios_distribution.csr`, `ios_distribution.cer` (Apple Distribution cert), `ios_distribution.p12` (cert+key bundle uploaded to CodeMagic), `p12_password.txt`. Required for re-uploading the cert to CodeMagic if the team-level store is ever cleared.
+- `gurgles.beer` backend — no admin panel or reset endpoint; leaderboard clears currently require nudging the agent in the backend repo. Addressed by M7a.
 - All background build processes: stopped.
-- **Security:** the CodeMagic API token used this session was shared in the chat transcript. Rotate it at CodeMagic UI → Teams → Personal Access Tokens before sharing this conversation or moving on.
+- **Security:** the CodeMagic API token lives at `c:\apps\HoldTheHoochMobile\secret.md` (gitignored). Do NOT paste it into chat again — rotate via CodeMagic UI → Teams → Personal Access Tokens if ever leaked.

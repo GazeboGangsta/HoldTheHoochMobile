@@ -128,6 +128,35 @@ Per [AUDIO-GUIDE.md](AUDIO-GUIDE.md). Add `flame_audio` dep. Wire each as the SF
 - [ ] iOS: TestFlight build, App Store Connect listing.
 - [ ] Submit to both stores.
 
+## M7 — Leaderboard integrity ❌
+
+Ship before the public M6 store release so the leaderboard has basic integrity from day one. Two-stage plan: start with device-bound identity (cheapest, zero UX change), then layer OS-level attestation on top once that's in place.
+
+Current state: `POST /api/scores` on `gurgles.beer` accepts any `{name, score, platform, version}` body with no identity or rate limit. Anyone with `curl` can submit arbitrary scores, impersonate players, or spam the top-50. Confirmed during 2026-04-20 device playtests — leaderboard filled with `e`, `hdhd`, `geggd`, `tester` entries.
+
+### M7a — Device-bound identity + server HMAC
+
+Mobile side:
+- [ ] Generate a UUID on first launch, persist in SharedPreferences under `device_id`. Regenerate if the key is cleared.
+- [ ] Sign each submission payload (`{name, score, platform, version, device_id, timestamp}`) with a shared HMAC secret baked into the app binary.
+- [ ] Include `device_id`, `timestamp`, `signature` in the `POST /api/scores` request body.
+
+`gurgles.beer` backend (separate `HoldTheHooch` repo):
+- [ ] Store the HMAC secret as a server env var; reject any submission with a missing or invalid signature.
+- [ ] Per-`device_id` rate limit — at most 1 submission / 30 s, 20 / hour. Rate-limit rejections return `429` silently (don't leak the constraint).
+- [ ] Max-plausible-score sanity check (reject scores above a threshold tuned to realistic play — tune once we know the reachable ceiling).
+- [ ] **Admin endpoint** `POST /api/scores/reset` token-gated via an `ADMIN_TOKEN` env var. Closes the gap from 2026-04-20 (had to nudge the backend repo's agent to clear test entries manually).
+
+Blocks the casual-abuse tier: curl spam, keyboard-mashing at the submit endpoint, accidental double-submissions. Does **not** stop a determined attacker with the app binary — HMAC secret can be extracted from a decompiled APK/IPA. M7b addresses that.
+
+### M7b — OS-level attestation (after M7a is shipped)
+
+- [ ] **iOS**: Apple App Attest. Generate attestation key on first launch, register with `gurgles.beer`, include attestation assertion in each score submission. Server validates against Apple's endpoint.
+- [ ] **Android**: Play Integrity API. Client fetches integrity verdict per submission, server verifies against Google's endpoint.
+- [ ] Backend: both attestation verifiers supersede the M7a HMAC check. HMAC stays as a fallback for rare devices where attestation isn't available.
+
+Cryptographically proves each submission comes from a genuine iOS/Android device running our unmodified app binary. Significantly more work per platform than M7a but raises the abuse bar from "trivial" to "researcher-grade".
+
 ## Post-V1 ideas (not scheduled)
 
 - Haptics on jump / spill / collect.
