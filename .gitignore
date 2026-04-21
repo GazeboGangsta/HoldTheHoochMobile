@@ -45,3 +45,7 @@ ios-signing/
 # Raw third-party art packs (only curated frames land in assets/)
 art-source/
 gnomes.zip
+
+# Tooling / local-only
+coverage/
+.claude/settings.local.json
