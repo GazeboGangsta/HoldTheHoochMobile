@@ -70,11 +70,14 @@ class Gurgles extends PositionComponent with CollisionCallbacks {
     _body = SpriteAnimationComponent(
       animation: _animations[GurglesAnimation.run]!,
       size: size,
-      // +4 px Y offset plants the feet on the ground. The curation script
-      // adds 4 px anti-alias padding on all sides of the union bbox, so
-      // without this shift the character floats above groundY by the
-      // scaled-down padding height. Tuned by on-device playtest 2026-04-21.
-      position: Vector2(0, 4),
+      // +8 px Y offset plants the feet on the ground. Combines two effects:
+      // (1) 4 px anti-alias padding added by the curation script's union-bbox
+      // and (2) the staff in the source art extends below the feet, so the
+      // bottom-most content pixel is the staff tip, not the foot. Shifting
+      // further past (1) sinks the staff tip into the dirt strip (below grass)
+      // which reads as "planted walking stick" rather than "floating feet".
+      // Tuned by on-device playtest 2026-04-21.
+      position: Vector2(0, 8),
     );
     add(_body!);
 
