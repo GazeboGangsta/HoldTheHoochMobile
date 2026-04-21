@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Sprite Size Preview</title>
+<style>
+  * { box-sizing: border-box; }
+  body { display: flex; font-family: -apple-system, system-ui, sans-serif; margin: 0; height: 100vh; }
+  .sidebar { width: 460px; padding: 16px; overflow-y: auto; background: #f5f5f5; border-right: 1px solid #ccc; }
+  .sidebar h2 { margin: 0 0 8px 0; font-size: 18px; }
+  .sidebar .intro { font-size: 12px; color: #555; margin-bottom: 12px; line-height: 1.4; }
+  .preview-pane { flex: 1; display: flex; align-items: center; justify-content: center; background: #1a1a1a; }
+
+  /* Phone frame — same proportions as the Pine Hills preview tool. 360×780
+     is a mid-size phone aspect. Gurgles renders at size.y*0.18 = 140 px tall,
+     0.8 aspect = 112 px wide. Obstacles + collectibles render at their
+     _sizeFor values without sizeScale (sizeScale is ~1 on a 900px game
+     viewport; slight shrinkage on real devices). */
+  .phone {
+    position: relative; width: 360px; height: 780px;
+    overflow: hidden; background: #77B8DC;
+    border: 3px solid #000; border-radius: 28px;
+  }
+  .play-area { position: absolute; top: 0; left: 0; right: 0; height: 86%; overflow: hidden; }
+  .control-strip {
+    position: absolute; bottom: 0; left: 0; right: 0; height: 14%;
+    background: #2D1A0E;
+    display: flex; align-items: center; justify-content: space-between; padding: 0 24px;
+  }
+  .control-strip .btn {
+    width: 50px; height: 50px; border: 2px solid #D4A744; border-radius: 8px;
+    color: #D4A744; display: flex; align-items: center; justify-content: center;
+    font-size: 22px; background: #2D1A0E;
+  }
+
+  /* Static parallax backdrop — single positioned image per layer,
+     matching game_scene.dart layering so the scene reads the same. */
+  .bg-layer {
+    position: absolute; left: 0; right: 0;
+    background-repeat: no-repeat; background-size: 100% 100%;
+    image-rendering: pixelated; image-rendering: crisp-edges;
+  }
+
+  .gurgles {
+    position: absolute; bottom: 0; left: 22%;
+    width: 112px; height: 140px;
+    image-rendering: auto; /* Gurgles is smooth cartoon, not pixel-art */
+  }
+
+  /* Lineup of the current class's variants, to the right of Gurgles.
+     Each variant sits on the ground line at its current size. */
+  .variants {
+    position: absolute; bottom: 0; left: 45%; right: 0;
+    display: flex; flex-wrap: nowrap; align-items: flex-end;
+    gap: 8px; padding-left: 8px;
+    pointer-events: none;
+  }
+  .variant {
+    image-rendering: pixelated; image-rendering: crisp-edges;
+    flex-shrink: 0;
+  }
+  .variant-label {
+    position: absolute; bottom: -16px; left: 0;
+    font-size: 9px; color: #fff; text-shadow: 0 0 3px #000;
+    white-space: nowrap;
+  }
+
+  /* Sidebar controls */
+  .class-picker {
+    width: 100%; padding: 8px; font-size: 13px;
+    border: 1px solid #888; border-radius: 4px; background: #fff;
+    margin-bottom: 12px;
+  }
+  .control-row {
+    display: grid; grid-template-columns: 60px 1fr 56px;
+    gap: 8px; align-items: center; margin: 6px 0;
+  }
+  .control-row label { font-size: 12px; color: #333; }
+  .control-row input[type=range] { width: 100%; }
+  .control-row .val {
+    font-family: 'Consolas', monospace; font-size: 12px; text-align: right;
+    padding: 2px 6px; background: #fff; border: 1px solid #ccc; border-radius: 3px;
+  }
+  .variants-list {
+    margin-top: 12px; padding: 8px; background: #fff;
+    border: 1px solid #ddd; border-radius: 4px;
+  }
+  .variants-list h3 { margin: 0 0 6px 0; font-size: 12px; color: #666; text-transform: uppercase; letter-spacing: 0.5px; }
+  .variants-list label { display: block; font-size: 12px; margin: 2px 0; cursor: pointer; }
+  .current-size {
+    margin-top: 12px; padding: 10px; background: #e8f4ff;
+    border: 1px solid #b3d9ff; border-radius: 4px;
+    font-family: monospace; font-size: 12px;
+  }
+  .btn-row { display: flex; gap: 8px; margin: 16px 0 8px; }
+  .btn-row button {
+    padding: 8px 16px; cursor: pointer; border: 1px solid #888;
+    background: #fff; border-radius: 4px; font-size: 13px;
+  }
+  .btn-row button.primary { background: #4A90E2; color: #fff; border-color: #4A90E2; }
+  #config-output {
+    width: 100%; height: 260px; font-family: 'Consolas', monospace;
+    font-size: 11px; padding: 8px; border: 1px solid #888; border-radius: 4px;
+    white-space: pre; resize: vertical;
+  }
+</style>
+</head>
+<body>
+  <div class="sidebar">
+    <h2>📏 Sprite Size Preview</h2>
+    <p class="intro">
+      Pick a class, toggle the variants you want to see, tune width + height against Gurgles.
+      All toggled variants render at the current W×H so you can spot outliers.
+      Click <b>Copy Dart Config</b> to export all 9 classes' tuned sizes.
+    </p>
+
+    <select class="class-picker" id="class-picker"></select>
+
+    <div class="control-row">
+      <label>Width px</label>
+      <input type="range" id="w-slider" min="8" max="200" step="1">
+      <span class="val" id="w-val">40</span>
+    </div>
+    <div class="control-row">
+      <label>Height px</label>
+      <input type="range" id="h-slider" min="8" max="200" step="1">
+      <span class="val" id="h-val">40</span>
+    </div>
+
+    <div class="current-size" id="current-size">
+      Size: 40 × 40 · Gurgles reference: 112 × 140
+    </div>
+
+    <div class="variants-list" id="variants-list">
+      <h3>Variants (all on by default)</h3>
+    </div>
+
+    <div class="btn-row">
+      <button class="primary" id="copy-btn">📋 Copy Dart Config</button>
+      <button id="reset-btn">Reset class</button>
+      <button id="reset-all-btn">Reset all</button>
+    </div>
+    <textarea id="config-output" readonly placeholder="Click 'Copy Dart Config' to generate all 9 _sizeFor switch entries for Obstacle + Collectible."></textarea>
+  </div>
+
+  <div class="preview-pane">
+    <div class="phone">
+      <div class="play-area" id="play-area">
+        <!-- backdrop layers inserted here -->
+        <img class="gurgles" id="gurgles" src="../assets/images/gurgles/idle/000.png" alt="Gurgles" />
+        <div class="variants" id="variants"></div>
+      </div>
+      <div class="control-strip">
+        <div class="btn">◀</div>
+        <div class="btn">▶</div>
+        <div style="flex:1"></div>
+        <div class="btn">▲</div>
+      </div>
+    </div>
+  </div>
+
+<script>
+// ---------- Pine Hills static backdrop ----------
+// Re-render the game's parallax at the same layer positions, but static.
+const BG_ROOT = '../assets/third_party/pine_hills/png/';
+const BACKDROP_LAYERS = [
+  // {src, yPct, hPct}  — yPct + hPct as fractions of play area height.
+  { src: '00_background.png', yPct: 0,    hPct: 1.00 },
+  { src: '01_back clouds.png', yPct: 0,    hPct: 1.00 },
+  { src: '06_back_mountains.png', yPct: 0.25, hPct: 0.75 },
+  { src: '07_mid_hills.png', yPct: 0.35, hPct: 0.65 },
+  { src: '08_mid_forest.png', yPct: 0.45, hPct: 0.55 },
+  { src: '09_front_grass.png', yPct: 0.80, hPct: 0.20 },
+];
+
+function renderBackdrop() {
+  const playArea = document.getElementById('play-area');
+  for (const layer of BACKDROP_LAYERS) {
+    const el = document.createElement('div');
+    el.className = 'bg-layer';
+    el.style.top = (layer.yPct * 100) + '%';
+    el.style.height = (layer.hPct * 100) + '%';
+    el.style.backgroundImage = `url("${BG_ROOT}${encodeURI(layer.src)}")`;
+    playArea.insertBefore(el, document.getElementById('gurgles'));
+  }
+}
+
+// ---------- Class definitions ----------
+// Mirrors lib/components/obstacle.dart + lib/components/collectible.dart.
+// Each class has: label, default Vector2 (w, h), list of variant sprite paths.
+// Paths relative to tools/ → assets/images/... (uses `..` escape).
+function defaultClasses() {
+  return {
+    'obstacle.stone':        { label: 'Obstacle — stone',        w: 40,  h: 28,  paths: ['../assets/images/obstacles/stone.png'] },
+    'obstacle.rock':         { label: 'Obstacle — rock',         w: 72,  h: 60,  paths: ['../assets/images/obstacles/rock.png'] },
+    'obstacle.mushroom':     { label: 'Obstacle — mushroom',     w: 72,  h: 72,  paths: ['../assets/images/obstacles/mushroom/000.png'] },
+    'obstacle.log':          { label: 'Obstacle — log',          w: 140, h: 72,  paths: ['../assets/images/obstacles/log/000.png'] },
+    'collectible.fruitCommon': { label: 'Collectible — fruitCommon', w: 40, h: 40, paths: [
+      '../assets/images/collectibles/cherry.png',
+      '../assets/images/collectibles/strawberry.png',
+      '../assets/images/collectibles/tomato.png',
+    ]},
+    'collectible.fruitMedium': { label: 'Collectible — fruitMedium', w: 44, h: 44, paths: [
+      '../assets/images/collectibles/apple.png',
+      '../assets/images/collectibles/orange.png',
+      '../assets/images/collectibles/pumpkin.png',
+    ]},
+    'collectible.fruitRare':   { label: 'Collectible — fruitRare',   w: 48, h: 48, paths: [
+      '../assets/images/collectibles/golden_apple.png',
+    ]},
+    'collectible.crystal':     { label: 'Collectible — crystal',     w: 36, h: 36, paths: [
+      '../assets/images/collectibles/crystal/rose_quartz.png',
+      '../assets/images/collectibles/crystal/jasper.png',
+      '../assets/images/collectibles/crystal/citrine.png',
+      '../assets/images/collectibles/crystal/turquoise.png',
+      '../assets/images/collectibles/crystal/tiger_eye.png',
+      '../assets/images/collectibles/crystal/amethyst.png',
+      '../assets/images/collectibles/crystal/moonstone.png',
+      '../assets/images/collectibles/crystal/sapphire.png',
+      '../assets/images/collectibles/crystal/quartz.png',
+      '../assets/images/collectibles/crystal/bloodstone.png',
+    ]},
+    'collectible.potion':      { label: 'Collectible — potion',      w: 32, h: 48, paths: [
+      '../assets/images/collectibles/potion.png',
+    ]},
+  };
+}
+
+let classes = defaultClasses();
+// Per-class visibility of variants. Keys = class id, values = Set of path indices.
+const visibility = {};
+for (const [id, cfg] of Object.entries(classes)) {
+  visibility[id] = new Set(cfg.paths.map((_, i) => i));
+}
+
+let currentClass = 'obstacle.stone';
+
+// ---------- sidebar populate ----------
+function populateClassPicker() {
+  const picker = document.getElementById('class-picker');
+  picker.innerHTML = '';
+  for (const [id, cfg] of Object.entries(classes)) {
+    const opt = document.createElement('option');
+    opt.value = id;
+    opt.textContent = `${cfg.label} (${cfg.w}×${cfg.h})`;
+    picker.appendChild(opt);
+  }
+  picker.value = currentClass;
+}
+
+function renderControls() {
+  const cfg = classes[currentClass];
+  const wSlider = document.getElementById('w-slider');
+  const hSlider = document.getElementById('h-slider');
+  wSlider.value = cfg.w;
+  hSlider.value = cfg.h;
+  document.getElementById('w-val').textContent = cfg.w;
+  document.getElementById('h-val').textContent = cfg.h;
+  document.getElementById('current-size').textContent =
+    `Size: ${cfg.w} × ${cfg.h} · Gurgles reference: 112 × 140`;
+
+  // Rebuild variants list
+  const list = document.getElementById('variants-list');
+  list.innerHTML = '<h3>Variants</h3>';
+  cfg.paths.forEach((path, i) => {
+    const name = path.split('/').pop().replace('.png', '');
+    const checked = visibility[currentClass].has(i);
+    const label = document.createElement('label');
+    label.innerHTML = `<input type="checkbox" ${checked ? 'checked' : ''} data-idx="${i}"> ${name}`;
+    label.querySelector('input').addEventListener('change', e => {
+      if (e.target.checked) visibility[currentClass].add(i);
+      else visibility[currentClass].delete(i);
+      renderVariants();
+    });
+    list.appendChild(label);
+  });
+
+  // Also update the option text in the class picker so the size stays current.
+  const picker = document.getElementById('class-picker');
+  for (const opt of picker.options) {
+    const c = classes[opt.value];
+    opt.textContent = `${c.label} (${c.w}×${c.h})`;
+  }
+}
+
+function renderVariants() {
+  const cfg = classes[currentClass];
+  const container = document.getElementById('variants');
+  container.innerHTML = '';
+  cfg.paths.forEach((path, i) => {
+    if (!visibility[currentClass].has(i)) return;
+    const wrap = document.createElement('div');
+    wrap.style.position = 'relative';
+    wrap.style.width = cfg.w + 'px';
+    wrap.style.height = cfg.h + 'px';
+    const img = document.createElement('img');
+    img.className = 'variant';
+    img.src = path;
+    img.style.width = cfg.w + 'px';
+    img.style.height = cfg.h + 'px';
+    wrap.appendChild(img);
+    const label = document.createElement('div');
+    label.className = 'variant-label';
+    label.textContent = path.split('/').pop().replace('.png', '');
+    wrap.appendChild(label);
+    container.appendChild(wrap);
+  });
+}
+
+// ---------- event wiring ----------
+document.getElementById('class-picker').addEventListener('change', e => {
+  currentClass = e.target.value;
+  renderControls();
+  renderVariants();
+});
+
+document.getElementById('w-slider').addEventListener('input', e => {
+  classes[currentClass].w = +e.target.value;
+  document.getElementById('w-val').textContent = e.target.value;
+  document.getElementById('current-size').textContent =
+    `Size: ${classes[currentClass].w} × ${classes[currentClass].h} · Gurgles reference: 112 × 140`;
+  renderVariants();
+  renderControls();   // refresh class-picker option text
+});
+
+document.getElementById('h-slider').addEventListener('input', e => {
+  classes[currentClass].h = +e.target.value;
+  document.getElementById('h-val').textContent = e.target.value;
+  document.getElementById('current-size').textContent =
+    `Size: ${classes[currentClass].w} × ${classes[currentClass].h} · Gurgles reference: 112 × 140`;
+  renderVariants();
+  renderControls();
+});
+
+document.getElementById('reset-btn').addEventListener('click', () => {
+  const defaults = defaultClasses()[currentClass];
+  classes[currentClass].w = defaults.w;
+  classes[currentClass].h = defaults.h;
+  visibility[currentClass] = new Set(defaults.paths.map((_, i) => i));
+  renderControls();
+  renderVariants();
+});
+
+document.getElementById('reset-all-btn').addEventListener('click', () => {
+  if (!confirm('Reset all classes to default sizes?')) return;
+  classes = defaultClasses();
+  for (const [id, cfg] of Object.entries(classes)) {
+    visibility[id] = new Set(cfg.paths.map((_, i) => i));
+  }
+  populateClassPicker();
+  renderControls();
+  renderVariants();
+});
+
+// ---------- config export ----------
+function generateDartConfig() {
+  const lines = [];
+  lines.push('// Generated by tools/sprite-size-preview.html');
+  lines.push('// Paste into lib/components/obstacle.dart and lib/components/collectible.dart.');
+  lines.push('');
+  lines.push('// ---- lib/components/obstacle.dart ----');
+  lines.push('  static Vector2 _sizeFor(ObstacleKind k) => switch (k) {');
+  lines.push(`        ObstacleKind.stone => Vector2(${classes['obstacle.stone'].w}, ${classes['obstacle.stone'].h}),`);
+  lines.push(`        ObstacleKind.rock => Vector2(${classes['obstacle.rock'].w}, ${classes['obstacle.rock'].h}),`);
+  lines.push(`        ObstacleKind.mushroom => Vector2(${classes['obstacle.mushroom'].w}, ${classes['obstacle.mushroom'].h}),`);
+  lines.push(`        ObstacleKind.log => Vector2(${classes['obstacle.log'].w}, ${classes['obstacle.log'].h}),`);
+  lines.push('      };');
+  lines.push('');
+  lines.push('// ---- lib/components/collectible.dart ----');
+  lines.push('  static Vector2 _sizeFor(CollectibleKind k) => switch (k) {');
+  lines.push(`        CollectibleKind.fruitCommon => Vector2(${classes['collectible.fruitCommon'].w}, ${classes['collectible.fruitCommon'].h}),`);
+  lines.push(`        CollectibleKind.fruitMedium => Vector2(${classes['collectible.fruitMedium'].w}, ${classes['collectible.fruitMedium'].h}),`);
+  lines.push(`        CollectibleKind.fruitRare => Vector2(${classes['collectible.fruitRare'].w}, ${classes['collectible.fruitRare'].h}),`);
+  lines.push(`        CollectibleKind.crystal => Vector2(${classes['collectible.crystal'].w}, ${classes['collectible.crystal'].h}),`);
+  lines.push(`        CollectibleKind.potion => Vector2(${classes['collectible.potion'].w}, ${classes['collectible.potion'].h}),`);
+  lines.push('      };');
+  return lines.join('\n');
+}
+
+document.getElementById('copy-btn').addEventListener('click', () => {
+  const dart = generateDartConfig();
+  document.getElementById('config-output').value = dart;
+  if (navigator.clipboard) navigator.clipboard.writeText(dart).catch(() => {});
+});
+
+// ---------- init ----------
+renderBackdrop();
+populateClassPicker();
+renderControls();
+renderVariants();
+</script>
+</body>
+</html>
