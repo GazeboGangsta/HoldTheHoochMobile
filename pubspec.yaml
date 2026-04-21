@@ -74,6 +74,7 @@ flutter:
     - assets/images/gurgles/jump_land/
     - assets/images/gurgles/hurt/
     - assets/images/gurgles/dead/
+    - assets/third_party/pine_hills/png/
     - assets/audio/
 
   # An image asset can refer to one or more resolution-specific "variants", see
