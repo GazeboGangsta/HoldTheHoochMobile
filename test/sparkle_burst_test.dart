@@ -7,30 +7,30 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   group('SparkleBurst.configFor', () {
-    test('particle counts strictly ordered herb < hops < potion', () {
-      expect(SparkleBurst.configFor(CollectibleKind.herb).count,
-          lessThan(SparkleBurst.configFor(CollectibleKind.hops).count));
-      expect(SparkleBurst.configFor(CollectibleKind.hops).count,
+    test('particle counts strictly ordered fruitCommon < fruitMedium < potion', () {
+      expect(SparkleBurst.configFor(CollectibleKind.fruitCommon).count,
+          lessThan(SparkleBurst.configFor(CollectibleKind.fruitMedium).count));
+      expect(SparkleBurst.configFor(CollectibleKind.fruitMedium).count,
           lessThan(SparkleBurst.configFor(CollectibleKind.potion).count));
     });
 
-    test('radii strictly ordered herb < hops < potion', () {
-      expect(SparkleBurst.configFor(CollectibleKind.herb).radius,
-          lessThan(SparkleBurst.configFor(CollectibleKind.hops).radius));
-      expect(SparkleBurst.configFor(CollectibleKind.hops).radius,
+    test('radii strictly ordered fruitCommon < fruitMedium < potion', () {
+      expect(SparkleBurst.configFor(CollectibleKind.fruitCommon).radius,
+          lessThan(SparkleBurst.configFor(CollectibleKind.fruitMedium).radius));
+      expect(SparkleBurst.configFor(CollectibleKind.fruitMedium).radius,
           lessThan(SparkleBurst.configFor(CollectibleKind.potion).radius));
     });
 
-    test('lifespans strictly ordered herb < hops < potion', () {
-      expect(SparkleBurst.configFor(CollectibleKind.herb).lifespan,
-          lessThan(SparkleBurst.configFor(CollectibleKind.hops).lifespan));
-      expect(SparkleBurst.configFor(CollectibleKind.hops).lifespan,
+    test('lifespans strictly ordered fruitCommon < fruitMedium < potion', () {
+      expect(SparkleBurst.configFor(CollectibleKind.fruitCommon).lifespan,
+          lessThan(SparkleBurst.configFor(CollectibleKind.fruitMedium).lifespan));
+      expect(SparkleBurst.configFor(CollectibleKind.fruitMedium).lifespan,
           lessThan(SparkleBurst.configFor(CollectibleKind.potion).lifespan));
     });
 
-    test('colours are distinct across kinds', () {
-      final h = SparkleBurst.configFor(CollectibleKind.herb).colour;
-      final o = SparkleBurst.configFor(CollectibleKind.hops).colour;
+    test('colours are distinct across fruitCommon, fruitMedium, potion', () {
+      final h = SparkleBurst.configFor(CollectibleKind.fruitCommon).colour;
+      final o = SparkleBurst.configFor(CollectibleKind.fruitMedium).colour;
       final p = SparkleBurst.configFor(CollectibleKind.potion).colour;
       expect(h, isNot(equals(o)));
       expect(o, isNot(equals(p)));

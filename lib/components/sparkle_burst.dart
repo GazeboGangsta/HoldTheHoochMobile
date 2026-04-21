@@ -7,8 +7,10 @@ import '../config/game_config.dart';
 import 'collectible.dart';
 
 /// Fire-and-forget sparkle burst played on collectible pickup. Tinted and
-/// sized per [CollectibleKind]: herb = small green, hops = medium gold,
+/// sized per [CollectibleKind]: fruitCommon = small green, fruitMedium = medium gold,
 /// potion = large blue plus an expanding halo ring.
+/// fruitRare and crystal temporarily share the potion config — Task 5 adds
+/// fully-fleshed configs for them.
 class SparkleBurst {
   static final Random _rng = Random();
 
@@ -32,18 +34,22 @@ class SparkleBurst {
     CollectibleKind kind,
   ) =>
       switch (kind) {
-        CollectibleKind.herb => (
+        CollectibleKind.fruitCommon => (
             count: 6,
             radius: 4.0,
             colour: const Color(0xFF4CAF50),
             lifespan: 0.5,
           ),
-        CollectibleKind.hops => (
+        CollectibleKind.fruitMedium => (
             count: 10,
             radius: 6.0,
             colour: const Color(0xFFFFD700),
             lifespan: 0.7,
           ),
+        // fruitRare and crystal get proper configs in Task 5; use potion config
+        // as a temporary fallback so the tree compiles and existing tests pass.
+        CollectibleKind.fruitRare ||
+        CollectibleKind.crystal ||
         CollectibleKind.potion => (
             count: 16,
             radius: 8.0,

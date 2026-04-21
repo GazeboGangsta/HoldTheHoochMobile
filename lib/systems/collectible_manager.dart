@@ -39,11 +39,12 @@ class CollectibleManager extends Component {
     }
   }
 
-  /// Weighted kind roll: herb 70%, hops 25%, potion 5%.
+  /// Weighted kind roll: fruitCommon 70%, fruitMedium 25%, potion 5%.
+  /// Task 6 expands to a 5-way roll including fruitRare and crystal.
   CollectibleKind _rollKind() {
     final r = _rng.nextDouble();
-    if (r < 0.70) return CollectibleKind.herb;
-    if (r < 0.95) return CollectibleKind.hops;
+    if (r < 0.70) return CollectibleKind.fruitCommon;
+    if (r < 0.95) return CollectibleKind.fruitMedium;
     return CollectibleKind.potion;
   }
 
@@ -51,21 +52,27 @@ class CollectibleManager extends Component {
   /// (gravity 2800, max velocity -720 → peak ~92px, plus ~116px of body
   /// clearance above his feet = ~208px reach above ground) can intersect
   /// each tier.
-  /// - herb: free grab at ground level
-  /// - hops: partial jump
-  /// - potion: full-hold jump
+  /// - fruitCommon: free grab at ground level
+  /// - fruitMedium: partial jump
+  /// - fruitRare: partial jump (same tier as fruitMedium for now)
+  /// - crystal / potion: full-hold jump
   double _heightForKind(CollectibleKind k) {
     return switch (k) {
-      CollectibleKind.herb => groundY - 50.0 * sizeScale,
-      CollectibleKind.hops => groundY - 120.0 * sizeScale,
+      CollectibleKind.fruitCommon => groundY - 50.0 * sizeScale,
+      CollectibleKind.fruitMedium => groundY - 120.0 * sizeScale,
+      CollectibleKind.fruitRare => groundY - 120.0 * sizeScale,
+      CollectibleKind.crystal => groundY - 180.0 * sizeScale,
       CollectibleKind.potion => groundY - 180.0 * sizeScale,
     };
   }
 
   void _spawn() {
     final kind = _rollKind();
+    final paths = Collectible.spritePathsFor(kind);
+    final spritePath = paths[_rng.nextInt(paths.length)];
     final c = Collectible(
       kind: kind,
+      spritePath: spritePath,
       position: Vector2(worldWidthProvider() + 80, _heightForKind(kind)),
       scrollSpeed: scrollSpeedProvider(),
       onPickup: (pts, at) => onPickup(pts, at, kind),

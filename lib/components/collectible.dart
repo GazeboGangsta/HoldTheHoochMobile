@@ -1,13 +1,20 @@
 import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
 import 'package:flutter/foundation.dart' show VoidCallback, visibleForTesting;
-import 'package:flame_svg/flame_svg.dart';
 import 'gurgles.dart';
 
-enum CollectibleKind { herb, hops, potion }
+/// Collectible tiers, rolled with weighted RNG by [CollectibleManager]:
+/// - fruitCommon: strawberry / cherry / tomato (10 pts, ground tier).
+/// - fruitMedium: apple / orange / pumpkin (50 pts, partial-jump tier).
+/// - fruitRare: golden apple (100 pts, partial-jump tier).
+/// - crystal: 10 gem variants (150 pts, full-jump tier).
+/// - potion: single Onocentaur bottle (200 pts, full-jump tier, grants
+///   1-second 4× spill-drain bonus).
+enum CollectibleKind { fruitCommon, fruitMedium, fruitRare, crystal, potion }
 
 class Collectible extends PositionComponent with CollisionCallbacks {
   final CollectibleKind kind;
+  final String spritePath;
   final void Function(int points, Vector2 worldPos) onPickup;
   final VoidCallback? _grantPotionBonus;
   double scrollSpeed;
@@ -15,6 +22,7 @@ class Collectible extends PositionComponent with CollisionCallbacks {
 
   Collectible({
     required this.kind,
+    required this.spritePath,
     required Vector2 position,
     required this.scrollSpeed,
     required this.onPickup,
@@ -28,26 +36,59 @@ class Collectible extends PositionComponent with CollisionCallbacks {
         );
 
   static Vector2 _sizeFor(CollectibleKind k) => switch (k) {
-        CollectibleKind.herb => Vector2(48, 48),
-        CollectibleKind.hops => Vector2(48, 56),
-        CollectibleKind.potion => Vector2(40, 56),
+        CollectibleKind.fruitCommon => Vector2(40, 40),
+        CollectibleKind.fruitMedium => Vector2(44, 44),
+        CollectibleKind.fruitRare => Vector2(48, 48),
+        CollectibleKind.crystal => Vector2(36, 36),
+        CollectibleKind.potion => Vector2(32, 48),
       };
 
-  static String _svgFor(CollectibleKind k) => switch (k) {
-        CollectibleKind.herb => 'svg/herb.svg',
-        CollectibleKind.hops => 'svg/hops.svg',
-        CollectibleKind.potion => 'svg/potion.svg',
+  /// List of sprite asset paths available for each kind. Manager picks one
+  /// uniformly at random per spawn, so kinds with multiple entries (e.g.
+  /// fruitCommon, crystal) get visual variety for free while behaviour
+  /// stays kind-driven.
+  static List<String> spritePathsFor(CollectibleKind k) => switch (k) {
+        CollectibleKind.fruitCommon => const [
+            'collectibles/cherry.png',
+            'collectibles/strawberry.png',
+            'collectibles/tomato.png',
+          ],
+        CollectibleKind.fruitMedium => const [
+            'collectibles/apple.png',
+            'collectibles/orange.png',
+            'collectibles/pumpkin.png',
+          ],
+        CollectibleKind.fruitRare => const [
+            'collectibles/golden_apple.png',
+          ],
+        CollectibleKind.crystal => const [
+            'collectibles/crystal/rose_quartz.png',
+            'collectibles/crystal/jasper.png',
+            'collectibles/crystal/citrine.png',
+            'collectibles/crystal/turquoise.png',
+            'collectibles/crystal/tiger_eye.png',
+            'collectibles/crystal/amethyst.png',
+            'collectibles/crystal/moonstone.png',
+            'collectibles/crystal/sapphire.png',
+            'collectibles/crystal/quartz.png',
+            'collectibles/crystal/bloodstone.png',
+          ],
+        CollectibleKind.potion => const ['collectibles/potion.png'],
       };
 
   static int pointsFor(CollectibleKind k) => switch (k) {
-        CollectibleKind.herb => 10,
-        CollectibleKind.hops => 50,
+        CollectibleKind.fruitCommon => 10,
+        CollectibleKind.fruitMedium => 50,
+        CollectibleKind.fruitRare => 100,
+        CollectibleKind.crystal => 150,
         CollectibleKind.potion => 200,
       };
 
+  @visibleForTesting
+  static bool grantsSpillDrain(CollectibleKind k) => k == CollectibleKind.potion;
+
   /// Active hitbox for pickup detection. 90% of sprite, centered via 5% inset
-  /// on each side, so edge-grazes don't award points and clipping-in visually
-  /// always corresponds to a real pickup.
+  /// on each side.
   @visibleForTesting
   static ({Vector2 pos, Vector2 size}) hitboxFor(Vector2 spriteSize) => (
         pos: Vector2(spriteSize.x * 0.05, spriteSize.y * 0.05),
@@ -56,11 +97,8 @@ class Collectible extends PositionComponent with CollisionCallbacks {
 
   @override
   Future<void> onLoad() async {
-    final svg = await Svg.load(_svgFor(kind));
-    add(SvgComponent(svg: svg, size: size));
-    // Active hitbox (default) so Collectible.onCollisionStart fires when
-    // Gurgles overlaps — with passive we'd only get the callback on
-    // Gurgles' side and onPickup would never run.
+    final sprite = await Sprite.load(spritePath);
+    add(SpriteComponent(sprite: sprite, size: size));
     final hb = hitboxFor(size);
     add(RectangleHitbox(size: hb.size, position: hb.pos));
   }
@@ -73,12 +111,13 @@ class Collectible extends PositionComponent with CollisionCallbacks {
   }
 
   @override
-  void onCollisionStart(Set<Vector2> intersectionPoints, PositionComponent other) {
+  void onCollisionStart(
+      Set<Vector2> intersectionPoints, PositionComponent other) {
     super.onCollisionStart(intersectionPoints, other);
     if (_consumed || other is! Gurgles) return;
     _consumed = true;
     onPickup(pointsFor(kind), position.clone());
-    if (kind == CollectibleKind.potion) {
+    if (grantsSpillDrain(kind)) {
       _grantPotionBonus?.call();
     }
     removeFromParent();

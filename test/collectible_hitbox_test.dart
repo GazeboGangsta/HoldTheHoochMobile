@@ -5,9 +5,11 @@ import 'package:hold_the_hooch/components/collectible.dart';
 void main() {
   group('Collectible hitbox is a strict subset of the sprite rect', () {
     final sizes = [
-      Vector2(48, 48),   // herb reference size
-      Vector2(48, 56),   // hops
-      Vector2(40, 56),   // potion
+      Vector2(40, 40),   // fruitCommon reference size
+      Vector2(44, 44),   // fruitMedium
+      Vector2(48, 48),   // fruitRare (golden apple)
+      Vector2(36, 36),   // crystal (small gems)
+      Vector2(32, 48),   // potion (tall bottle)
       Vector2(100, 100), // arbitrary scale
     ];
 

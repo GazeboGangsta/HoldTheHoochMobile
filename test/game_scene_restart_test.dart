@@ -33,7 +33,7 @@ void main() {
     game.add(_StubCollectible());
     game.add(ScorePopup(points: 10, position: Vector2(50, 50)));
     await game.ready();
-    game.add(SparkleBurst.emit(CollectibleKind.herb, Vector2(25, 25)));
+    game.add(SparkleBurst.emit(CollectibleKind.fruitCommon, Vector2(25, 25)));
     await game.ready();
 
     expect(game.children.whereType<Obstacle>(), isNotEmpty);
@@ -87,7 +87,8 @@ class _StubObstacle extends Obstacle {
 class _StubCollectible extends Collectible {
   _StubCollectible()
       : super(
-          kind: CollectibleKind.herb,
+          kind: CollectibleKind.fruitCommon,
+          spritePath: 'collectibles/cherry.png',
           position: Vector2.zero(),
           scrollSpeed: 0,
           onPickup: _noop,
