@@ -55,3 +55,8 @@ coverage/
 # Ad-hoc working dir for asset-pack staging before curation. Contents
 # move to assets/third_party/ when they're ready to ship.
 temp/
+
+# Clipboard-dump files from tools/sprite-size-preview.html and
+# sprite-hitbox-preview.html. User pastes tuning output here; not tracked.
+size.md
+hitbox.md

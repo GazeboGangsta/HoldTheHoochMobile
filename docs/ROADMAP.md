@@ -85,7 +85,7 @@ Goal: make it feel and sound finished.
 - [x] Score popup on collectible pickup (⚠️ crashes — fix in M4a).
 - [x] **Tankard rotation** tied to `balance.tilt` — visual feedback of how close to spilling. Rotate `_tankard` in `Gurgles.update`: `_tankard.angle = balance.tilt * 0.6` (~35° max lean).
 - [x] **Splash particles** on spill — programmatic emission via `SplashEmitter` (hybrid burst + reactive trickle + dramatic game-over flourish, all from the tankard rim).
-- [x] **Sparkle particles** on collectible pickup — programmatic, tinted + size-scaled per `CollectibleKind` via `SparkleBurst` (herb green / hops gold / potion blue + expanding halo).
+- [x] **Sparkle particles** on collectible pickup — programmatic, tinted + size-scaled per `CollectibleKind` via `SparkleBurst`. 5 tiers: red / orange / gold / purple+halo / blue+halo.
 - [x] **8-frame run cycle + full jump/hurt/dead arc** — derivative of `no_hat_gnome` frames from the purchased Game Developer Studio gnome pack. See [ART-PACK-INVENTORY.md](ART-PACK-INVENTORY.md) for license + inventory. Pipeline: `dart run tools/build_gurgles_sprites.dart` curates raw frames into `assets/images/gurgles/<anim>/`. Rendering is driven by `GurglesAnimator` state machine (`lib/components/gurgles_animator.dart`).
 - [x] **Hurt pose + dead pose** on game-over — 6-frame hurt animation plays after obstacle hit or spill, then holds on a single-frame dead pose until the overlay appears (unified 600 ms delay via `GameConfig.gameOverHurtDelayMs`).
 - [x] **Obstacle + collectible visual refresh** — pixel-art swap for all obstacles + collectibles. `ObstacleKind` now `{ stone, rock, mushroom, log }` (dropped `root`, added `stone`; mushroom + log animated). `CollectibleKind` now `{ fruitCommon, fruitMedium, fruitRare, crystal, potion }` (renamed + 2 new tiers). Sprites sliced from Nature Full atlas + Onocentaur potions + Mushrooms pack + individual fruit/veg files — see [OBSTACLE-COLLECTIBLE-ASSETS.md](../docs/OBSTACLE-COLLECTIBLE-ASSETS.md) for the full inventory and [docs/superpowers/plans/2026-04-21-obstacle-collectible-refresh.md](superpowers/plans/2026-04-21-obstacle-collectible-refresh.md) for the implementation plan.
@@ -95,7 +95,7 @@ Goal: make it feel and sound finished.
 Per [AUDIO-GUIDE.md](AUDIO-GUIDE.md). Add `flame_audio` dep. Wire each as the SFX arrives:
 - [ ] `sfx-jump.wav` on `handleJumpDown`.
 - [ ] `sfx-land.wav` on Gurgles' onGround transition.
-- [ ] `sfx-collect-herb/hops/potion.wav` on pickup.
+- [ ] `sfx-collect-fruit.wav` (or per-tier variants) on fruit/crystal/potion pickup.
 - [ ] `sfx-spill-warning.wav` on first crossing of `spillThreshold`.
 - [ ] `sfx-spill-game-over.wav` on spill death.
 - [ ] `sfx-collision.wav` on obstacle hit.

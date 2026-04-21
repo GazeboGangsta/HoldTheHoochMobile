@@ -47,7 +47,7 @@ The config block is in `pubspec.yaml` under `flutter_launcher_icons:`. Android u
   - `log/000.png…003.png` — 4-frame animated sway sliced from `Log_sprite.png`.
 - **Collectibles** (5 kinds at `assets/images/collectibles/`):
   - `fruitCommon` variants: `cherry.png`, `strawberry.png`, `tomato.png` (10 pts).
-  - `fruitMedium` variants: `apple.png`, `orange.png`, `pumpkin.png` (25 pts).
+  - `fruitMedium` variants: `apple.png`, `orange.png`, `pumpkin.png` (50 pts).
   - `fruitRare`: `golden_apple.png` (100 pts).
   - `crystal/` variants (10): `rose_quartz`, `jasper`, `citrine`, `turquoise`, `tiger_eye`, `amethyst`, `moonstone`, `sapphire`, `quartz`, `bloodstone` (150 pts) — sliced from Nature Full atlas row 10.
   - `potion.png` — single Onocentaur red heart-bottle (200 pts + 1s 4× spill-drain).

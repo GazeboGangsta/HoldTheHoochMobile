@@ -18,7 +18,7 @@ Gurgles runs on a real 8-frame sprite animation derived from the `no_hat_gnome` 
 - **Tankard visually leans** with `balance.tilt` (up to ~34°) so the player can see which way the hooch is tipping.
 - Passive hooch wobble builds tilt over time; every jump adds a random tilt impulse.
 - **Spill meter** (red bar below score) fills when `|tilt| > 0.7` and drains when `|tilt| < 0.4`. 100% = game over.
-- **Obstacles** — 4 kinds, weighted spawn: stone 35% (small 40×28 tripping stones), rock 25% (72×60), mushroom 20% (72×72, 8-frame bob animation), log 20% (140×72, 4-frame sway animation). Pixel-art from the Mushrooms / props packs. Per-kind tight hitboxes tuned against the actual sprite silhouette (`lib/components/obstacle.dart:hitboxFor`).
+- **Obstacles** — 4 kinds, weighted spawn: stone 35% (60×49 tripping stone), rock 25% (109×124, planted 30 px into dirt), mushroom 20% (82×82, 8-frame bob animation), log 20% (150×82, planted 17 px into dirt, 4-frame sway animation). Pixel-art from the Mushrooms / props packs. Per-kind tight hitboxes tuned against the actual sprite silhouette (`lib/components/obstacle.dart:hitboxFor`). `Obstacle.yOffsetFor` sinks rock + log below groundY so tall shapes read as "planted" rather than "floating".
 - **Collectibles** — 5 kinds, weighted spawn: fruitCommon 55% (cherry / strawberry / tomato, 3 visual variants, 10 pts), fruitMedium 25% (apple / orange / pumpkin, 50 pts), fruitRare 10% (golden apple, 100 pts), crystal 5% (10 gem variants from Nature Full, 150 pts), potion 5% (Onocentaur red heart-bottle, 200 pts + grants 1s 4× spill-drain). Sparkle bursts colour-coded per tier: red → orange → gold → purple → blue. Crystal + potion get expanding halo rings on pickup.
 - **Parallax**: 13-layer Pine Hills dusk-forest backdrop — sky gradient → back cloud field → 4 independent-speed drift clouds (8/14/22 px/s + one -10 px/s counter-breeze) → back mountains (0.12×) → mid hills (0.22×) → mid forest (0.40×) → front_trees2 (0.86×, behind Gurgles) → front_trees1 (0.85×, behind Gurgles) → front_grass (1.0×, behind Gurgles) → **[Gurgles]** → front_leafs (1.0×, only layer in front of player). Free asset pack from myaumya.itch.io, license bundled. 320×180 pixel-art, rendered with `FilterQuality.none` for crisp scaling.
 - Dusk sky backdrop (`backgroundColor = 0xFF77B8DC`, matched to Pine Hills `00_background.png` top gradient). Replaces the previous `#1A1A3E` night-navy.
@@ -27,7 +27,7 @@ Gurgles runs on a real 8-frame sprite animation derived from the `no_hat_gnome` 
 - **Game Over** overlay shows score, persists best-score locally, submits to `gurgles.beer` (silently; offline still shows score but is **not** queued for retry despite [docs/BACKEND.md](BACKEND.md) promising otherwise).
 - **Leaderboard** — menu button → scrollable top-50 list from `gurgles.beer`, pull-to-refresh, current player rows highlighted.
 - **Splash particles** — amber droplets with occasional cream highlights burst from the tankard rim whenever the hooch tilts into the spill zone; emission rate scales with how far past threshold the tilt sits. On spill-death a 30-droplet burst plays for 600ms before the game-over overlay appears — currently subtle on-device, a full-screen "death" effect is queued in [ROADMAP.md § Post-V1 ideas](ROADMAP.md).
-- **Sparkle particles** — kind-specific bursts on collectible pickup: 6 small green for herb, 10 mid gold for hops, 16 large blue plus an expanding halo ring for potion.
+- **Sparkle particles** — kind-specific bursts on collectible pickup, 5 tiers: 6 small red (fruitCommon) → 8 small orange (fruitMedium) → 10 mid gold (fruitRare) → 14 mid purple + expanding halo (crystal) → 16 large blue + expanding halo (potion).
 
 ## Milestone progress
 
@@ -38,7 +38,7 @@ See [docs/ROADMAP.md](ROADMAP.md) for the detailed per-milestone plan.
 - **M3 — Hooch balance** ✅ Complete.
 - **M4 — Content pass** ✅ Complete.
   - All 4 obstacle kinds: ✅ in, hitboxes tuned.
-  - Collectibles (herb/hops/potion): ✅ working, three reachable tiers, score popup on pickup.
+  - Collectibles (5 kinds: fruitCommon/fruitMedium/fruitRare/crystal/potion): ✅ working, four reachable height tiers, score popup on pickup.
   - Score multiplier (+0.1x per 10s, capped 3x): ✅ implemented.
   - Potion spill-drain bonus: ✅ implemented (4× drain rate for 1 second).
   - Wobble amplitude scaling: ✅ implemented (1.0× → 1.7× over difficultyRampSeconds).
@@ -64,7 +64,7 @@ lib/
     hooch_balance.dart                # pure state: tilt + spill, passive wobble
     ground.dart                       # tiled bg-ground.svg strip at screen bottom
     obstacle.dart                     # 4 kinds, per-kind RectangleHitbox sizing
-    collectible.dart                  # 3 kinds (herb/hops/potion), active hitbox
+    collectible.dart                  # 5 kinds (fruitCommon/fruitMedium/fruitRare/crystal/potion), active hitbox, per-kind sprite-variant RNG
     parallax_bg.dart                  # hand-rolled tiled SVG parallax layer
     spill_meter.dart                  # red fill bar driven by balance.spillPercent
     score_popup.dart                  # floating +N text on pickup
