@@ -79,7 +79,7 @@ Goal: make it feel and sound finished.
 ### M5a — Visuals
 
 - [x] Real SVGs from web game (Gurgles, hooch, obstacles, parallax).
-- [x] Parallax background (mountains + trees).
+- [x] **13-layer Pine Hills parallax** — dusk-forest backdrop from [myaumya.itch.io](https://myaumya.itch.io/pine-hills-background) (free, commercial-OK license). Sky + 4 independent-speed drift clouds + mountains/hills/forest + front trees (2 layers, one behind Gurgles one for occlusion) + front grass/leafs. New `RasterParallaxLayer` + `CloudDrift` components; see [docs/superpowers/plans/2026-04-21-pine-hills-parallax.md](superpowers/plans/2026-04-21-pine-hills-parallax.md). Replaces the earlier 2-layer SVG night-sky prototype.
 - [x] Spill meter bar.
 - [x] Dark-navy backdrop matched to mountains gradient (seamless sky).
 - [x] Score popup on collectible pickup (⚠️ crashes — fix in M4a).
@@ -118,7 +118,7 @@ Per [AUDIO-GUIDE.md](AUDIO-GUIDE.md). Add `flame_audio` dep. Wire each as the SF
 
 ### M6b — Branding + metadata
 
-- [ ] App icon (Android adaptive + iOS flat). Master SVG per [ART-GUIDE.md](ART-GUIDE.md).
+- [x] **App icon** — generated via `flutter_launcher_icons` from `assets/images/icon-source.png` (4267×4267 RGB, beer-mug glyph on dark brown). Non-adaptive Android icon (can upgrade to adaptive foreground/background split in V2). iOS AppIcon.appiconset full set, alpha stripped for App Store. Shipped in v0.1.1.
 - [ ] Splash screen.
 - [ ] Privacy policy (reuse / adapt gurgles.beer one).
 - [ ] Store listings: description, feature graphic, screenshots (×3 each platform minimum).

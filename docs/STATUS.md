@@ -1,27 +1,27 @@
 # Project Status — HoldTheHooch Mobile
 
-_Last updated: 2026-04-21 (gnome-pack animations integrated on feat/gnome-animations)_
+_Last updated: 2026-04-21 (v0.1.1 on TestFlight — gnome animations + app icon + Pine Hills parallax)_
 
 Snapshot of where the project is, what's working, what isn't, and what to pick up next session. Refreshed after a full-codebase review; known doc drift corrected.
 
 ## TL;DR
 
-Working Flutter + Flame 2D side-scrolling endless runner on Android. Installable debug APK running on Pixel 8 Pro + Samsung S26 Ultra via wireless debugging. Core loop is playable via a dedicated bottom control strip (◀ ▶ tilt buttons + ▲ jump). Tankard leans with `balance.tilt` for visible feedback. Real SVG art from the web game is in, parallax backdrop scrolls, score submits to `gurgles.beer`, leaderboard scene shows top 50. iOS not yet built on a real Mac, but CodeMagic's `ios-debug` workflow passes.
+Working Flutter + Flame 2D side-scrolling endless runner on Android and iOS. Samsung S26 Ultra via wireless debugging; iOS via TestFlight (`v0.1.1`, build 2 shipped 2026-04-21 — gnome animations + app icon + Pine Hills dusk-forest parallax). Core loop is playable via a dedicated bottom control strip (◀ ▶ tilt buttons + ▲ jump). Tankard leans with `balance.tilt` for visible feedback. 13-layer Pine Hills parallax scrolls beneath Gurgles. Score submits to `gurgles.beer`, leaderboard scene shows top 50.
 
 Gurgles runs on a real 8-frame sprite animation derived from the `no_hat_gnome` frames in the purchased Game Developer Studio gnome pack. Jump arc is a 7-frame takeoff + 12-frame airborne loop + 6-frame landing. On game over: 6-frame hurt animation → held dead pose → overlay. Menu screen shows an idling Gurgles above the name field.
 
 ## What's playable today
 
 - **Menu** → name entry (persisted locally) → **Start** → game scene → **Game Over** overlay → **Retry** / **Menu**.
-- Gurgles runs on a real 8-frame sprite animation derived from the `no_hat_gnome` frames in the purchased Game Developer Studio gnome pack. Jump arc is a 7-frame takeoff + 12-frame airborne loop + 6-frame landing. On game over: 6-frame hurt animation → held dead pose → overlay. Menu screen shows an idling Gurgles above the name field.
+- Gurgles: 8-frame run cycle + 7/12/6-frame jump arc + 6-frame hurt + held dead pose, rendered via a `GurglesAnimator` state machine driving one `SpriteAnimationComponent`. Tankard rides above his head as a separate SVG overlay that rotates with tilt.
 - Bottom **control strip**: ◀ tilt-left, ▶ tilt-right, ▲ jump (right-aligned). Tap-and-hold for continuous action. Play area sits above the strip; no gestures needed in the play area, so edge back-gestures don't collide.
 - **Tankard visually leans** with `balance.tilt` (up to ~34°) so the player can see which way the hooch is tipping.
 - Passive hooch wobble builds tilt over time; every jump adds a random tilt impulse.
 - **Spill meter** (red bar below score) fills when `|tilt| > 0.7` and drains when `|tilt| < 0.4`. 100% = game over.
 - Obstacles (root / rock / mushroom / log) spawn at speed-dependent intervals and end the run on collision. Per-obstacle tight hitboxes are authored (see `lib/components/obstacle.dart:40-63`).
 - Collectibles (herb / hops / potion) spawn at three reachable height tiers; picking one up awards points and shows a floating +N popup.
-- Parallax: distant mountains (0.15x) + forest trees (0.45x) + tiled ground (1.0x).
-- Dark-navy night sky backdrop (matched to `bg-mountains.svg` gradient top to avoid horizontal seam).
+- **Parallax**: 13-layer Pine Hills dusk-forest backdrop — sky gradient → back cloud field → 4 independent-speed drift clouds (8/14/22 px/s + one -10 px/s counter-breeze) → back mountains (0.12×) → mid hills (0.22×) → mid forest (0.40×) → front_trees2 (0.86×, behind Gurgles) → front_trees1 (0.85×, behind Gurgles) → front_grass (1.0×, behind Gurgles) → **[Gurgles]** → front_leafs (1.0×, only layer in front of player). Free asset pack from myaumya.itch.io, license bundled. 320×180 pixel-art, rendered with `FilterQuality.none` for crisp scaling.
+- Dusk sky backdrop (`backgroundColor = 0xFF77B8DC`, matched to Pine Hills `00_background.png` top gradient). Replaces the previous `#1A1A3E` night-navy.
 - Score: +10 per second elapsed + collectible points, shown top-center.
 - Difficulty curve: scroll speed ramps 1.0x → 2.0x and wobble amplitude ramps 1.0× → 1.7× over 180 seconds.
 - **Game Over** overlay shows score, persists best-score locally, submits to `gurgles.beer` (silently; offline still shows score but is **not** queued for retry despite [docs/BACKEND.md](BACKEND.md) promising otherwise).
@@ -42,8 +42,8 @@ See [docs/ROADMAP.md](ROADMAP.md) for the detailed per-milestone plan.
   - Score multiplier (+0.1x per 10s, capped 3x): ✅ implemented.
   - Potion spill-drain bonus: ✅ implemented (4× drain rate for 1 second).
   - Wobble amplitude scaling: ✅ implemented (1.0× → 1.7× over difficultyRampSeconds).
-- **M5 — Polish & assets** ⏳ Partial. Real SVGs in, parallax in, spill meter UI in, score popup in, tankard rotation tied to tilt, dedicated control strip with tilt + jump buttons, leaderboard scene live, splash + sparkle particles live (M5a), 8-frame run cycle + 7/12/6-frame jump arc + 6-frame hurt + dead pose via the purchased `no_hat_gnome` gnome pack + menu idle animation (M5a, `feat/gnome-animations`). Still missing: SFX (M5b), tutorial overlay + settings (M5c).
-- **M6 — Store prep** ⏳ First iOS build shipped to TestFlight on 2026-04-21 (closes M6a #1). Signing pipeline on CodeMagic (canonical `ios_signing` managed flow) now verified end-to-end with cert + profile uploaded to CodeMagic's team-level stores. Remaining M6a: decision on Xcode Cloud vs Actions macOS runner. M6b (branding + metadata) and M6c (release) not started.
+- **M5 — Polish & assets** ⏳ Partial. Real SVGs in (legacy), 13-layer Pine Hills dusk parallax + 4-cloud drift (M5a, `feat/branding-background`), spill meter UI in, score popup in, tankard rotation tied to tilt, dedicated control strip, leaderboard scene live, splash + sparkle particles live (M5a), 8-frame run cycle + 7/12/6-frame jump arc + 6-frame hurt + dead pose via the purchased `no_hat_gnome` gnome pack + menu idle animation (M5a, `feat/gnome-animations`), app icon generated via `flutter_launcher_icons` (M6b partial). Still missing: SFX (M5b), tutorial overlay + settings (M5c), splash screen + privacy policy (M6b remainder).
+- **M6 — Store prep** ⏳ Two iOS builds shipped to TestFlight: `v0.1.0` (2026-04-21) and `v0.1.1` (2026-04-21 — gnome animations + app icon + Pine Hills parallax). Signing pipeline on CodeMagic (canonical `ios_signing` managed flow) verified end-to-end with cert + profile in CodeMagic's team-level stores. App icon: ✅. M6b remainder: splash screen, privacy policy, store listings. M6a decision on Xcode Cloud vs Actions macOS runner still pending (CodeMagic is working fine meanwhile).
 - **M7 — Leaderboard integrity** ❌ Not started. Planned before public M6 release — leaderboard currently accepts any unauthenticated `POST /api/scores`.
 
 ## Tech stack (as built)
@@ -162,16 +162,18 @@ flutter install -d <device-id> --debug
 - **`package:image` is a dev-only dep.** The asset curation script at `tools/build_gurgles_sprites.dart` uses it to compute the union content bounding box across all shipping frames + crop + resize. Raw frames live in `art-source/gnomes/` (gitignored) and are consumed by the script, not by the app. Do NOT import `package:image` from `lib/` — it's dev_dependencies only.
 - **Flame 1.37's `SpriteAnimationWidget` requires BOTH `animation` AND `animationTicker` as constructor args.** The ticker isn't auto-created in 1.37 (unlike older versions). Construct it explicitly via `animation.createTicker()` and store it in state alongside the animation (see `lib/components/gurgles_idle_widget.dart` for the pattern).
 - **Flutter asset resolver is non-recursive for trailing-slash entries.** `assets/images/` alone does NOT recursively include subfolders. Each subfolder must be listed explicitly in pubspec.yaml — see the `assets/images/gurgles/<anim>/` entries.
+- **Flame's built-in `ParallaxComponent` is geometric per-layer, not arbitrary.** Velocity for layer N is `baseVelocity × velocityMultiplierDelta^N` — so you can't set layer 3 faster than layer 5. That's why `RasterParallaxLayer` (`lib/components/raster_parallax_layer.dart`) + `CloudDrift` (`lib/components/cloud_drift.dart`) are hand-rolled: they let each layer own its speed factor / px-per-second, which is required for a parallax scene where cloud drift is independent of ground scroll.
+- **CodeMagic's GitHub webhook didn't fire on the `v0.1.1` tag push** (2026-04-21). The `ios-release` workflow has `triggering: events: [tag]` configured correctly, but the tag push didn't automatically queue a build. Manual trigger via API worked: `curl -X POST -H "x-auth-token: $TOKEN" -H "Content-Type: application/json" https://api.codemagic.io/builds -d '{"appId":"69e5621f551ec5674ead805e","workflowId":"ios-release","tag":"v0.1.1"}'`. Webhook integration may need reconnecting in CodeMagic → app settings → repository integrations.
 
 ## Immediate next steps (in order)
 
-1. **Merge `feat/gnome-animations` into main** — 10 commits shipping the no_hat_gnome animation integration (curation pipeline + GurglesAnimator state machine + menu idle + hurt/dead overlays + device-tuning). 89 tests passing. Fully playtested on Samsung S26 Ultra.
-2. **Collect TestFlight feedback** — first IPA (`1.0.0 (N)`, tag `v0.1.0`) shipped to App Store Connect on 2026-04-21; friend on iPhone is the first external tester. What they flag steers everything below.
-3. **M5c remaining UX** — tutorial overlay (first 1–2s of first run), settings (music / haptics / control toggles). Pure code, no asset blocker.
-4. **M7a — Leaderboard integrity (device-bound identity + server HMAC + admin endpoint)** — add before M6 public release. Covers the unauthenticated-submission + no-admin-tooling gaps surfaced on 2026-04-21. See [ROADMAP.md § M7a](ROADMAP.md).
-5. **M5b audio pass** — wire SFX per [AUDIO-GUIDE.md](AUDIO-GUIDE.md). Blocked on audio delivery.
-6. **M6b store metadata** — app icon, splash screen, privacy policy, store listings. Blocked on having something worth publishing (TestFlight feedback loop).
-7. **Design call on finite-hooch spill model** (see [ROADMAP.md § Design ideas to consider](ROADMAP.md)) — decide before M6 ship whether to swap the auto-drain spill mechanic for a finite-resource refill-via-collectibles model.
+1. **Collect TestFlight feedback** — `v0.1.1` (build 2) shipped 2026-04-21; IPA in Apple processing. Your iPhone friend is the first external tester. Their feedback steers priorities.
+2. **M5c remaining UX** — tutorial overlay (first 1–2s of first run), settings (music / haptics / control toggles). Pure code, no asset blocker.
+3. **M7a — Leaderboard integrity** (device-bound identity + server HMAC + admin endpoint). Before M6 public release. See [ROADMAP.md § M7a](ROADMAP.md).
+4. **M5b audio pass** — wire SFX per [AUDIO-GUIDE.md](AUDIO-GUIDE.md). Blocked on audio delivery.
+5. **M6b remaining** — splash screen, privacy policy, store listings. App icon ✅.
+6. **Investigate CodeMagic webhook** — tag-push trigger didn't fire on `v0.1.1`. Check app → repository integrations. Workaround in place (manual API trigger).
+7. **Design call on finite-hooch spill model** (see [ROADMAP.md § Design ideas to consider](ROADMAP.md)) — decide before M6 ship.
 
 ## Infrastructure state (end of session)
 
@@ -182,7 +184,7 @@ flutter install -d <device-id> --debug
   - `android-debug` (linux_x2) — push to main, ~2 min, produces APK. ✅ verified.
   - `ios-debug` (mac_mini_m2) — push to main, ~2m23s, produces `Runner.app.zip`. ✅ verified.
   - `android-release` (linux_x2) — tag `v*` triggered. Needs env group `android_signing`. Not yet exercised.
-  - `ios-release` (mac_mini_m2) — tag `v*` triggered. ✅ **verified end-to-end on 2026-04-21** — tag `v0.1.0` produces a signed IPA that uploads to TestFlight. Uses canonical `ios_signing` managed flow + manual one-time uploads of (a) `ios_distribution.p12` to CodeMagic Code signing identities and (b) the `beer.gurgles.holdTheHooch` App Store provisioning profile to CodeMagic's profile store (CodeMagic's documented auto-creation-via-API-key is broken for first-time accounts — see [Gotchas](#gotchas-dont-repeat-these)).
+  - `ios-release` (mac_mini_m2) — tag `v*` triggered. ✅ **Verified end-to-end on 2026-04-21 for both `v0.1.0` and `v0.1.1`**. ~5 min build time, produces a signed IPA that uploads to TestFlight. **Webhook did not fire on the v0.1.1 tag push** — had to manually trigger via the CodeMagic API (see Gotchas). Uses canonical `ios_signing` managed flow + manual one-time uploads of (a) `ios_distribution.p12` to CodeMagic Code signing identities and (b) the `beer.gurgles.holdTheHooch` App Store provisioning profile to CodeMagic's profile store (CodeMagic's documented auto-creation-via-API-key is broken for first-time accounts — see [Gotchas](#gotchas-dont-repeat-these)).
   See [docs/SIGNING.md](SIGNING.md) for the one-time setup of the release paths.
 - Samsung S26 Ultra: connected at `adb-R5GL12X3ZXH-fontbc._adb-tls-connect._tcp` via mDNS auto-discovery (IP:port changes per wireless-debugging session; mDNS hostname is stable). Will need re-enable wireless debugging next session.
 - **Local signing artefacts** at `c:\apps\HoldTheHoochMobile\ios-signing\` (gitignored): `ios_distribution.key` (RSA private key, keep safe!), `ios_distribution.csr`, `ios_distribution.cer` (Apple Distribution cert), `ios_distribution.p12` (cert+key bundle uploaded to CodeMagic), `p12_password.txt`. Required for re-uploading the cert to CodeMagic if the team-level store is ever cleared.

@@ -12,6 +12,30 @@ Replacement art specs for all visual assets. Drop SVGs into `assets/svg/` (raste
 
 The original briefs below describe the aspirational art direction from before the pack was purchased. They're retained as reference for future hand-drawn polish passes (e.g. if we ever commission an original run-cycle).
 
+## Current backdrop art
+
+**As of 2026-04-21 the game's parallax backdrop is the free "Pine Hills" pack from [myaumya.itch.io](https://myaumya.itch.io/pine-hills-background).** Licensed for commercial use + modification; redistribution not allowed. See [assets/third_party/pine_hills/LICENSE.txt](../assets/third_party/pine_hills/LICENSE.txt). The pack ships 14 pixel-art PNG layers at 320×180; we use 13 of them (front_rocks skipped) rendered upscaled with `FilterQuality.none` for a crisp retro look.
+
+Layer allocation + speed factors are documented in [lib/scenes/game_scene.dart](../lib/scenes/game_scene.dart) and the plan at [docs/superpowers/plans/2026-04-21-pine-hills-parallax.md](superpowers/plans/2026-04-21-pine-hills-parallax.md).
+
+The deliberate pixel-art-background / smooth-cartoon-character hybrid style is a known aesthetic (Celeste, Hyper Light Drifter). If we ever commission custom parallax art later, the `RasterParallaxLayer` + `CloudDrift` components already handle arbitrary PNGs — drop new images in and tune the speed factors.
+
+A visual iteration tool for this pack lives at [tools/pine-hills-preview.html](../tools/pine-hills-preview.html) — open it in a browser to tune layer order/position/speed live and copy-paste the resulting Dart config back into `game_scene.dart`.
+
+## Unused asset pack: Forest Sprites
+
+An alternative free pack from itch.io (`assets/third_party/forest_sprites/`) is staged on disk but not wired in — lighter (5 layers), daylight palette, higher per-tile resolution (500×300). Kept as a potential theme option for V2. License bundled: commercial OK, modify OK, no redistribution. See [assets/third_party/forest_sprites/LICENSE.txt](../assets/third_party/forest_sprites/LICENSE.txt).
+
+## Current app icon
+
+`assets/images/icon-source.png` (4267×4267 RGB) is the master for the in-store app icon. Regenerate platform-specific icons with:
+
+```bash
+dart run flutter_launcher_icons
+```
+
+The config block is in `pubspec.yaml` under `flutter_launcher_icons:`. Android uses a simple square icon at `@mipmap/launcher_icon` (non-adaptive for V1). iOS AppIcon.appiconset contains all sizes including the 1024×1024 App Store version with alpha stripped.
+
 ## Style
 
 Flat/minimal SVG in the same visual language as the web game at [gurgles.beer](https://gurgles.beer). Clean geometric shapes, bold saturated colours, modern indie game feel. Think "old Newgrounds flash game from 2005, but crisper". Gurgles should be instantly recognisable alongside his web-game twin.
