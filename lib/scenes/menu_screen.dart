@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../components/gurgles_idle_widget.dart';
 import '../services/local_store.dart';
 import '../utils/routes.dart';
 import 'game_screen.dart';
@@ -63,7 +64,9 @@ class _MenuScreenState extends State<MenuScreen> {
               const SizedBox(height: 8),
               Text('Best: $_best',
                   style: const TextStyle(color: Colors.white70)),
-              const SizedBox(height: 48),
+              const SizedBox(height: 16),
+              const GurglesIdleWidget(size: 160),
+              const SizedBox(height: 16),
               TextField(
                 controller: _nameCtl,
                 maxLength: 20,
