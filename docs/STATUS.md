@@ -1,6 +1,6 @@
 # Project Status — HoldTheHooch Mobile
 
-_Last updated: 2026-04-21 (v0.1.1 on TestFlight — gnome animations + app icon + Pine Hills parallax)_
+_Last updated: 2026-04-21 (obstacle + collectible pixel-art refresh on feat/obstacle-collectible-refresh)_
 
 Snapshot of where the project is, what's working, what isn't, and what to pick up next session. Refreshed after a full-codebase review; known doc drift corrected.
 
@@ -18,8 +18,8 @@ Gurgles runs on a real 8-frame sprite animation derived from the `no_hat_gnome` 
 - **Tankard visually leans** with `balance.tilt` (up to ~34°) so the player can see which way the hooch is tipping.
 - Passive hooch wobble builds tilt over time; every jump adds a random tilt impulse.
 - **Spill meter** (red bar below score) fills when `|tilt| > 0.7` and drains when `|tilt| < 0.4`. 100% = game over.
-- Obstacles (root / rock / mushroom / log) spawn at speed-dependent intervals and end the run on collision. Per-obstacle tight hitboxes are authored (see `lib/components/obstacle.dart:40-63`).
-- Collectibles (herb / hops / potion) spawn at three reachable height tiers; picking one up awards points and shows a floating +N popup.
+- **Obstacles** — 4 kinds, weighted spawn: stone 35% (small 40×28 tripping stones), rock 25% (72×60), mushroom 20% (72×72, 8-frame bob animation), log 20% (140×72, 4-frame sway animation). Pixel-art from the Mushrooms / props packs. Per-kind tight hitboxes tuned against the actual sprite silhouette (`lib/components/obstacle.dart:hitboxFor`).
+- **Collectibles** — 5 kinds, weighted spawn: fruitCommon 55% (cherry / strawberry / tomato, 3 visual variants, 10 pts), fruitMedium 25% (apple / orange / pumpkin, 25 pts), fruitRare 10% (golden apple, 100 pts), crystal 5% (10 gem variants from Nature Full, 150 pts), potion 5% (Onocentaur red heart-bottle, 200 pts + grants 1s 4× spill-drain). Sparkle bursts colour-coded per tier: red → orange → gold → purple → blue. Crystal + potion get expanding halo rings on pickup.
 - **Parallax**: 13-layer Pine Hills dusk-forest backdrop — sky gradient → back cloud field → 4 independent-speed drift clouds (8/14/22 px/s + one -10 px/s counter-breeze) → back mountains (0.12×) → mid hills (0.22×) → mid forest (0.40×) → front_trees2 (0.86×, behind Gurgles) → front_trees1 (0.85×, behind Gurgles) → front_grass (1.0×, behind Gurgles) → **[Gurgles]** → front_leafs (1.0×, only layer in front of player). Free asset pack from myaumya.itch.io, license bundled. 320×180 pixel-art, rendered with `FilterQuality.none` for crisp scaling.
 - Dusk sky backdrop (`backgroundColor = 0xFF77B8DC`, matched to Pine Hills `00_background.png` top gradient). Replaces the previous `#1A1A3E` night-navy.
 - Score: +10 per second elapsed + collectible points, shown top-center.
@@ -42,7 +42,7 @@ See [docs/ROADMAP.md](ROADMAP.md) for the detailed per-milestone plan.
   - Score multiplier (+0.1x per 10s, capped 3x): ✅ implemented.
   - Potion spill-drain bonus: ✅ implemented (4× drain rate for 1 second).
   - Wobble amplitude scaling: ✅ implemented (1.0× → 1.7× over difficultyRampSeconds).
-- **M5 — Polish & assets** ⏳ Partial. Real SVGs in (legacy), 13-layer Pine Hills dusk parallax + 4-cloud drift (M5a, `feat/branding-background`), spill meter UI in, score popup in, tankard rotation tied to tilt, dedicated control strip, leaderboard scene live, splash + sparkle particles live (M5a), 8-frame run cycle + 7/12/6-frame jump arc + 6-frame hurt + dead pose via the purchased `no_hat_gnome` gnome pack + menu idle animation (M5a, `feat/gnome-animations`), app icon generated via `flutter_launcher_icons` (M6b partial). Still missing: SFX (M5b), tutorial overlay + settings (M5c), splash screen + privacy policy (M6b remainder).
+- **M5 — Polish & assets** ⏳ Partial. Real SVGs in (legacy), 13-layer Pine Hills dusk parallax + 4-cloud drift (M5a, `feat/branding-background`), spill meter UI in, score popup in, tankard rotation tied to tilt, dedicated control strip, leaderboard scene live, splash + sparkle particles live (M5a), 8-frame run cycle + 7/12/6-frame jump arc + 6-frame hurt + dead pose via the purchased `no_hat_gnome` gnome pack + menu idle animation (M5a, `feat/gnome-animations`), app icon generated via `flutter_launcher_icons` (M6b partial), obstacle + collectible pixel-art refresh (M5a, `feat/obstacle-collectible-refresh`) — dropped `root` obstacle + added `stone`, renamed `herb`/`hops` → `fruitCommon`/`fruitMedium` + added `fruitRare` and `crystal` tiers, mushroom + log now animated, per-kind sparkle burst colours + crystal halo. Sprites sliced from Nature Full + Onocentaur potions + Animated Mushrooms + individual fruit/veg packs (all commercial-OK; inventory in [OBSTACLE-COLLECTIBLE-ASSETS.md](OBSTACLE-COLLECTIBLE-ASSETS.md)). Still missing: SFX (M5b), tutorial overlay + settings (M5c), splash screen + privacy policy (M6b remainder).
 - **M6 — Store prep** ⏳ Two iOS builds shipped to TestFlight: `v0.1.0` (2026-04-21) and `v0.1.1` (2026-04-21 — gnome animations + app icon + Pine Hills parallax). Signing pipeline on CodeMagic (canonical `ios_signing` managed flow) verified end-to-end with cert + profile in CodeMagic's team-level stores. App icon: ✅. M6b remainder: splash screen, privacy policy, store listings. M6a decision on Xcode Cloud vs Actions macOS runner still pending (CodeMagic is working fine meanwhile).
 - **M7 — Leaderboard integrity** ❌ Not started. Planned before public M6 release — leaderboard currently accepts any unauthenticated `POST /api/scores`.
 
@@ -163,6 +163,7 @@ flutter install -d <device-id> --debug
 - **Flame 1.37's `SpriteAnimationWidget` requires BOTH `animation` AND `animationTicker` as constructor args.** The ticker isn't auto-created in 1.37 (unlike older versions). Construct it explicitly via `animation.createTicker()` and store it in state alongside the animation (see `lib/components/gurgles_idle_widget.dart` for the pattern).
 - **Flutter asset resolver is non-recursive for trailing-slash entries.** `assets/images/` alone does NOT recursively include subfolders. Each subfolder must be listed explicitly in pubspec.yaml — see the `assets/images/gurgles/<anim>/` entries.
 - **Flame's built-in `ParallaxComponent` is geometric per-layer, not arbitrary.** Velocity for layer N is `baseVelocity × velocityMultiplierDelta^N` — so you can't set layer 3 faster than layer 5. That's why `RasterParallaxLayer` (`lib/components/raster_parallax_layer.dart`) + `CloudDrift` (`lib/components/cloud_drift.dart`) are hand-rolled: they let each layer own its speed factor / px-per-second, which is required for a parallax scene where cloud drift is independent of ground scroll.
+- **Slicing pixel-art atlases requires per-row y-offset calibration.** The Nature Full atlas (160×208, 16×16 cells) uses non-uniform row heights (trees span 2 cells, later rows are 1 cell). Crystal row is at y=160 (not y=144 as a uniform-grid assumption would suggest). When adding new categories from the same atlas, open `assets/third_party/nature_full/global.png` in a 1:1 viewer, count pixel rows from the top, and hardcode the row y-offset in `tools/build_obstacle_collectible_sprites.dart`. Visually spot-check each new output before committing.
 - **CodeMagic's GitHub webhook didn't fire on the `v0.1.1` tag push** (2026-04-21). The `ios-release` workflow has `triggering: events: [tag]` configured correctly, but the tag push didn't automatically queue a build. Manual trigger via API worked: `curl -X POST -H "x-auth-token: $TOKEN" -H "Content-Type: application/json" https://api.codemagic.io/builds -d '{"appId":"69e5621f551ec5674ead805e","workflowId":"ios-release","tag":"v0.1.1"}'`. Webhook integration may need reconnecting in CodeMagic → app settings → repository integrations.
 
 ## Immediate next steps (in order)
@@ -170,11 +171,10 @@ flutter install -d <device-id> --debug
 1. **Collect TestFlight feedback** — `v0.1.1` (build 2) shipped 2026-04-21; IPA in Apple processing. Your iPhone friend is the first external tester. Their feedback steers priorities.
 2. **M5c remaining UX** — tutorial overlay (first 1–2s of first run), settings (music / haptics / control toggles). Pure code, no asset blocker.
 3. **M7a — Leaderboard integrity** (device-bound identity + server HMAC + admin endpoint). Before M6 public release. See [ROADMAP.md § M7a](ROADMAP.md).
-4. **Obstacle + collectible asset refresh** — current root / rock / mushroom / log and herb / hops / potion SVGs (carried over from the web game) are the main visual mismatch against the Pine Hills pixel-art backdrop + gnome-pack character. Likely sourcing a free itch.io pixel-art prop pack and following the same curation workflow as gnomes / Pine Hills. Scope may expand to new obstacle/collectible kinds. See [ROADMAP.md § M5a](ROADMAP.md).
-5. **M5b audio pass** — wire SFX per [AUDIO-GUIDE.md](AUDIO-GUIDE.md). Blocked on audio delivery.
-6. **M6b remaining** — splash screen, privacy policy, store listings. App icon ✅.
-7. **Investigate CodeMagic webhook** — tag-push trigger didn't fire on `v0.1.1`. Check app → repository integrations. Workaround in place (manual API trigger).
-8. **Design call on finite-hooch spill model** (see [ROADMAP.md § Design ideas to consider](ROADMAP.md)) — decide before M6 ship.
+4. **M5b audio pass** — wire SFX per [AUDIO-GUIDE.md](AUDIO-GUIDE.md). Blocked on audio delivery.
+5. **M6b remaining** — splash screen, privacy policy, store listings. App icon ✅.
+6. **Investigate CodeMagic webhook** — tag-push trigger didn't fire on `v0.1.1`. Check app → repository integrations. Workaround in place (manual API trigger).
+7. **Design call on finite-hooch spill model** (see [ROADMAP.md § Design ideas to consider](ROADMAP.md)) — decide before M6 ship.
 
 ## Infrastructure state (end of session)
 

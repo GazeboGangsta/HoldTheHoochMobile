@@ -36,6 +36,37 @@ dart run flutter_launcher_icons
 
 The config block is in `pubspec.yaml` under `flutter_launcher_icons:`. Android uses a simple square icon at `@mipmap/launcher_icon` (non-adaptive for V1). iOS AppIcon.appiconset contains all sizes including the 1024×1024 App Store version with alpha stripped.
 
+## Current obstacle + collectible art
+
+**As of 2026-04-21** the obstacles and collectibles use pixel art from several staged packs (all commercial-OK; see [OBSTACLE-COLLECTIBLE-ASSETS.md](OBSTACLE-COLLECTIBLE-ASSETS.md) for the full inventory + licences):
+
+- **Obstacles** (4 kinds at `assets/images/obstacles/`):
+  - `stone.png` (Stone_01, 16×16) — small tripping stone.
+  - `rock.png` (Rock_03, 32×32) — angular grey rock.
+  - `mushroom/000.png…007.png` — 8-frame animated bob sliced from `AnimatedMushroomRed.png`.
+  - `log/000.png…003.png` — 4-frame animated sway sliced from `Log_sprite.png`.
+- **Collectibles** (5 kinds at `assets/images/collectibles/`):
+  - `fruitCommon` variants: `cherry.png`, `strawberry.png`, `tomato.png` (10 pts).
+  - `fruitMedium` variants: `apple.png`, `orange.png`, `pumpkin.png` (25 pts).
+  - `fruitRare`: `golden_apple.png` (100 pts).
+  - `crystal/` variants (10): `rose_quartz`, `jasper`, `citrine`, `turquoise`, `tiger_eye`, `amethyst`, `moonstone`, `sapphire`, `quartz`, `bloodstone` (150 pts) — sliced from Nature Full atlas row 10.
+  - `potion.png` — single Onocentaur red heart-bottle (200 pts + 1s 4× spill-drain).
+
+Slicing + curation lives in `tools/build_obstacle_collectible_sprites.dart` — a one-shot Dart + `package:image` script. Run `dart run tools/build_obstacle_collectible_sprites.dart` from the repo root to regenerate outputs. Same pattern as `tools/build_gurgles_sprites.dart`.
+
+Sparkle bursts on pickup are colour-coded per tier (`lib/components/sparkle_burst.dart:configFor`):
+- fruitCommon: 6 small red sparkles (strawberry/cherry/tomato)
+- fruitMedium: 8 small orange sparkles (apple/orange/pumpkin)
+- fruitRare: 10 medium gold sparkles (golden apple)
+- crystal: 14 medium purple sparkles + purple halo ring
+- potion: 16 large blue sparkles + blue halo ring
+
+V2 expansion candidates still in `assets/third_party/` (not yet wired):
+- Animated mushroom colour variants (pink + blue) — for rare-variant RNG on the `mushroom` obstacle.
+- Remaining 10 fruits/veg (carrot, banana, avocado, garlic, onions) — for more fruit variety.
+- Nature Full butterflies / bugs / flowers / leaves / nuts — moving pickups, animated obstacles, or ambient decoration.
+- VariPixels PotionsPack — alternative potion library (726 containers) for power-up variants.
+
 ## Style
 
 Flat/minimal SVG in the same visual language as the web game at [gurgles.beer](https://gurgles.beer). Clean geometric shapes, bold saturated colours, modern indie game feel. Think "old Newgrounds flash game from 2005, but crisper". Gurgles should be instantly recognisable alongside his web-game twin.
