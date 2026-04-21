@@ -48,63 +48,65 @@ class _MenuScreenState extends State<MenuScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFF1E2A1A),
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Text(
-                'Hold the Hooch',
-                style: TextStyle(
-                  fontSize: 42,
-                  fontWeight: FontWeight.w800,
-                  color: Color(0xFFD4A744),
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Text(
+                  'Hold the Hooch',
+                  style: TextStyle(
+                    fontSize: 42,
+                    fontWeight: FontWeight.w800,
+                    color: Color(0xFFD4A744),
+                  ),
                 ),
-              ),
-              const SizedBox(height: 8),
-              Text('Best: $_best',
-                  style: const TextStyle(color: Colors.white70)),
-              const SizedBox(height: 16),
-              const GurglesIdleWidget(size: 160),
-              const SizedBox(height: 16),
-              TextField(
-                controller: _nameCtl,
-                maxLength: 20,
-                textAlign: TextAlign.center,
-                style: const TextStyle(color: Colors.white, fontSize: 20),
-                decoration: const InputDecoration(
-                  hintText: 'Enter your name',
-                  hintStyle: TextStyle(color: Colors.white38),
-                  filled: true,
-                  fillColor: Color(0xFF2E3A2A),
-                  border: OutlineInputBorder(),
+                const SizedBox(height: 8),
+                Text('Best: $_best',
+                    style: const TextStyle(color: Colors.white70)),
+                const SizedBox(height: 16),
+                const GurglesIdleWidget(size: 160),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: _nameCtl,
+                  maxLength: 20,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(color: Colors.white, fontSize: 20),
+                  decoration: const InputDecoration(
+                    hintText: 'Enter your name',
+                    hintStyle: TextStyle(color: Colors.white38),
+                    filled: true,
+                    fillColor: Color(0xFF2E3A2A),
+                    border: OutlineInputBorder(),
+                  ),
                 ),
-              ),
-              const SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: _start,
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 64, vertical: 18),
-                  backgroundColor: const Color(0xFFD4A744),
-                  foregroundColor: Colors.black,
+                const SizedBox(height: 24),
+                ElevatedButton(
+                  onPressed: _start,
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 64, vertical: 18),
+                    backgroundColor: const Color(0xFFD4A744),
+                    foregroundColor: Colors.black,
+                  ),
+                  child: const Text('Start', style: TextStyle(fontSize: 22)),
                 ),
-                child: const Text('Start', style: TextStyle(fontSize: 22)),
-              ),
-              const SizedBox(height: 12),
-              OutlinedButton(
-                onPressed: () => Navigator.of(context).push(
-                  fadeRoute(const LeaderboardScreen()),
+                const SizedBox(height: 12),
+                OutlinedButton(
+                  onPressed: () => Navigator.of(context).push(
+                    fadeRoute(const LeaderboardScreen()),
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 48, vertical: 14),
+                    side: const BorderSide(color: Color(0xFFD4A744)),
+                    foregroundColor: const Color(0xFFD4A744),
+                  ),
+                  child: const Text('Leaderboard', style: TextStyle(fontSize: 18)),
                 ),
-                style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 48, vertical: 14),
-                  side: const BorderSide(color: Color(0xFFD4A744)),
-                  foregroundColor: const Color(0xFFD4A744),
-                ),
-                child: const Text('Leaderboard', style: TextStyle(fontSize: 18)),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

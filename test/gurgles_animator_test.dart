@@ -45,6 +45,14 @@ void main() {
       expect(a.state, GurglesAnimation.run);
     });
 
+    test('jumpStart -> jumpLand if onGround becomes true before duration elapses', () {
+      final a = GurglesAnimator();
+      a.update(0.016, onGround: false, velocityY: -500);
+      // Short-tap: player lands mid-takeoff.
+      a.update(0.016, onGround: true, velocityY: 0);
+      expect(a.state, GurglesAnimation.jumpLand);
+    });
+
     test('triggerHurt -> hurt from any non-terminal state', () {
       final a = GurglesAnimator();
       a.triggerHurt();

@@ -38,7 +38,9 @@ class GurglesAnimator {
         if (!onGround) _transition(GurglesAnimation.jumpStart);
         return;
       case GurglesAnimation.jumpStart:
-        if (_stateElapsed >= GameConfig.jumpStartDurationSeconds) {
+        if (onGround) {
+          _transition(GurglesAnimation.jumpLand);
+        } else if (_stateElapsed >= GameConfig.jumpStartDurationSeconds) {
           _transition(GurglesAnimation.jumpCycle);
         }
         return;

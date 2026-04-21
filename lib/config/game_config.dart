@@ -81,7 +81,7 @@ class GameConfig {
 
   // Gnome-pack animation durations. Each source clip plays at ~20fps.
   // These are totals from first frame to last. Tune on-device if needed.
-  static const double jumpStartDurationSeconds = 0.35;   // 7 frames
+  static const double jumpStartDurationSeconds = 0.55;   // 7 frames — covers most airborne time
   static const double jumpLandDurationSeconds = 0.30;    // 6 frames
   static const double hurtDurationSeconds = 0.30;        // 6 frames
 
