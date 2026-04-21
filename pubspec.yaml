@@ -75,6 +75,16 @@ flutter:
     - assets/images/gurgles/hurt/
     - assets/images/gurgles/dead/
     - assets/third_party/pine_hills/png/
+    - assets/third_party/nature_full/
+    - assets/third_party/mushrooms/
+    - assets/third_party/potions_onocentaur/
+    - assets/third_party/props/
+    - assets/third_party/fruits_veg/
+    - assets/images/obstacles/
+    - assets/images/obstacles/mushroom/
+    - assets/images/obstacles/log/
+    - assets/images/collectibles/
+    - assets/images/collectibles/crystal/
     - assets/audio/
 
   # An image asset can refer to one or more resolution-specific "variants", see

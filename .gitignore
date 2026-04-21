@@ -51,3 +51,7 @@ ForestSprites.zip
 # Tooling / local-only
 coverage/
 .claude/settings.local.json
+
+# Ad-hoc working dir for asset-pack staging before curation. Contents
+# move to assets/third_party/ when they're ready to ship.
+temp/
