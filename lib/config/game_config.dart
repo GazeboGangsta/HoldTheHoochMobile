@@ -71,7 +71,6 @@ class GameConfig {
   static const int splashGameOverBurstCount = 30;
   static const double splashTrickleRateBase = 5.0;   // particles/sec at tilt == spillThreshold
   static const double splashTrickleRateMax = 15.0;   // particles/sec at tilt == 1.0
-  static const int splashGameOverDelayMs = 600;      // hold the overlay this long so the burst animates
   static const double splashGravity = 800.0;         // px/s² pulling splash droplets down
   static const double splashSpeedMin = 60.0;         // px/s min initial droplet speed
   static const double splashSpeedMax = 120.0;        // px/s max initial droplet speed

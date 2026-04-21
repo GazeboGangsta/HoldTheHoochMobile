@@ -86,7 +86,6 @@ void main() {
       expect(GameConfig.splashGameOverBurstCount, greaterThan(GameConfig.splashBurstCount));
       expect(GameConfig.splashTrickleRateBase, greaterThan(0));
       expect(GameConfig.splashTrickleRateMax, greaterThan(GameConfig.splashTrickleRateBase));
-      expect(GameConfig.splashGameOverDelayMs, greaterThan(0));
       expect(GameConfig.splashGravity, greaterThan(0));
       expect(GameConfig.splashSpeedMin, greaterThan(0));
       expect(GameConfig.splashSpeedMax, greaterThan(GameConfig.splashSpeedMin));
