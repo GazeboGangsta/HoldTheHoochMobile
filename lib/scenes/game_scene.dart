@@ -208,9 +208,21 @@ class GameScene extends FlameGame with HasCollisionDetection {
     ));
 
 
-    // 11 front_trees1 added BEFORE Gurgles → renders behind him. Gives the
-    // scene a midground-tree beat without occluding the player. Layer 12
-    // is still added after Gurgles for one layer of depth occlusion.
+    // 12 front_trees2 added BEFORE Gurgles → renders behind him (slightly
+    // further from camera than 11 despite the name, per playtest tuning via
+    // tools/pine-hills-preview.html).
+    add(RasterParallaxLayer(
+      assetPath: '../third_party/pine_hills/png/12_front_trees2.png',
+      speedFactor: 0.86,
+      worldSpeedProvider: () => currentScrollSpeed,
+      worldSize: size,
+      yPosition: playAreaHeight * 0.55,
+      height: playAreaHeight * 0.45,
+      sourceWidth: srcW,
+      sourceHeight: srcH,
+    ));
+
+    // 11 front_trees1 — also behind Gurgles, closer to camera than 12.
     add(RasterParallaxLayer(
       assetPath: '../third_party/pine_hills/png/11_front_trees1.png',
       speedFactor: 0.85,
@@ -218,6 +230,19 @@ class GameScene extends FlameGame with HasCollisionDetection {
       worldSize: size,
       yPosition: playAreaHeight * 0.50,
       height: playAreaHeight * 0.50,
+      sourceWidth: srcW,
+      sourceHeight: srcH,
+    ));
+
+    // 09 front_grass — behind Gurgles so his feet are visible above the
+    // grass blades. Layer 10 (dirt/leafs edge) goes in front.
+    add(RasterParallaxLayer(
+      assetPath: '../third_party/pine_hills/png/09_front_grass.png',
+      speedFactor: 1.0,
+      worldSpeedProvider: () => currentScrollSpeed,
+      worldSize: size,
+      yPosition: playAreaHeight * 0.80,
+      height: playAreaHeight * 0.20,
       sourceWidth: srcW,
       sourceHeight: srcH,
     ));
@@ -232,19 +257,9 @@ class GameScene extends FlameGame with HasCollisionDetection {
     gurgles.onObstacleHit = () => _end('Hit an obstacle!');
     add(gurgles);
 
-    // 09-13: foreground layers inserted after Gurgles so they occlude him
-    // for depth, but before gameplay managers so obstacles/collectibles render
-    // on top (visible through the foliage).
-    add(RasterParallaxLayer(
-      assetPath: '../third_party/pine_hills/png/09_front_grass.png',
-      speedFactor: 1.0,
-      worldSpeedProvider: () => currentScrollSpeed,
-      worldSize: size,
-      yPosition: playAreaHeight * 0.80,
-      height: playAreaHeight * 0.20,
-      sourceWidth: srcW,
-      sourceHeight: srcH,
-    ));
+    // 10 front_leafs (dirt edge) — the only layer that renders IN FRONT of
+    // Gurgles. Sits at the ground line, occludes his ankles for a grounded
+    // silhouette. Layer 13 (rocks) disabled per playtest.
     add(RasterParallaxLayer(
       assetPath: '../third_party/pine_hills/png/10_front_leafs.png',
       speedFactor: 1.0,
@@ -252,26 +267,6 @@ class GameScene extends FlameGame with HasCollisionDetection {
       worldSize: size,
       yPosition: playAreaHeight * 0.80,
       height: playAreaHeight * 0.20,
-      sourceWidth: srcW,
-      sourceHeight: srcH,
-    ));
-    add(RasterParallaxLayer(
-      assetPath: '../third_party/pine_hills/png/12_front_trees2.png',
-      speedFactor: 0.92,
-      worldSpeedProvider: () => currentScrollSpeed,
-      worldSize: size,
-      yPosition: playAreaHeight * 0.55,
-      height: playAreaHeight * 0.45,
-      sourceWidth: srcW,
-      sourceHeight: srcH,
-    ));
-    add(RasterParallaxLayer(
-      assetPath: '../third_party/pine_hills/png/13_front_rocks.png',
-      speedFactor: 1.0,
-      worldSpeedProvider: () => currentScrollSpeed,
-      worldSize: size,
-      yPosition: playAreaHeight * 0.85,
-      height: playAreaHeight * 0.15,
       sourceWidth: srcW,
       sourceHeight: srcH,
     ));
