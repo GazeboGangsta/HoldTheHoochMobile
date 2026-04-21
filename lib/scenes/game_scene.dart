@@ -42,7 +42,6 @@ class GameScene extends FlameGame with HasCollisionDetection {
   bool _gameOver = false;
   String? endReason;
   late double _groundY;
-  late double _groundHeight;
 
   // Allows test stubs to initialise _groundY without triggering the full
   // SVG-loading onLoad() path.
@@ -84,8 +83,11 @@ class GameScene extends FlameGame with HasCollisionDetection {
 
     final controlStripHeight = size.y * GameConfig.controlStripHeightFraction;
     final controlStripTop = size.y - controlStripHeight;
-    _groundHeight = size.y * 0.06;
-    _groundY = controlStripTop - _groundHeight;
+    // _groundY pinned to top of control strip: Gurgles' feet land on the
+    // Pine Hills grass/dirt (layer 09/10 content sits at the bottom of the
+    // play area). Previously we had an extra _groundHeight gap between
+    // them, which the old SVG Ground component filled — now unused.
+    _groundY = controlStripTop;
 
     // "Underground" backdrop for the control strip.
     add(RectangleComponent(
@@ -175,8 +177,8 @@ class GameScene extends FlameGame with HasCollisionDetection {
       speedFactor: 0.12,
       worldSpeedProvider: () => currentScrollSpeed,
       worldSize: size,
-      yPosition: 0,
-      height: playAreaHeight,
+      yPosition: playAreaHeight * 0.25,
+      height: playAreaHeight * 0.75,
       sourceWidth: srcW,
       sourceHeight: srcH,
     ));
@@ -187,8 +189,8 @@ class GameScene extends FlameGame with HasCollisionDetection {
       speedFactor: 0.22,
       worldSpeedProvider: () => currentScrollSpeed,
       worldSize: size,
-      yPosition: 0,
-      height: playAreaHeight,
+      yPosition: playAreaHeight * 0.35,
+      height: playAreaHeight * 0.65,
       sourceWidth: srcW,
       sourceHeight: srcH,
     ));
@@ -199,8 +201,8 @@ class GameScene extends FlameGame with HasCollisionDetection {
       speedFactor: 0.40,
       worldSpeedProvider: () => currentScrollSpeed,
       worldSize: size,
-      yPosition: 0,
-      height: playAreaHeight,
+      yPosition: playAreaHeight * 0.45,
+      height: playAreaHeight * 0.55,
       sourceWidth: srcW,
       sourceHeight: srcH,
     ));
@@ -224,8 +226,8 @@ class GameScene extends FlameGame with HasCollisionDetection {
       speedFactor: 1.0,
       worldSpeedProvider: () => currentScrollSpeed,
       worldSize: size,
-      yPosition: 0,
-      height: playAreaHeight,
+      yPosition: playAreaHeight * 0.80,
+      height: playAreaHeight * 0.20,
       sourceWidth: srcW,
       sourceHeight: srcH,
     ));
@@ -234,8 +236,8 @@ class GameScene extends FlameGame with HasCollisionDetection {
       speedFactor: 1.0,
       worldSpeedProvider: () => currentScrollSpeed,
       worldSize: size,
-      yPosition: 0,
-      height: playAreaHeight,
+      yPosition: playAreaHeight * 0.80,
+      height: playAreaHeight * 0.20,
       sourceWidth: srcW,
       sourceHeight: srcH,
     ));
@@ -244,8 +246,8 @@ class GameScene extends FlameGame with HasCollisionDetection {
       speedFactor: 0.85,
       worldSpeedProvider: () => currentScrollSpeed,
       worldSize: size,
-      yPosition: 0,
-      height: playAreaHeight,
+      yPosition: playAreaHeight * 0.50,
+      height: playAreaHeight * 0.50,
       sourceWidth: srcW,
       sourceHeight: srcH,
     ));
@@ -254,8 +256,8 @@ class GameScene extends FlameGame with HasCollisionDetection {
       speedFactor: 0.92,
       worldSpeedProvider: () => currentScrollSpeed,
       worldSize: size,
-      yPosition: 0,
-      height: playAreaHeight,
+      yPosition: playAreaHeight * 0.55,
+      height: playAreaHeight * 0.45,
       sourceWidth: srcW,
       sourceHeight: srcH,
     ));
@@ -264,8 +266,8 @@ class GameScene extends FlameGame with HasCollisionDetection {
       speedFactor: 1.0,
       worldSpeedProvider: () => currentScrollSpeed,
       worldSize: size,
-      yPosition: 0,
-      height: playAreaHeight,
+      yPosition: playAreaHeight * 0.85,
+      height: playAreaHeight * 0.15,
       sourceWidth: srcW,
       sourceHeight: srcH,
     ));
