@@ -242,25 +242,21 @@ class GameScene extends FlameGame with HasCollisionDetection {
     _gameOver = true;
     endReason = reason;
 
-    if (fromSpill) {
-      // Keep the engine running through the delay so the burst animates.
-      // _gameOver (set above) blocks further update() logic, and the
-      // game-over overlay hasn't been added yet, so the player can't
-      // retry mid-delay.
-      splashEmitter.emitGameOverBurst();
-      Future.delayed(
-        Duration(milliseconds: GameConfig.splashGameOverDelayMs),
-        () {
-          if (!isAttached) return;
-          pauseEngine();
-          overlays.add(gameOverOverlayId);
-        },
-      );
-      return;
-    }
+    gurgles.triggerHurt();
+    if (fromSpill) splashEmitter.emitGameOverBurst();
 
-    pauseEngine();
-    overlays.add(gameOverOverlayId);
+    // Wait for the hurt animation + (if spilling) the splash flourish before
+    // showing the overlay. The engine keeps running during the delay so both
+    // play; _gameOver (set above) blocks further update() logic, and the
+    // overlay hasn't been added yet, so the player can't retry mid-delay.
+    Future.delayed(
+      Duration(milliseconds: GameConfig.gameOverHurtDelayMs),
+      () {
+        if (!isAttached) return;
+        pauseEngine();
+        overlays.add(gameOverOverlayId);
+      },
+    );
   }
 
   Future<void> restart() async {
@@ -289,6 +285,7 @@ class GameScene extends FlameGame with HasCollisionDetection {
     balance.spill = 0;
     balance.resetPhase();
     balance.setDriftDirection(Random().nextBool() ? 1.0 : -1.0);
+    gurgles.resetAnimator();
     resumeEngine();
   }
 
