@@ -65,7 +65,7 @@ class CollectibleManager extends Component {
     return switch (k) {
       CollectibleKind.fruitCommon => groundY - 50.0 * sizeScale,
       CollectibleKind.fruitMedium => groundY - 120.0 * sizeScale,
-      CollectibleKind.fruitRare => groundY - 120.0 * sizeScale,
+      CollectibleKind.fruitRare => groundY - 225.0 * sizeScale,
       CollectibleKind.crystal => groundY - 180.0 * sizeScale,
       CollectibleKind.potion => groundY - 180.0 * sizeScale,
     };

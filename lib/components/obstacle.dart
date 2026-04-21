@@ -24,10 +24,20 @@ class Obstacle extends PositionComponent with CollisionCallbacks {
         );
 
   static Vector2 _sizeFor(ObstacleKind k) => switch (k) {
-        ObstacleKind.stone => Vector2(40, 28),
-        ObstacleKind.rock => Vector2(72, 60),
-        ObstacleKind.mushroom => Vector2(72, 72),
-        ObstacleKind.log => Vector2(140, 72),
+        ObstacleKind.stone => Vector2(60, 49),
+        ObstacleKind.rock => Vector2(180, 160),
+        ObstacleKind.mushroom => Vector2(82, 82),
+        ObstacleKind.log => Vector2(150, 82),
+      };
+
+  /// Pixels to push an obstacle BELOW the ground line (so tall rocks + logs
+  /// appear planted in the dirt rather than floating on the grass). Applied
+  /// by [ObstacleManager._spawn] as `position.y = groundY + yOffsetFor(k)`.
+  /// Tuned via tools/sprite-size-preview.html.
+  static double yOffsetFor(ObstacleKind k) => switch (k) {
+        ObstacleKind.rock => 30,
+        ObstacleKind.log => 17,
+        ObstacleKind.stone || ObstacleKind.mushroom => 0,
       };
 
   static String _staticSpriteFor(ObstacleKind k) => switch (k) {

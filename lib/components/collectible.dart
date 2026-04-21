@@ -36,9 +36,9 @@ class Collectible extends PositionComponent with CollisionCallbacks {
         );
 
   static Vector2 _sizeFor(CollectibleKind k) => switch (k) {
-        CollectibleKind.fruitCommon => Vector2(40, 40),
-        CollectibleKind.fruitMedium => Vector2(44, 44),
-        CollectibleKind.fruitRare => Vector2(48, 48),
+        CollectibleKind.fruitCommon => Vector2(60, 60),
+        CollectibleKind.fruitMedium => Vector2(65, 65),
+        CollectibleKind.fruitRare => Vector2(60, 60),
         CollectibleKind.crystal => Vector2(36, 36),
         CollectibleKind.potion => Vector2(32, 48),
       };

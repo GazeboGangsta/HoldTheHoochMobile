@@ -47,9 +47,13 @@ class ObstacleManager extends Component {
   }
 
   void _spawn() {
+    final kind = _rollKind();
     final ob = Obstacle(
-      kind: _rollKind(),
-      position: Vector2(worldWidthProvider() + 80, groundY),
+      kind: kind,
+      position: Vector2(
+        worldWidthProvider() + 80,
+        groundY + Obstacle.yOffsetFor(kind),
+      ),
       scrollSpeed: scrollSpeedProvider(),
       sizeScale: sizeScale,
     );
