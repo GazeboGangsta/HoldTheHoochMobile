@@ -66,6 +66,13 @@ flutter:
   assets:
     - assets/svg/
     - assets/images/
+    - assets/images/gurgles/idle/
+    - assets/images/gurgles/run/
+    - assets/images/gurgles/jump_start/
+    - assets/images/gurgles/jump_cycle/
+    - assets/images/gurgles/jump_land/
+    - assets/images/gurgles/hurt/
+    - assets/images/gurgles/dead/
     - assets/audio/
 
   # An image asset can refer to one or more resolution-specific "variants", see
