@@ -2,6 +2,16 @@
 
 Replacement art specs for all visual assets. Drop SVGs into `assets/svg/` (raster fallbacks into `assets/images/`) with the exact filenames listed below. No code changes needed — the engine reads each file at startup.
 
+## Current character sprites
+
+**As of 2026-04-21 Gurgles is drawn from a derivative of the `no_hat_gnome` frames in the purchased *Gnomes Mega Character Pack* (Game Developer Studio, commercial licence per clause 4.1 of the GDN terms).** See [ART-PACK-INVENTORY.md](ART-PACK-INVENTORY.md) for the full pack inventory and the per-animation file layout.
+
+- The pack's original character holds a wooden staff in his lead hand. This is intentionally kept in our build — it reframes Gurgles as "druid brewer with walking staff + magically-floating tankard" without requiring per-frame edits.
+- The tankard remains a separate floating `SvgComponent` overlay (`assets/svg/hooch.svg`), rotated per-frame by `balance.tilt` — rendering logic in [lib/components/gurgles.dart](../lib/components/gurgles.dart).
+- Asset-regeneration pipeline: extract the raw pack into `art-source/gnomes/` (gitignored), then run `dart run tools/build_gurgles_sprites.dart`. Output lands in `assets/images/gurgles/<anim>/` and is consumed at runtime via Flame's `Sprite.load` + `SpriteAnimation.spriteList`.
+
+The original briefs below describe the aspirational art direction from before the pack was purchased. They're retained as reference for future hand-drawn polish passes (e.g. if we ever commission an original run-cycle).
+
 ## Style
 
 Flat/minimal SVG in the same visual language as the web game at [gurgles.beer](https://gurgles.beer). Clean geometric shapes, bold saturated colours, modern indie game feel. Think "old Newgrounds flash game from 2005, but crisper". Gurgles should be instantly recognisable alongside his web-game twin.

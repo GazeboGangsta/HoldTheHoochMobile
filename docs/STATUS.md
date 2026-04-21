@@ -1,6 +1,6 @@
 # Project Status — HoldTheHooch Mobile
 
-_Last updated: 2026-04-21 (first TestFlight IPA shipped; M7 leaderboard-integrity milestone added)_
+_Last updated: 2026-04-21 (gnome-pack animations integrated on feat/gnome-animations)_
 
 Snapshot of where the project is, what's working, what isn't, and what to pick up next session. Refreshed after a full-codebase review; known doc drift corrected.
 
@@ -8,10 +8,12 @@ Snapshot of where the project is, what's working, what isn't, and what to pick u
 
 Working Flutter + Flame 2D side-scrolling endless runner on Android. Installable debug APK running on Pixel 8 Pro + Samsung S26 Ultra via wireless debugging. Core loop is playable via a dedicated bottom control strip (◀ ▶ tilt buttons + ▲ jump). Tankard leans with `balance.tilt` for visible feedback. Real SVG art from the web game is in, parallax backdrop scrolls, score submits to `gurgles.beer`, leaderboard scene shows top 50. iOS not yet built on a real Mac, but CodeMagic's `ios-debug` workflow passes.
 
+Gurgles runs on a real 8-frame sprite animation derived from the `no_hat_gnome` frames in the purchased Game Developer Studio gnome pack. Jump arc is a 7-frame takeoff + 12-frame airborne loop + 6-frame landing. On game over: 6-frame hurt animation → held dead pose → overlay. Menu screen shows an idling Gurgles above the name field.
+
 ## What's playable today
 
 - **Menu** → name entry (persisted locally) → **Start** → game scene → **Game Over** overlay → **Retry** / **Menu**.
-- Gurgles runs (sprite swaps between run and jump pose — no animated run cycle).
+- Gurgles runs on a real 8-frame sprite animation derived from the `no_hat_gnome` frames in the purchased Game Developer Studio gnome pack. Jump arc is a 7-frame takeoff + 12-frame airborne loop + 6-frame landing. On game over: 6-frame hurt animation → held dead pose → overlay. Menu screen shows an idling Gurgles above the name field.
 - Bottom **control strip**: ◀ tilt-left, ▶ tilt-right, ▲ jump (right-aligned). Tap-and-hold for continuous action. Play area sits above the strip; no gestures needed in the play area, so edge back-gestures don't collide.
 - **Tankard visually leans** with `balance.tilt` (up to ~34°) so the player can see which way the hooch is tipping.
 - Passive hooch wobble builds tilt over time; every jump adds a random tilt impulse.
@@ -136,7 +138,7 @@ flutter install -d <device-id> --debug
 | 11 | Obstacle/collectible scroll speed frozen at spawn | Low | Each instance captures `scrollSpeed` at spawn time; doesn't update as world speed ramps. Results in visible "catch up" lag at higher speeds. Pull `scrollSpeedProvider()` in `update()`. |
 | 12 | `platform` field in score submission | Low | `defaultTargetPlatform.name.toLowerCase()` returns `'android'`/`'ios'` on device but `'linux'`/etc. on desktop. Fine for mobile-only ship; harden before store submission. |
 | 13 | Gurgles lands 0.5px above `_groundY` | Low | Masked by 2-pixel tolerance in `onGround`. Cosmetic only. |
-| 14 | Run cycle sprite swap is binary (run ↔ jump) | Low | Web game has one gurgles pose; a 6-frame cycle is in [ART-GUIDE.md](ART-GUIDE.md). Defer to polish pass. |
+| ~~14~~ | ~~Run cycle sprite swap is binary (run ↔ jump)~~ | ~~Low~~ | **Closed 2026-04-21.** Replaced with 8-frame run cycle + 7/12/6-frame jump arc + 6-frame hurt + dead pose via the no_hat_gnome gnome-pack integration on `feat/gnome-animations`. See docs/ART-PACK-INVENTORY.md and docs/superpowers/plans/2026-04-21-gnome-animation-integration.md. |
 | 15 | No SFX / music | Med | Brief in [AUDIO-GUIDE.md](AUDIO-GUIDE.md); nothing wired via `flame_audio`. |
 | ~~16~~ | ~~Test suite is effectively empty~~ | ~~Med~~ | **Closed 2026-04-20.** M4c minimum-viable suite landed — 58 tests covering HoochBalance clamps, GameConfig invariants, Obstacle/Collectible hitbox bounds, GameScene.restart() cleanup, Gurgles peak-jump. |
 | ~~17~~ | ~~No iOS build attempted~~ | ~~High (for ship)~~ | **Closed 2026-04-20.** iOS no-codesign build passes via CodeMagic `ios-debug` workflow. Release workflow (`ios-release`) configured but needs Apple Developer signing credentials per [SIGNING.md](SIGNING.md). |
@@ -157,14 +159,17 @@ flutter install -d <device-id> --debug
 - **`ApiClient.fetchTop` now throws on failure** (used to silently return `[]`). Callers must catch or wrap in a `FutureBuilder` with error handling.
 - **Calling `parent?.add(child)` from inside `update()` causes `ConcurrentModificationError` in the test harness.** In tests without `GameWidget`, `FlameGame.isMounted` stays false so `Component.add` takes the direct-modify branch instead of the lifecycle queue. If you're already iterating the parent's children (and Flame is iterating yours via `updateTree`), the add mutates the live set. Workaround used in `SplashEmitter`: override `updateTree`, buffer adds in a `_pendingEmissions` list, flush after the children-iteration loop. Same class of issue `ScorePopup` sidesteps by computing motion in a custom `update` override rather than effects on `TextComponent`.
 - **CodeMagic's "automatic iOS code signing" is broken for first-time Apple Developer accounts.** The `ios_signing` declarative block claims it auto-creates the Distribution cert + App Store provisioning profile via the App Store Connect API key integration. In practice: (a) the pre-flight profile-existence check runs before any script does, (b) `app-store-connect fetch-signing-files --create` silently fails to save the generated private key (`"Cannot save Signing Certificates without certificate private key"`), leaving orphaned certs on Apple's side that can't be used for signing on subsequent runs. **The working path** (proven 2026-04-21): generate the RSA private key + CSR on Windows with OpenSSL, upload CSR to Apple Developer Portal → download `.cer` → combine cert+key into `.p12` → upload `.p12` to CodeMagic Code signing identities → manually create the App Store provisioning profile at Apple Developer Portal → upload the `.mobileprovision` to CodeMagic's profile store. Then the canonical `ios_signing` block finds both and just works. See [SIGNING.md](SIGNING.md) + `ios-signing/` for the full OpenSSL commands + files.
+- **`package:image` is a dev-only dep.** The asset curation script at `tools/build_gurgles_sprites.dart` uses it to compute the union content bounding box across all shipping frames + crop + resize. Raw frames live in `art-source/gnomes/` (gitignored) and are consumed by the script, not by the app. Do NOT import `package:image` from `lib/` — it's dev_dependencies only.
+- **Flame 1.37's `SpriteAnimationWidget` requires BOTH `animation` AND `animationTicker` as constructor args.** The ticker isn't auto-created in 1.37 (unlike older versions). Construct it explicitly via `animation.createTicker()` and store it in state alongside the animation (see `lib/components/gurgles_idle_widget.dart` for the pattern).
+- **Flutter asset resolver is non-recursive for trailing-slash entries.** `assets/images/` alone does NOT recursively include subfolders. Each subfolder must be listed explicitly in pubspec.yaml — see the `assets/images/gurgles/<anim>/` entries.
 
 ## Immediate next steps (in order)
 
-1. **Collect TestFlight feedback** — first IPA (`1.0.0 (N)`, tag `v0.1.0`) shipped to App Store Connect on 2026-04-21; friend on iPhone is the first external tester. What they flag steers everything below.
-2. **M5c remaining UX** — tutorial overlay (first 1–2s of first run), settings (music / haptics / control toggles). Pure code, no asset blocker.
-3. **M7a — Leaderboard integrity (device-bound identity + server HMAC + admin endpoint)** — add before M6 public release. Covers the unauthenticated-submission + no-admin-tooling gaps surfaced on 2026-04-21. See [ROADMAP.md § M7a](ROADMAP.md).
-4. **M5b audio pass** — wire SFX per [AUDIO-GUIDE.md](AUDIO-GUIDE.md). Blocked on audio delivery.
-5. **M5a remaining polish** — 6-frame run cycle + hurt pose. Art-dependent per [ART-GUIDE.md](ART-GUIDE.md); unblocked only when art lands.
+1. **Merge `feat/gnome-animations` into main** — 10 commits shipping the no_hat_gnome animation integration (curation pipeline + GurglesAnimator state machine + menu idle + hurt/dead overlays + device-tuning). 89 tests passing. Fully playtested on Samsung S26 Ultra.
+2. **Collect TestFlight feedback** — first IPA (`1.0.0 (N)`, tag `v0.1.0`) shipped to App Store Connect on 2026-04-21; friend on iPhone is the first external tester. What they flag steers everything below.
+3. **M5c remaining UX** — tutorial overlay (first 1–2s of first run), settings (music / haptics / control toggles). Pure code, no asset blocker.
+4. **M7a — Leaderboard integrity (device-bound identity + server HMAC + admin endpoint)** — add before M6 public release. Covers the unauthenticated-submission + no-admin-tooling gaps surfaced on 2026-04-21. See [ROADMAP.md § M7a](ROADMAP.md).
+5. **M5b audio pass** — wire SFX per [AUDIO-GUIDE.md](AUDIO-GUIDE.md). Blocked on audio delivery.
 6. **M6b store metadata** — app icon, splash screen, privacy policy, store listings. Blocked on having something worth publishing (TestFlight feedback loop).
 7. **Design call on finite-hooch spill model** (see [ROADMAP.md § Design ideas to consider](ROADMAP.md)) — decide before M6 ship whether to swap the auto-drain spill mechanic for a finite-resource refill-via-collectibles model.
 

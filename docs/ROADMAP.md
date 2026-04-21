@@ -86,8 +86,8 @@ Goal: make it feel and sound finished.
 - [x] **Tankard rotation** tied to `balance.tilt` — visual feedback of how close to spilling. Rotate `_tankard` in `Gurgles.update`: `_tankard.angle = balance.tilt * 0.6` (~35° max lean).
 - [x] **Splash particles** on spill — programmatic emission via `SplashEmitter` (hybrid burst + reactive trickle + dramatic game-over flourish, all from the tankard rim).
 - [x] **Sparkle particles** on collectible pickup — programmatic, tinted + size-scaled per `CollectibleKind` via `SparkleBurst` (herb green / hops gold / potion blue + expanding halo).
-- [ ] **6-frame run cycle** sprite swap. Requires art delivery ([ART-GUIDE.md](ART-GUIDE.md)).
-- [ ] **Hurt pose** on game-over (gurgles-hurt.svg — needs art).
+- [x] **8-frame run cycle + full jump/hurt/dead arc** — derivative of `no_hat_gnome` frames from the purchased Game Developer Studio gnome pack. See [ART-PACK-INVENTORY.md](ART-PACK-INVENTORY.md) for license + inventory. Pipeline: `dart run tools/build_gurgles_sprites.dart` curates raw frames into `assets/images/gurgles/<anim>/`. Rendering is driven by `GurglesAnimator` state machine (`lib/components/gurgles_animator.dart`).
+- [x] **Hurt pose + dead pose** on game-over — 6-frame hurt animation plays after obstacle hit or spill, then holds on a single-frame dead pose until the overlay appears (unified 600 ms delay via `GameConfig.gameOverHurtDelayMs`).
 
 ### M5b — Audio
 
@@ -105,6 +105,7 @@ Per [AUDIO-GUIDE.md](AUDIO-GUIDE.md). Add `flame_audio` dep. Wire each as the SF
 ### M5c — Scenes + UX
 
 - [x] **Leaderboard scene** — `GET /api/scores/top`, list top 50. Menu button pushes a new scene with loading / error / empty states and current-player highlighting.
+- [x] **Menu idle animation** — Gurgles idles next to the name-entry field on the menu screen via a standalone `GurglesIdleWidget` (no FlameGame needed). 20-frame cycle from the gnome pack's idle animation.
 - [ ] **Tutorial overlay** — first 1–2 seconds of first run only. `tap-hint.svg` on right, `drag-hint.svg` on left. Dismiss on first input.
 - [ ] **Settings** (lightweight) — music toggle, haptics toggle, accelerometer vs drag toggle.
 
