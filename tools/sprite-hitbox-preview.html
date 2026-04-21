@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Sprite Hitbox Preview</title>
+<style>
+  * { box-sizing: border-box; }
+  body { display: flex; font-family: -apple-system, system-ui, sans-serif; margin: 0; height: 100vh; }
+  .sidebar { width: 480px; padding: 16px; overflow-y: auto; background: #f5f5f5; border-right: 1px solid #ccc; }
+  .sidebar h2 { margin: 0 0 8px 0; font-size: 18px; }
+  .sidebar .intro { font-size: 12px; color: #555; margin-bottom: 12px; line-height: 1.4; }
+  .preview-pane { flex: 1; display: flex; align-items: center; justify-content: center; background: #1a1a1a; }
+
+  /* Phone frame — matches sprite-size-preview (360×780, game ratio). */
+  .phone {
+    position: relative; width: 360px; height: 780px;
+    overflow: hidden; background: #77B8DC;
+    border: 3px solid #000; border-radius: 28px;
+  }
+  .play-area { position: absolute; top: 0; left: 0; right: 0; height: 86%; overflow: hidden; }
+  .control-strip {
+    position: absolute; bottom: 0; left: 0; right: 0; height: 14%;
+    background: #2D1A0E;
+    display: flex; align-items: center; justify-content: space-between; padding: 0 24px;
+  }
+  .control-strip .btn {
+    width: 50px; height: 50px; border: 2px solid #D4A744; border-radius: 8px;
+    color: #D4A744; display: flex; align-items: center; justify-content: center;
+    font-size: 22px; background: #2D1A0E;
+  }
+  .bg-layer {
+    position: absolute; left: 0; right: 0;
+    background-repeat: no-repeat; background-size: 100% 100%;
+    image-rendering: pixelated; image-rendering: crisp-edges;
+  }
+
+  /* The sprite containers — Gurgles on the left, selected class on the right.
+     Each holds an <img> + a hitbox overlay div. */
+  .sprite-wrap {
+    position: absolute; bottom: 0;
+    transition: bottom 0.15s ease-out;
+  }
+  .sprite-wrap img {
+    display: block;
+    image-rendering: pixelated; image-rendering: crisp-edges;
+  }
+  .sprite-wrap .hitbox {
+    position: absolute;
+    background: rgba(255, 64, 64, 0.30);
+    border: 1.5px solid rgba(255, 32, 32, 0.95);
+    pointer-events: none;
+  }
+  .sprite-wrap.gurgles {
+    left: 22%;
+  }
+  .sprite-wrap.gurgles img {
+    image-rendering: auto; /* smooth cartoon */
+    width: 112px; height: 140px;
+  }
+  .variants {
+    position: absolute; bottom: 0; left: 45%; right: 0;
+    display: flex; flex-wrap: nowrap; align-items: flex-end;
+    gap: 12px; padding-left: 8px;
+    pointer-events: none;
+  }
+  .variant-label {
+    position: absolute; bottom: -14px; left: 0;
+    font-size: 9px; color: #fff; text-shadow: 0 0 3px #000;
+    white-space: nowrap;
+  }
+
+  /* Sidebar controls */
+  .class-picker {
+    width: 100%; padding: 8px; font-size: 13px;
+    border: 1px solid #888; border-radius: 4px; background: #fff;
+    margin-bottom: 12px;
+  }
+  .sprite-info {
+    padding: 8px; background: #fff; border: 1px solid #ddd; border-radius: 4px;
+    font-family: monospace; font-size: 11px; margin-bottom: 12px;
+    color: #333;
+  }
+  .slider-group { margin-bottom: 12px; }
+  .slider-group h3 {
+    margin: 0 0 6px 0; font-size: 11px; color: #666;
+    text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .control-row {
+    display: grid; grid-template-columns: 90px 1fr 56px;
+    gap: 8px; align-items: center; margin: 4px 0;
+  }
+  .control-row label { font-size: 12px; color: #333; }
+  .control-row input[type=range] { width: 100%; }
+  .control-row .val {
+    font-family: 'Consolas', monospace; font-size: 11px; text-align: right;
+    padding: 2px 6px; background: #fff; border: 1px solid #ccc; border-radius: 3px;
+  }
+  .variants-list {
+    margin-top: 12px; padding: 8px; background: #fff;
+    border: 1px solid #ddd; border-radius: 4px;
+  }
+  .variants-list h3 {
+    margin: 0 0 6px 0; font-size: 11px; color: #666;
+    text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .variants-list label { display: block; font-size: 12px; margin: 2px 0; cursor: pointer; }
+  .gurgles-panel { background: #fff4d6 !important; border: 1px solid #e8a900 !important; }
+  .btn-row { display: flex; gap: 8px; margin: 16px 0 8px; }
+  .btn-row button {
+    padding: 8px 16px; cursor: pointer; border: 1px solid #888;
+    background: #fff; border-radius: 4px; font-size: 13px;
+  }
+  .btn-row button.primary { background: #4A90E2; color: #fff; border-color: #4A90E2; }
+  #config-output {
+    width: 100%; height: 240px; font-family: 'Consolas', monospace;
+    font-size: 11px; padding: 8px; border: 1px solid #888; border-radius: 4px;
+    white-space: pre; resize: vertical;
+  }
+  .toggle-show-hitbox {
+    display: flex; align-items: center; gap: 8px;
+    padding: 6px 8px; background: #ffe; border: 1px solid #dd8;
+    border-radius: 4px; font-size: 12px; margin-bottom: 12px;
+  }
+  .non-tunable-note {
+    font-size: 11px; color: #777; font-style: italic;
+    margin-top: 4px;
+  }
+</style>
+</head>
+<body>
+  <div class="sidebar">
+    <h2>🎯 Sprite Hitbox Preview</h2>
+    <p class="intro">
+      Red overlay = collision box. Tune fractions of each sprite (position X/Y + width/height).
+      Gurgles' body hitbox + all obstacle hitboxes are per-kind tunable; collectible hitboxes
+      share one generic 90% centered rect (shown for reference, not tunable here).
+    </p>
+
+    <div class="toggle-show-hitbox">
+      <label><input type="checkbox" id="show-hitbox" checked> Show hitbox overlays</label>
+    </div>
+
+    <select class="class-picker" id="class-picker"></select>
+
+    <div class="sprite-info" id="sprite-info">
+      Sprite: 112 × 140 px
+    </div>
+
+    <div class="slider-group">
+      <h3>Hitbox (fractions of sprite size)</h3>
+      <div class="control-row">
+        <label>Pos X %</label>
+        <input type="range" id="pos-x-slider" min="0" max="100" step="1">
+        <span class="val" id="pos-x-val">30</span>
+      </div>
+      <div class="control-row">
+        <label>Pos Y %</label>
+        <input type="range" id="pos-y-slider" min="0" max="100" step="1">
+        <span class="val" id="pos-y-val">32</span>
+      </div>
+      <div class="control-row">
+        <label>Size X %</label>
+        <input type="range" id="size-x-slider" min="1" max="100" step="1">
+        <span class="val" id="size-x-val">40</span>
+      </div>
+      <div class="control-row">
+        <label>Size Y %</label>
+        <input type="range" id="size-y-slider" min="1" max="100" step="1">
+        <span class="val" id="size-y-val">58</span>
+      </div>
+      <div class="non-tunable-note" id="non-tunable-note" style="display:none;">
+        This class shares the generic 90% centered hitbox — not tunable per-kind in V1.
+      </div>
+    </div>
+
+    <div class="variants-list" id="variants-list">
+      <h3>Variants</h3>
+    </div>
+
+    <div class="variants-list gurgles-panel">
+      <h3>Gurgles Jump Height (preview only)</h3>
+      <label><input type="radio" name="gurgles-height" value="0" checked> Standing on ground (0 px)</label>
+      <label><input type="radio" name="gurgles-height" value="92"> Short-tap jump peak (~92 px)</label>
+      <label><input type="radio" name="gurgles-height" value="208"> Full-hold jump peak (~208 px)</label>
+    </div>
+
+    <div class="btn-row">
+      <button class="primary" id="copy-btn">📋 Copy Dart Config</button>
+      <button id="reset-btn">Reset class</button>
+      <button id="reset-all-btn">Reset all</button>
+    </div>
+    <textarea id="config-output" readonly placeholder="Click 'Copy Dart Config' to export Gurgles body hitbox + Obstacle.hitboxFor switch."></textarea>
+  </div>
+
+  <div class="preview-pane">
+    <div class="phone">
+      <div class="play-area" id="play-area">
+        <!-- backdrop layers inserted here -->
+        <div class="sprite-wrap gurgles" id="gurgles-wrap">
+          <img src="../assets/images/gurgles/idle/000.png" alt="Gurgles" />
+          <div class="hitbox" id="gurgles-hitbox"></div>
+        </div>
+        <div class="variants" id="variants"></div>
+      </div>
+      <div class="control-strip">
+        <div class="btn">◀</div>
+        <div class="btn">▶</div>
+        <div style="flex:1"></div>
+        <div class="btn">▲</div>
+      </div>
+    </div>
+  </div>
+
+<script>
+// ---------- Pine Hills static backdrop (same layers as size-preview) ----------
+const BG_ROOT = '../assets/third_party/pine_hills/png/';
+const BACKDROP_LAYERS = [
+  { src: '00_background.png', yPct: 0,    hPct: 1.00 },
+  { src: '01_back clouds.png', yPct: 0,    hPct: 1.00 },
+  { src: '06_back_mountains.png', yPct: 0.25, hPct: 0.75 },
+  { src: '07_mid_hills.png', yPct: 0.35, hPct: 0.65 },
+  { src: '08_mid_forest.png', yPct: 0.45, hPct: 0.55 },
+  { src: '09_front_grass.png', yPct: 0.80, hPct: 0.20 },
+];
+
+function renderBackdrop() {
+  const playArea = document.getElementById('play-area');
+  const gurgles = document.getElementById('gurgles-wrap');
+  for (const layer of BACKDROP_LAYERS) {
+    const el = document.createElement('div');
+    el.className = 'bg-layer';
+    el.style.top = (layer.yPct * 100) + '%';
+    el.style.height = (layer.hPct * 100) + '%';
+    el.style.backgroundImage = `url("${BG_ROOT}${encodeURI(layer.src)}")`;
+    playArea.insertBefore(el, gurgles);
+  }
+}
+
+// ---------- Class definitions ----------
+// Each class has: label, sprite path(s), sprite size (matches tuned values
+// from tools/sprite-size-preview.html), default hitbox fractions, tunable flag.
+// Collectible hitbox is generic (non-tunable here) — shown for reference only.
+const COLLECTIBLE_GENERIC_HITBOX = { posX: 5, posY: 5, sizeX: 90, sizeY: 90 };
+
+function defaultClasses() {
+  return {
+    'gurgles': {
+      label: 'Gurgles (body hitbox)',
+      paths: ['../assets/images/gurgles/idle/000.png'],
+      w: 112, h: 140,
+      hitbox: { posX: 30, posY: 32, sizeX: 40, sizeY: 58 },
+      tunable: true,
+      dartKind: null,  // Gurgles is not an enum kind
+    },
+    'obstacle.stone': {
+      label: 'Obstacle — stone',
+      paths: ['../assets/images/obstacles/stone.png'],
+      w: 60, h: 49,
+      hitbox: { posX: 15, posY: 35, sizeX: 70, sizeY: 60 },
+      tunable: true,
+      dartKind: 'stone',
+      dartEnum: 'ObstacleKind',
+    },
+    'obstacle.rock': {
+      label: 'Obstacle — rock',
+      paths: ['../assets/images/obstacles/rock.png'],
+      w: 180, h: 160,
+      hitbox: { posX: 10, posY: 25, sizeX: 80, sizeY: 70 },
+      tunable: true,
+      dartKind: 'rock',
+      dartEnum: 'ObstacleKind',
+    },
+    'obstacle.mushroom': {
+      label: 'Obstacle — mushroom',
+      paths: ['../assets/images/obstacles/mushroom/000.png'],
+      w: 82, h: 82,
+      hitbox: { posX: 25, posY: 30, sizeX: 45, sizeY: 65 },
+      tunable: true,
+      dartKind: 'mushroom',
+      dartEnum: 'ObstacleKind',
+    },
+    'obstacle.log': {
+      label: 'Obstacle — log',
+      paths: ['../assets/images/obstacles/log/000.png'],
+      w: 150, h: 82,
+      hitbox: { posX: 5, posY: 25, sizeX: 90, sizeY: 60 },
+      tunable: true,
+      dartKind: 'log',
+      dartEnum: 'ObstacleKind',
+    },
+    'collectible.fruitCommon': {
+      label: 'Collectible — fruitCommon (reference, non-tunable)',
+      paths: [
+        '../assets/images/collectibles/cherry.png',
+        '../assets/images/collectibles/strawberry.png',
+        '../assets/images/collectibles/tomato.png',
+      ],
+      w: 60, h: 60,
+      hitbox: { ...COLLECTIBLE_GENERIC_HITBOX },
+      tunable: false,
+    },
+    'collectible.fruitMedium': {
+      label: 'Collectible — fruitMedium (reference, non-tunable)',
+      paths: [
+        '../assets/images/collectibles/apple.png',
+        '../assets/images/collectibles/orange.png',
+        '../assets/images/collectibles/pumpkin.png',
+      ],
+      w: 65, h: 65,
+      hitbox: { ...COLLECTIBLE_GENERIC_HITBOX },
+      tunable: false,
+    },
+    'collectible.fruitRare': {
+      label: 'Collectible — fruitRare (reference, non-tunable)',
+      paths: ['../assets/images/collectibles/golden_apple.png'],
+      w: 60, h: 60,
+      hitbox: { ...COLLECTIBLE_GENERIC_HITBOX },
+      tunable: false,
+    },
+    'collectible.crystal': {
+      label: 'Collectible — crystal (reference, non-tunable)',
+      paths: [
+        '../assets/images/collectibles/crystal/rose_quartz.png',
+        '../assets/images/collectibles/crystal/jasper.png',
+        '../assets/images/collectibles/crystal/citrine.png',
+        '../assets/images/collectibles/crystal/turquoise.png',
+        '../assets/images/collectibles/crystal/tiger_eye.png',
+        '../assets/images/collectibles/crystal/amethyst.png',
+        '../assets/images/collectibles/crystal/moonstone.png',
+        '../assets/images/collectibles/crystal/sapphire.png',
+        '../assets/images/collectibles/crystal/quartz.png',
+        '../assets/images/collectibles/crystal/bloodstone.png',
+      ],
+      w: 36, h: 36,
+      hitbox: { ...COLLECTIBLE_GENERIC_HITBOX },
+      tunable: false,
+    },
+    'collectible.potion': {
+      label: 'Collectible — potion (reference, non-tunable)',
+      paths: ['../assets/images/collectibles/potion.png'],
+      w: 32, h: 48,
+      hitbox: { ...COLLECTIBLE_GENERIC_HITBOX },
+      tunable: false,
+    },
+  };
+}
+
+let classes = defaultClasses();
+const visibility = {};
+for (const [id, cfg] of Object.entries(classes)) {
+  visibility[id] = new Set(cfg.paths.map((_, i) => i));
+}
+let currentClass = 'gurgles';
+let showHitbox = true;
+
+// ---------- rendering ----------
+function renderGurglesHitbox() {
+  const cfg = classes['gurgles'];
+  const hb = document.getElementById('gurgles-hitbox');
+  hb.style.left = (cfg.hitbox.posX / 100 * cfg.w) + 'px';
+  hb.style.top = (cfg.hitbox.posY / 100 * cfg.h) + 'px';
+  hb.style.width = (cfg.hitbox.sizeX / 100 * cfg.w) + 'px';
+  hb.style.height = (cfg.hitbox.sizeY / 100 * cfg.h) + 'px';
+  hb.style.display = showHitbox ? 'block' : 'none';
+}
+
+function renderVariants() {
+  const cfg = classes[currentClass];
+  const container = document.getElementById('variants');
+  container.innerHTML = '';
+  if (currentClass === 'gurgles') return;  // no secondary lineup for gurgles
+  cfg.paths.forEach((path, i) => {
+    if (!visibility[currentClass].has(i)) return;
+    const wrap = document.createElement('div');
+    wrap.className = 'sprite-wrap';
+    wrap.style.position = 'relative';
+    wrap.style.width = cfg.w + 'px';
+    wrap.style.height = cfg.h + 'px';
+    const img = document.createElement('img');
+    img.src = path;
+    img.style.width = cfg.w + 'px';
+    img.style.height = cfg.h + 'px';
+    wrap.appendChild(img);
+    const hb = document.createElement('div');
+    hb.className = 'hitbox';
+    hb.style.left = (cfg.hitbox.posX / 100 * cfg.w) + 'px';
+    hb.style.top = (cfg.hitbox.posY / 100 * cfg.h) + 'px';
+    hb.style.width = (cfg.hitbox.sizeX / 100 * cfg.w) + 'px';
+    hb.style.height = (cfg.hitbox.sizeY / 100 * cfg.h) + 'px';
+    hb.style.display = showHitbox ? 'block' : 'none';
+    wrap.appendChild(hb);
+    const label = document.createElement('div');
+    label.className = 'variant-label';
+    label.textContent = path.split('/').pop().replace('.png', '');
+    wrap.appendChild(label);
+    container.appendChild(wrap);
+  });
+}
+
+function populateClassPicker() {
+  const picker = document.getElementById('class-picker');
+  picker.innerHTML = '';
+  for (const [id, cfg] of Object.entries(classes)) {
+    const opt = document.createElement('option');
+    opt.value = id;
+    opt.textContent = cfg.label;
+    picker.appendChild(opt);
+  }
+  picker.value = currentClass;
+}
+
+function renderControls() {
+  const cfg = classes[currentClass];
+  document.getElementById('sprite-info').textContent =
+    `Sprite: ${cfg.w} × ${cfg.h} px` + (cfg.paths.length > 1 ? ` · ${cfg.paths.length} variants` : '');
+
+  document.getElementById('pos-x-slider').value = cfg.hitbox.posX;
+  document.getElementById('pos-y-slider').value = cfg.hitbox.posY;
+  document.getElementById('size-x-slider').value = cfg.hitbox.sizeX;
+  document.getElementById('size-y-slider').value = cfg.hitbox.sizeY;
+  document.getElementById('pos-x-val').textContent = cfg.hitbox.posX;
+  document.getElementById('pos-y-val').textContent = cfg.hitbox.posY;
+  document.getElementById('size-x-val').textContent = cfg.hitbox.sizeX;
+  document.getElementById('size-y-val').textContent = cfg.hitbox.sizeY;
+
+  const disableSliders = !cfg.tunable;
+  document.getElementById('pos-x-slider').disabled = disableSliders;
+  document.getElementById('pos-y-slider').disabled = disableSliders;
+  document.getElementById('size-x-slider').disabled = disableSliders;
+  document.getElementById('size-y-slider').disabled = disableSliders;
+  document.getElementById('non-tunable-note').style.display = disableSliders ? 'block' : 'none';
+
+  const list = document.getElementById('variants-list');
+  list.innerHTML = '<h3>Variants in this class</h3>';
+  if (cfg.paths.length < 2) {
+    list.innerHTML += '<div style="color:#999;font-size:11px;">Only one sprite in this class.</div>';
+  } else {
+    cfg.paths.forEach((path, i) => {
+      const name = path.split('/').pop().replace('.png', '');
+      const checked = visibility[currentClass].has(i);
+      const label = document.createElement('label');
+      label.innerHTML = `<input type="checkbox" ${checked ? 'checked' : ''} data-idx="${i}"> ${name}`;
+      label.querySelector('input').addEventListener('change', e => {
+        if (e.target.checked) visibility[currentClass].add(i);
+        else visibility[currentClass].delete(i);
+        renderVariants();
+      });
+      list.appendChild(label);
+    });
+  }
+}
+
+function updateHitboxField(field, value) {
+  const cfg = classes[currentClass];
+  if (!cfg.tunable) return;
+  cfg.hitbox[field] = value;
+  document.getElementById(`${field.replace(/([A-Z])/g, '-$1').toLowerCase()}-val`).textContent = value;
+  if (currentClass === 'gurgles') renderGurglesHitbox();
+  else renderVariants();
+}
+
+// ---------- event wiring ----------
+document.getElementById('class-picker').addEventListener('change', e => {
+  currentClass = e.target.value;
+  renderControls();
+  renderVariants();
+});
+
+document.getElementById('pos-x-slider').addEventListener('input', e => updateHitboxField('posX', +e.target.value));
+document.getElementById('pos-y-slider').addEventListener('input', e => updateHitboxField('posY', +e.target.value));
+document.getElementById('size-x-slider').addEventListener('input', e => updateHitboxField('sizeX', +e.target.value));
+document.getElementById('size-y-slider').addEventListener('input', e => updateHitboxField('sizeY', +e.target.value));
+
+document.getElementById('show-hitbox').addEventListener('change', e => {
+  showHitbox = e.target.checked;
+  renderGurglesHitbox();
+  renderVariants();
+});
+
+document.querySelectorAll('input[name="gurgles-height"]').forEach(radio => {
+  radio.addEventListener('change', e => {
+    document.getElementById('gurgles-wrap').style.bottom = e.target.value + 'px';
+  });
+});
+
+document.getElementById('reset-btn').addEventListener('click', () => {
+  const defaults = defaultClasses()[currentClass];
+  classes[currentClass].hitbox = { ...defaults.hitbox };
+  renderControls();
+  renderGurglesHitbox();
+  renderVariants();
+});
+
+document.getElementById('reset-all-btn').addEventListener('click', () => {
+  if (!confirm('Reset all hitboxes to defaults?')) return;
+  classes = defaultClasses();
+  for (const [id, cfg] of Object.entries(classes)) {
+    visibility[id] = new Set(cfg.paths.map((_, i) => i));
+  }
+  populateClassPicker();
+  renderControls();
+  renderGurglesHitbox();
+  renderVariants();
+});
+
+// ---------- config export ----------
+function generateDartConfig() {
+  const g = classes['gurgles'].hitbox;
+  const lines = [];
+  lines.push('// Generated by tools/sprite-hitbox-preview.html');
+  lines.push('// Paste into lib/components/gurgles.dart (onLoad hitbox)');
+  lines.push('// + lib/components/obstacle.dart (hitboxFor switch).');
+  lines.push('');
+  lines.push('// ---- lib/components/gurgles.dart (inside onLoad, after sprite loading) ----');
+  lines.push('    add(RectangleHitbox(');
+  lines.push(`      size: Vector2(size.x * ${(g.sizeX / 100).toFixed(2)}, size.y * ${(g.sizeY / 100).toFixed(2)}),`);
+  lines.push(`      position: Vector2(size.x * ${(g.posX / 100).toFixed(2)}, size.y * ${(g.posY / 100).toFixed(2)}),`);
+  lines.push('    ));');
+  lines.push('');
+  lines.push('// ---- lib/components/obstacle.dart ----');
+  lines.push('  @visibleForTesting');
+  lines.push('  static ({Vector2 pos, Vector2 size}) hitboxFor(ObstacleKind k, Vector2 s) =>');
+  lines.push('      switch (k) {');
+  for (const kindKey of ['obstacle.stone', 'obstacle.rock', 'obstacle.mushroom', 'obstacle.log']) {
+    const c = classes[kindKey];
+    const h = c.hitbox;
+    lines.push(`        ObstacleKind.${c.dartKind} => (`);
+    lines.push(`            pos: Vector2(s.x * ${(h.posX / 100).toFixed(2)}, s.y * ${(h.posY / 100).toFixed(2)}),`);
+    lines.push(`            size: Vector2(s.x * ${(h.sizeX / 100).toFixed(2)}, s.y * ${(h.sizeY / 100).toFixed(2)}),`);
+    lines.push('          ),');
+  }
+  lines.push('      };');
+  lines.push('');
+  lines.push('// Collectibles share the generic 90% centered hitbox (not per-kind tunable in V1).');
+  return lines.join('\n');
+}
+
+document.getElementById('copy-btn').addEventListener('click', () => {
+  const dart = generateDartConfig();
+  document.getElementById('config-output').value = dart;
+  if (navigator.clipboard) navigator.clipboard.writeText(dart).catch(() => {});
+});
+
+// ---------- init ----------
+renderBackdrop();
+populateClassPicker();
+renderControls();
+renderGurglesHitbox();
+renderVariants();
+</script>
+</body>
+</html>
