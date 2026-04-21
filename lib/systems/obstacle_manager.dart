@@ -8,7 +8,7 @@ class ObstacleManager extends Component {
   final double Function() worldWidthProvider;
   final double groundY;
   final double sizeScale;
-  final Random _rng = Random();
+  final Random _rng;
 
   double _timeToNext = 1.5;
 
@@ -17,7 +17,8 @@ class ObstacleManager extends Component {
     required this.worldWidthProvider,
     required this.groundY,
     this.sizeScale = 1.0,
-  });
+    Random? rng,
+  }) : _rng = rng ?? Random();
 
   @override
   void update(double dt) {
@@ -32,10 +33,22 @@ class ObstacleManager extends Component {
     }
   }
 
+  /// Weighted obstacle roll:
+  ///   stone     35%  (small, frequent)
+  ///   rock      25%
+  ///   mushroom  20%
+  ///   log       20%
+  ObstacleKind _rollKind() {
+    final r = _rng.nextDouble();
+    if (r < 0.35) return ObstacleKind.stone;
+    if (r < 0.60) return ObstacleKind.rock;
+    if (r < 0.80) return ObstacleKind.mushroom;
+    return ObstacleKind.log;
+  }
+
   void _spawn() {
-    final kind = ObstacleKind.values[_rng.nextInt(ObstacleKind.values.length)];
     final ob = Obstacle(
-      kind: kind,
+      kind: _rollKind(),
       position: Vector2(worldWidthProvider() + 80, groundY),
       scrollSpeed: scrollSpeedProvider(),
       sizeScale: sizeScale,
