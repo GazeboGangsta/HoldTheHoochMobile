@@ -42,7 +42,7 @@ See [docs/ROADMAP.md](ROADMAP.md) for the detailed per-milestone plan.
   - Score multiplier (+0.1x per 10s, capped 3x): ✅ implemented.
   - Potion spill-drain bonus: ✅ implemented (4× drain rate for 1 second).
   - Wobble amplitude scaling: ✅ implemented (1.0× → 1.7× over difficultyRampSeconds).
-- **M5 — Polish & assets** ⏳ Partial. Real SVGs in, parallax in, spill meter UI in, score popup in, tankard rotation tied to tilt, dedicated control strip with tilt + jump buttons, leaderboard scene live, splash + sparkle particles live (M5a). Still missing: SFX, run-cycle animation, hurt pose, tutorial overlay, settings.
+- **M5 — Polish & assets** ⏳ Partial. Real SVGs in, parallax in, spill meter UI in, score popup in, tankard rotation tied to tilt, dedicated control strip with tilt + jump buttons, leaderboard scene live, splash + sparkle particles live (M5a), 8-frame run cycle + 7/12/6-frame jump arc + 6-frame hurt + dead pose via the purchased `no_hat_gnome` gnome pack + menu idle animation (M5a, `feat/gnome-animations`). Still missing: SFX (M5b), tutorial overlay + settings (M5c).
 - **M6 — Store prep** ⏳ First iOS build shipped to TestFlight on 2026-04-21 (closes M6a #1). Signing pipeline on CodeMagic (canonical `ios_signing` managed flow) now verified end-to-end with cert + profile uploaded to CodeMagic's team-level stores. Remaining M6a: decision on Xcode Cloud vs Actions macOS runner. M6b (branding + metadata) and M6c (release) not started.
 - **M7 — Leaderboard integrity** ❌ Not started. Planned before public M6 release — leaderboard currently accepts any unauthenticated `POST /api/scores`.
 
