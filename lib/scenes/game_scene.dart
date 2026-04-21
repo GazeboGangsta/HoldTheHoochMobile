@@ -5,7 +5,6 @@ import 'package:flame/game.dart';
 import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:flutter/material.dart';
 import '../components/collectible.dart';
-import '../components/ground.dart';
 import '../components/gurgles.dart';
 import '../components/hooch_balance.dart';
 import '../components/obstacle.dart';
@@ -26,7 +25,6 @@ class GameScene extends FlameGame with HasCollisionDetection {
   late Gurgles gurgles;
   late HoochBalance balance;
   late SplashEmitter splashEmitter;
-  late Ground ground;
   late ObstacleManager obstacleManager;
   late CollectibleManager collectibleManager;
   late TextComponent scoreText;
@@ -126,7 +124,7 @@ class GameScene extends FlameGame with HasCollisionDetection {
       worldSpeedProvider: () => currentScrollSpeed,
       worldSize: size,
       yPosition: 0,
-      height: playAreaHeight * 0.55,
+      height: playAreaHeight,
       sourceWidth: srcW,
       sourceHeight: srcH,
     ));
@@ -138,8 +136,8 @@ class GameScene extends FlameGame with HasCollisionDetection {
       assetPath: '../third_party/pine_hills/png/02_cloud1.png',
       driftPxPerSecond: 8,
       worldSize: size,
-      yPosition: playAreaHeight * 0.08,
-      height: playAreaHeight * 0.35,
+      yPosition: 0,
+      height: playAreaHeight,
       sourceWidth: srcW,
       sourceHeight: srcH,
     ));
@@ -147,8 +145,8 @@ class GameScene extends FlameGame with HasCollisionDetection {
       assetPath: '../third_party/pine_hills/png/03_cloud2.png',
       driftPxPerSecond: 14,
       worldSize: size,
-      yPosition: playAreaHeight * 0.18,
-      height: playAreaHeight * 0.35,
+      yPosition: 0,
+      height: playAreaHeight,
       sourceWidth: srcW,
       sourceHeight: srcH,
     ));
@@ -156,8 +154,8 @@ class GameScene extends FlameGame with HasCollisionDetection {
       assetPath: '../third_party/pine_hills/png/04_cloud3.png',
       driftPxPerSecond: 22,
       worldSize: size,
-      yPosition: playAreaHeight * 0.05,
-      height: playAreaHeight * 0.35,
+      yPosition: 0,
+      height: playAreaHeight,
       sourceWidth: srcW,
       sourceHeight: srcH,
     ));
@@ -165,8 +163,8 @@ class GameScene extends FlameGame with HasCollisionDetection {
       assetPath: '../third_party/pine_hills/png/05_cloud4.png',
       driftPxPerSecond: -10, // counter-breeze
       worldSize: size,
-      yPosition: playAreaHeight * 0.22,
-      height: playAreaHeight * 0.35,
+      yPosition: 0,
+      height: playAreaHeight,
       sourceWidth: srcW,
       sourceHeight: srcH,
     ));
@@ -177,8 +175,8 @@ class GameScene extends FlameGame with HasCollisionDetection {
       speedFactor: 0.12,
       worldSpeedProvider: () => currentScrollSpeed,
       worldSize: size,
-      yPosition: playAreaHeight * 0.35,
-      height: playAreaHeight * 0.50,
+      yPosition: 0,
+      height: playAreaHeight,
       sourceWidth: srcW,
       sourceHeight: srcH,
     ));
@@ -189,8 +187,8 @@ class GameScene extends FlameGame with HasCollisionDetection {
       speedFactor: 0.22,
       worldSpeedProvider: () => currentScrollSpeed,
       worldSize: size,
-      yPosition: playAreaHeight * 0.50,
-      height: playAreaHeight * 0.40,
+      yPosition: 0,
+      height: playAreaHeight,
       sourceWidth: srcW,
       sourceHeight: srcH,
     ));
@@ -201,20 +199,12 @@ class GameScene extends FlameGame with HasCollisionDetection {
       speedFactor: 0.40,
       worldSpeedProvider: () => currentScrollSpeed,
       worldSize: size,
-      yPosition: playAreaHeight * 0.58,
-      height: playAreaHeight * 0.35,
+      yPosition: 0,
+      height: playAreaHeight,
       sourceWidth: srcW,
       sourceHeight: srcH,
     ));
 
-    // Pass a truncated worldSize so Ground pins to the top of the control
-    // strip instead of the bottom of the screen.
-    ground = Ground(
-      worldSize: Vector2(size.x, controlStripTop),
-      groundHeight: _groundHeight,
-      scrollSpeedProvider: () => currentScrollSpeed,
-    );
-    add(ground);
 
     final gurglesHeight = size.y * 0.18;
     final gurglesWidth = gurglesHeight * 0.8;
@@ -234,8 +224,8 @@ class GameScene extends FlameGame with HasCollisionDetection {
       speedFactor: 1.0,
       worldSpeedProvider: () => currentScrollSpeed,
       worldSize: size,
-      yPosition: playAreaHeight - playAreaHeight * 0.12,
-      height: playAreaHeight * 0.12,
+      yPosition: 0,
+      height: playAreaHeight,
       sourceWidth: srcW,
       sourceHeight: srcH,
     ));
@@ -244,8 +234,8 @@ class GameScene extends FlameGame with HasCollisionDetection {
       speedFactor: 1.0,
       worldSpeedProvider: () => currentScrollSpeed,
       worldSize: size,
-      yPosition: playAreaHeight - playAreaHeight * 0.10,
-      height: playAreaHeight * 0.10,
+      yPosition: 0,
+      height: playAreaHeight,
       sourceWidth: srcW,
       sourceHeight: srcH,
     ));
@@ -254,8 +244,8 @@ class GameScene extends FlameGame with HasCollisionDetection {
       speedFactor: 0.85,
       worldSpeedProvider: () => currentScrollSpeed,
       worldSize: size,
-      yPosition: playAreaHeight - playAreaHeight * 0.55,
-      height: playAreaHeight * 0.55,
+      yPosition: 0,
+      height: playAreaHeight,
       sourceWidth: srcW,
       sourceHeight: srcH,
     ));
@@ -264,8 +254,8 @@ class GameScene extends FlameGame with HasCollisionDetection {
       speedFactor: 0.92,
       worldSpeedProvider: () => currentScrollSpeed,
       worldSize: size,
-      yPosition: playAreaHeight - playAreaHeight * 0.50,
-      height: playAreaHeight * 0.50,
+      yPosition: 0,
+      height: playAreaHeight,
       sourceWidth: srcW,
       sourceHeight: srcH,
     ));
@@ -274,8 +264,8 @@ class GameScene extends FlameGame with HasCollisionDetection {
       speedFactor: 1.0,
       worldSpeedProvider: () => currentScrollSpeed,
       worldSize: size,
-      yPosition: playAreaHeight - playAreaHeight * 0.10,
-      height: playAreaHeight * 0.10,
+      yPosition: 0,
+      height: playAreaHeight,
       sourceWidth: srcW,
       sourceHeight: srcH,
     ));
