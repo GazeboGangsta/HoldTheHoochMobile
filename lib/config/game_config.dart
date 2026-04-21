@@ -79,4 +79,16 @@ class GameConfig {
   // M5a — sparkle burst tuning. Deceleration is dt-based so feel is stable across
   // framerates. 4.8/s gives the familiar 0.92-per-frame decay at 60fps.
   static const double sparkleDecelerationRate = 4.8;
+
+  // Gnome-pack animation durations. Each source clip plays at ~20fps.
+  // These are totals from first frame to last. Tune on-device if needed.
+  static const double jumpStartDurationSeconds = 0.35;   // 7 frames
+  static const double jumpLandDurationSeconds = 0.30;    // 6 frames
+  static const double hurtDurationSeconds = 0.30;        // 6 frames
+
+  // Delay between game-over trigger and the overlay appearing. Covers the
+  // hurt animation + splash-emitter flourish. Value was splashGameOverDelayMs
+  // before Gurgles had a hurt animation; now applies to both spill and
+  // obstacle endings.
+  static const int gameOverHurtDelayMs = 600;
 }
