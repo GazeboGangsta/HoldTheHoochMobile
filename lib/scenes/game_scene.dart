@@ -9,7 +9,8 @@ import '../components/ground.dart';
 import '../components/gurgles.dart';
 import '../components/hooch_balance.dart';
 import '../components/obstacle.dart';
-import '../components/parallax_bg.dart';
+import '../components/cloud_drift.dart';
+import '../components/raster_parallax_layer.dart';
 import '../components/score_popup.dart';
 import '../components/sparkle_burst.dart';
 import '../components/splash_emitter.dart';
@@ -50,11 +51,11 @@ class GameScene extends FlameGame with HasCollisionDetection {
   @visibleForTesting
   set groundYForTesting(double v) => _groundY = v;
 
-  // Match bg-mountains.svg's gradient top color — otherwise you get a hard
-  // horizontal seam where the light sky-blue Flame backdrop meets the
-  // mountain layer's dark night sky.
+  // Matched to the top row of Pine Hills 00_background.png so there's no
+  // horizontal seam where the sky layer's gradient begins. Tune if a seam
+  // is visible on device (Task 6 of the Pine Hills parallax plan).
   @override
-  Color backgroundColor() => const Color(0xFF1A1A3E);
+  Color backgroundColor() => const Color(0xFF77B8DC);
 
   double get currentScrollSpeed {
     final t = (_elapsed / GameConfig.difficultyRampSeconds).clamp(0.0, 1.0);
@@ -95,24 +96,115 @@ class GameScene extends FlameGame with HasCollisionDetection {
       paint: Paint()..color = const Color(0xFF2D1A0E),
     ));
 
-    final mountainsHeight = size.y * 0.42;
-    final treesHeight = size.y * 0.32;
+    // Pine Hills parallax stack. See docs/superpowers/plans/
+    // 2026-04-21-pine-hills-parallax.md for the full layer allocation +
+    // speed rationale.
+    //
+    // Asset paths use the `../` prefix to escape Flame's default
+    // `assets/images/` cache root, resolving to
+    // `assets/third_party/pine_hills/png/` which is registered in pubspec.
+    final playAreaHeight = _groundY;
+    const srcW = 320;
+    const srcH = 180;
 
-    add(ParallaxLayer(
-      assetPath: 'svg/bg-mountains.svg',
-      speedFactor: 0.15,
+    // 00: static sky background (full playable area, does not scroll).
+    add(RasterParallaxLayer(
+      assetPath: '../third_party/pine_hills/png/00_background.png',
+      speedFactor: 0.0,
       worldSpeedProvider: () => currentScrollSpeed,
       worldSize: size,
-      yPosition: _groundY - mountainsHeight,
-      height: mountainsHeight,
+      yPosition: 0,
+      height: playAreaHeight,
+      sourceWidth: srcW,
+      sourceHeight: srcH,
     ));
-    add(ParallaxLayer(
-      assetPath: 'svg/bg-trees.svg',
-      speedFactor: 0.45,
+
+    // 01: back-cloud field (fills upper sky, very slow drift).
+    add(RasterParallaxLayer(
+      assetPath: '../third_party/pine_hills/png/01_back clouds.png',
+      speedFactor: 0.03,
       worldSpeedProvider: () => currentScrollSpeed,
       worldSize: size,
-      yPosition: _groundY - treesHeight,
-      height: treesHeight,
+      yPosition: 0,
+      height: playAreaHeight * 0.55,
+      sourceWidth: srcW,
+      sourceHeight: srcH,
+    ));
+
+    // 02-05: drift clouds — independent px/s velocities. Positive values
+    // drift left (same direction as ground scroll); negative drifts right
+    // for counter-breeze variety.
+    add(CloudDrift(
+      assetPath: '../third_party/pine_hills/png/02_cloud1.png',
+      driftPxPerSecond: 8,
+      worldSize: size,
+      yPosition: playAreaHeight * 0.08,
+      height: playAreaHeight * 0.35,
+      sourceWidth: srcW,
+      sourceHeight: srcH,
+    ));
+    add(CloudDrift(
+      assetPath: '../third_party/pine_hills/png/03_cloud2.png',
+      driftPxPerSecond: 14,
+      worldSize: size,
+      yPosition: playAreaHeight * 0.18,
+      height: playAreaHeight * 0.35,
+      sourceWidth: srcW,
+      sourceHeight: srcH,
+    ));
+    add(CloudDrift(
+      assetPath: '../third_party/pine_hills/png/04_cloud3.png',
+      driftPxPerSecond: 22,
+      worldSize: size,
+      yPosition: playAreaHeight * 0.05,
+      height: playAreaHeight * 0.35,
+      sourceWidth: srcW,
+      sourceHeight: srcH,
+    ));
+    add(CloudDrift(
+      assetPath: '../third_party/pine_hills/png/05_cloud4.png',
+      driftPxPerSecond: -10, // counter-breeze
+      worldSize: size,
+      yPosition: playAreaHeight * 0.22,
+      height: playAreaHeight * 0.35,
+      sourceWidth: srcW,
+      sourceHeight: srcH,
+    ));
+
+    // 06: back mountains.
+    add(RasterParallaxLayer(
+      assetPath: '../third_party/pine_hills/png/06_back_mountains.png',
+      speedFactor: 0.12,
+      worldSpeedProvider: () => currentScrollSpeed,
+      worldSize: size,
+      yPosition: playAreaHeight * 0.35,
+      height: playAreaHeight * 0.50,
+      sourceWidth: srcW,
+      sourceHeight: srcH,
+    ));
+
+    // 07: mid hills.
+    add(RasterParallaxLayer(
+      assetPath: '../third_party/pine_hills/png/07_mid_hills.png',
+      speedFactor: 0.22,
+      worldSpeedProvider: () => currentScrollSpeed,
+      worldSize: size,
+      yPosition: playAreaHeight * 0.50,
+      height: playAreaHeight * 0.40,
+      sourceWidth: srcW,
+      sourceHeight: srcH,
+    ));
+
+    // 08: mid forest.
+    add(RasterParallaxLayer(
+      assetPath: '../third_party/pine_hills/png/08_mid_forest.png',
+      speedFactor: 0.40,
+      worldSpeedProvider: () => currentScrollSpeed,
+      worldSize: size,
+      yPosition: playAreaHeight * 0.58,
+      height: playAreaHeight * 0.35,
+      sourceWidth: srcW,
+      sourceHeight: srcH,
     ));
 
     // Pass a truncated worldSize so Ground pins to the top of the control
@@ -133,6 +225,60 @@ class GameScene extends FlameGame with HasCollisionDetection {
     );
     gurgles.onObstacleHit = () => _end('Hit an obstacle!');
     add(gurgles);
+
+    // 09-13: foreground layers inserted after Gurgles so they occlude him
+    // for depth, but before gameplay managers so obstacles/collectibles render
+    // on top (visible through the foliage).
+    add(RasterParallaxLayer(
+      assetPath: '../third_party/pine_hills/png/09_front_grass.png',
+      speedFactor: 1.0,
+      worldSpeedProvider: () => currentScrollSpeed,
+      worldSize: size,
+      yPosition: playAreaHeight - playAreaHeight * 0.12,
+      height: playAreaHeight * 0.12,
+      sourceWidth: srcW,
+      sourceHeight: srcH,
+    ));
+    add(RasterParallaxLayer(
+      assetPath: '../third_party/pine_hills/png/10_front_leafs.png',
+      speedFactor: 1.0,
+      worldSpeedProvider: () => currentScrollSpeed,
+      worldSize: size,
+      yPosition: playAreaHeight - playAreaHeight * 0.10,
+      height: playAreaHeight * 0.10,
+      sourceWidth: srcW,
+      sourceHeight: srcH,
+    ));
+    add(RasterParallaxLayer(
+      assetPath: '../third_party/pine_hills/png/11_front_trees1.png',
+      speedFactor: 0.85,
+      worldSpeedProvider: () => currentScrollSpeed,
+      worldSize: size,
+      yPosition: playAreaHeight - playAreaHeight * 0.55,
+      height: playAreaHeight * 0.55,
+      sourceWidth: srcW,
+      sourceHeight: srcH,
+    ));
+    add(RasterParallaxLayer(
+      assetPath: '../third_party/pine_hills/png/12_front_trees2.png',
+      speedFactor: 0.92,
+      worldSpeedProvider: () => currentScrollSpeed,
+      worldSize: size,
+      yPosition: playAreaHeight - playAreaHeight * 0.50,
+      height: playAreaHeight * 0.50,
+      sourceWidth: srcW,
+      sourceHeight: srcH,
+    ));
+    add(RasterParallaxLayer(
+      assetPath: '../third_party/pine_hills/png/13_front_rocks.png',
+      speedFactor: 1.0,
+      worldSpeedProvider: () => currentScrollSpeed,
+      worldSize: size,
+      yPosition: playAreaHeight - playAreaHeight * 0.10,
+      height: playAreaHeight * 0.10,
+      sourceWidth: srcW,
+      sourceHeight: srcH,
+    ));
 
     balance = HoochBalance();
     balance.setDriftDirection(Random().nextBool() ? 1.0 : -1.0);
