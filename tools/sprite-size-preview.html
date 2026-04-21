@@ -45,15 +45,17 @@
     position: absolute; bottom: 0; left: 22%;
     width: 112px; height: 140px;
     image-rendering: auto; /* Gurgles is smooth cartoon, not pixel-art */
+    transition: bottom 0.15s ease-out;
   }
 
   /* Lineup of the current class's variants, to the right of Gurgles.
-     Each variant sits on the ground line at its current size. */
+     Each variant floats at the per-class Y offset above the ground. */
   .variants {
-    position: absolute; bottom: 0; left: 45%; right: 0;
+    position: absolute; left: 45%; right: 0;
     display: flex; flex-wrap: nowrap; align-items: flex-end;
     gap: 8px; padding-left: 8px;
     pointer-events: none;
+    bottom: 0;  /* container bottom = ground line; variants offset from here */
   }
   .variant {
     image-rendering: pixelated; image-rendering: crisp-edges;
@@ -126,9 +128,21 @@
       <input type="range" id="h-slider" min="8" max="200" step="1">
       <span class="val" id="h-val">40</span>
     </div>
+    <div class="control-row">
+      <label>Y above ground</label>
+      <input type="range" id="y-slider" min="-30" max="250" step="1">
+      <span class="val" id="y-val">0</span>
+    </div>
 
     <div class="current-size" id="current-size">
-      Size: 40 × 40 · Gurgles reference: 112 × 140
+      Size: 40 × 40 · Y: 0 · Gurgles reference: 112 × 140
+    </div>
+
+    <div class="variants-list" style="background: #fff4d6; border-color: #e8a900;">
+      <h3>Gurgles Jump Height (preview only)</h3>
+      <label><input type="radio" name="gurgles-height" value="0" checked> Standing on ground (0 px)</label>
+      <label><input type="radio" name="gurgles-height" value="92"> Short-tap jump peak (~92 px)</label>
+      <label><input type="radio" name="gurgles-height" value="208"> Full-hold jump peak (~208 px)</label>
     </div>
 
     <div class="variants-list" id="variants-list">
@@ -186,29 +200,30 @@ function renderBackdrop() {
 }
 
 // ---------- Class definitions ----------
-// Mirrors lib/components/obstacle.dart + lib/components/collectible.dart.
-// Each class has: label, default Vector2 (w, h), list of variant sprite paths.
+// Mirrors lib/components/obstacle.dart + lib/components/collectible.dart +
+// lib/systems/collectible_manager.dart._heightForKind.
+// Each class has: label, default w/h, y (px above ground), variant paths.
 // Paths relative to tools/ → assets/images/... (uses `..` escape).
 function defaultClasses() {
   return {
-    'obstacle.stone':        { label: 'Obstacle — stone',        w: 40,  h: 28,  paths: ['../assets/images/obstacles/stone.png'] },
-    'obstacle.rock':         { label: 'Obstacle — rock',         w: 72,  h: 60,  paths: ['../assets/images/obstacles/rock.png'] },
-    'obstacle.mushroom':     { label: 'Obstacle — mushroom',     w: 72,  h: 72,  paths: ['../assets/images/obstacles/mushroom/000.png'] },
-    'obstacle.log':          { label: 'Obstacle — log',          w: 140, h: 72,  paths: ['../assets/images/obstacles/log/000.png'] },
-    'collectible.fruitCommon': { label: 'Collectible — fruitCommon', w: 40, h: 40, paths: [
+    'obstacle.stone':        { label: 'Obstacle — stone',        w: 40,  h: 28,  y: 0,   paths: ['../assets/images/obstacles/stone.png'] },
+    'obstacle.rock':         { label: 'Obstacle — rock',         w: 72,  h: 60,  y: 0,   paths: ['../assets/images/obstacles/rock.png'] },
+    'obstacle.mushroom':     { label: 'Obstacle — mushroom',     w: 72,  h: 72,  y: 0,   paths: ['../assets/images/obstacles/mushroom/000.png'] },
+    'obstacle.log':          { label: 'Obstacle — log',          w: 140, h: 72,  y: 0,   paths: ['../assets/images/obstacles/log/000.png'] },
+    'collectible.fruitCommon': { label: 'Collectible — fruitCommon', w: 40, h: 40, y: 50, paths: [
       '../assets/images/collectibles/cherry.png',
       '../assets/images/collectibles/strawberry.png',
       '../assets/images/collectibles/tomato.png',
     ]},
-    'collectible.fruitMedium': { label: 'Collectible — fruitMedium', w: 44, h: 44, paths: [
+    'collectible.fruitMedium': { label: 'Collectible — fruitMedium', w: 44, h: 44, y: 120, paths: [
       '../assets/images/collectibles/apple.png',
       '../assets/images/collectibles/orange.png',
       '../assets/images/collectibles/pumpkin.png',
     ]},
-    'collectible.fruitRare':   { label: 'Collectible — fruitRare',   w: 48, h: 48, paths: [
+    'collectible.fruitRare':   { label: 'Collectible — fruitRare',   w: 48, h: 48, y: 120, paths: [
       '../assets/images/collectibles/golden_apple.png',
     ]},
-    'collectible.crystal':     { label: 'Collectible — crystal',     w: 36, h: 36, paths: [
+    'collectible.crystal':     { label: 'Collectible — crystal',     w: 36, h: 36, y: 180, paths: [
       '../assets/images/collectibles/crystal/rose_quartz.png',
       '../assets/images/collectibles/crystal/jasper.png',
       '../assets/images/collectibles/crystal/citrine.png',
@@ -220,7 +235,7 @@ function defaultClasses() {
       '../assets/images/collectibles/crystal/quartz.png',
       '../assets/images/collectibles/crystal/bloodstone.png',
     ]},
-    'collectible.potion':      { label: 'Collectible — potion',      w: 32, h: 48, paths: [
+    'collectible.potion':      { label: 'Collectible — potion',      w: 32, h: 48, y: 180, paths: [
       '../assets/images/collectibles/potion.png',
     ]},
   };
@@ -248,16 +263,21 @@ function populateClassPicker() {
   picker.value = currentClass;
 }
 
+function updateCurrentSize() {
+  const cfg = classes[currentClass];
+  document.getElementById('current-size').textContent =
+    `Size: ${cfg.w} × ${cfg.h} · Y: ${cfg.y} · Gurgles reference: 112 × 140`;
+}
+
 function renderControls() {
   const cfg = classes[currentClass];
-  const wSlider = document.getElementById('w-slider');
-  const hSlider = document.getElementById('h-slider');
-  wSlider.value = cfg.w;
-  hSlider.value = cfg.h;
+  document.getElementById('w-slider').value = cfg.w;
+  document.getElementById('h-slider').value = cfg.h;
+  document.getElementById('y-slider').value = cfg.y;
   document.getElementById('w-val').textContent = cfg.w;
   document.getElementById('h-val').textContent = cfg.h;
-  document.getElementById('current-size').textContent =
-    `Size: ${cfg.w} × ${cfg.h} · Gurgles reference: 112 × 140`;
+  document.getElementById('y-val').textContent = cfg.y;
+  updateCurrentSize();
 
   // Rebuild variants list
   const list = document.getElementById('variants-list');
@@ -275,11 +295,11 @@ function renderControls() {
     list.appendChild(label);
   });
 
-  // Also update the option text in the class picker so the size stays current.
+  // Update option text in the class picker so the size + y stay current.
   const picker = document.getElementById('class-picker');
   for (const opt of picker.options) {
     const c = classes[opt.value];
-    opt.textContent = `${c.label} (${c.w}×${c.h})`;
+    opt.textContent = `${c.label} (${c.w}×${c.h} @ y=${c.y})`;
   }
 }
 
@@ -287,6 +307,8 @@ function renderVariants() {
   const cfg = classes[currentClass];
   const container = document.getElementById('variants');
   container.innerHTML = '';
+  // Bottom offset = cfg.y (px above ground).
+  container.style.bottom = cfg.y + 'px';
   cfg.paths.forEach((path, i) => {
     if (!visibility[currentClass].has(i)) return;
     const wrap = document.createElement('div');
@@ -317,19 +339,42 @@ document.getElementById('class-picker').addEventListener('change', e => {
 document.getElementById('w-slider').addEventListener('input', e => {
   classes[currentClass].w = +e.target.value;
   document.getElementById('w-val').textContent = e.target.value;
-  document.getElementById('current-size').textContent =
-    `Size: ${classes[currentClass].w} × ${classes[currentClass].h} · Gurgles reference: 112 × 140`;
+  updateCurrentSize();
   renderVariants();
-  renderControls();   // refresh class-picker option text
+  // update picker text without recursing into slider refresh:
+  for (const opt of document.getElementById('class-picker').options) {
+    const c = classes[opt.value];
+    opt.textContent = `${c.label} (${c.w}×${c.h} @ y=${c.y})`;
+  }
 });
 
 document.getElementById('h-slider').addEventListener('input', e => {
   classes[currentClass].h = +e.target.value;
   document.getElementById('h-val').textContent = e.target.value;
-  document.getElementById('current-size').textContent =
-    `Size: ${classes[currentClass].w} × ${classes[currentClass].h} · Gurgles reference: 112 × 140`;
+  updateCurrentSize();
   renderVariants();
-  renderControls();
+  for (const opt of document.getElementById('class-picker').options) {
+    const c = classes[opt.value];
+    opt.textContent = `${c.label} (${c.w}×${c.h} @ y=${c.y})`;
+  }
+});
+
+document.getElementById('y-slider').addEventListener('input', e => {
+  classes[currentClass].y = +e.target.value;
+  document.getElementById('y-val').textContent = e.target.value;
+  updateCurrentSize();
+  renderVariants();
+  for (const opt of document.getElementById('class-picker').options) {
+    const c = classes[opt.value];
+    opt.textContent = `${c.label} (${c.w}×${c.h} @ y=${c.y})`;
+  }
+});
+
+// Gurgles jump-height radios.
+document.querySelectorAll('input[name="gurgles-height"]').forEach(radio => {
+  radio.addEventListener('change', e => {
+    document.getElementById('gurgles').style.bottom = e.target.value + 'px';
+  });
 });
 
 document.getElementById('reset-btn').addEventListener('click', () => {
@@ -356,7 +401,8 @@ document.getElementById('reset-all-btn').addEventListener('click', () => {
 function generateDartConfig() {
   const lines = [];
   lines.push('// Generated by tools/sprite-size-preview.html');
-  lines.push('// Paste into lib/components/obstacle.dart and lib/components/collectible.dart.');
+  lines.push('// Paste into lib/components/obstacle.dart + lib/components/collectible.dart');
+  lines.push('// + lib/systems/collectible_manager.dart.');
   lines.push('');
   lines.push('// ---- lib/components/obstacle.dart ----');
   lines.push('  static Vector2 _sizeFor(ObstacleKind k) => switch (k) {');
@@ -374,6 +420,30 @@ function generateDartConfig() {
   lines.push(`        CollectibleKind.crystal => Vector2(${classes['collectible.crystal'].w}, ${classes['collectible.crystal'].h}),`);
   lines.push(`        CollectibleKind.potion => Vector2(${classes['collectible.potion'].w}, ${classes['collectible.potion'].h}),`);
   lines.push('      };');
+  lines.push('');
+  lines.push('// ---- lib/systems/collectible_manager.dart ----');
+  lines.push('  /// Y-offset above groundY for each kind. Obstacle kinds always spawn');
+  lines.push('  /// at groundY (Y: 0) so they\'re not covered here.');
+  lines.push('  double _heightForKind(CollectibleKind k) {');
+  lines.push('    return switch (k) {');
+  lines.push(`      CollectibleKind.fruitCommon => groundY - ${classes['collectible.fruitCommon'].y}.0 * sizeScale,`);
+  lines.push(`      CollectibleKind.fruitMedium => groundY - ${classes['collectible.fruitMedium'].y}.0 * sizeScale,`);
+  lines.push(`      CollectibleKind.fruitRare => groundY - ${classes['collectible.fruitRare'].y}.0 * sizeScale,`);
+  lines.push(`      CollectibleKind.crystal => groundY - ${classes['collectible.crystal'].y}.0 * sizeScale,`);
+  lines.push(`      CollectibleKind.potion => groundY - ${classes['collectible.potion'].y}.0 * sizeScale,`);
+  lines.push('    };');
+  lines.push('  }');
+  // Warn if any obstacle has a non-zero Y (unusual — obstacles sit on the ground).
+  const obstacleYsNonZero = ['stone','rock','mushroom','log']
+    .filter(k => classes['obstacle.' + k].y !== 0);
+  if (obstacleYsNonZero.length > 0) {
+    lines.push('');
+    lines.push('// NOTE: non-zero Y for obstacles ' + obstacleYsNonZero.join(', ') + ':');
+    for (const k of obstacleYsNonZero) {
+      lines.push(`//   ${k}: y=${classes['obstacle.' + k].y}px. Would need a new position`);
+      lines.push(`//   override in ObstacleManager._spawn — currently obstacles spawn at groundY.`);
+    }
+  }
   return lines.join('\n');
 }
 
