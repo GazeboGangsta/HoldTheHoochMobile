@@ -4,8 +4,7 @@ import 'package:flutter/foundation.dart' show VoidCallback;
 import '../components/collectible.dart';
 
 /// Spawns collectibles from just off the right edge at varying heights.
-/// Spawn cadence is slower than obstacles and deliberately offset so the
-/// two streams don't always align.
+/// Weighted-kind roll + per-kind sprite-variant RNG.
 class CollectibleManager extends Component {
   final double Function() scrollSpeedProvider;
   final double Function() worldWidthProvider;
@@ -13,7 +12,7 @@ class CollectibleManager extends Component {
   final double sizeScale;
   final void Function(int points, Vector2 worldPos, CollectibleKind kind) onPickup;
   final VoidCallback? onPotionBonus;
-  final Random _rng = Random();
+  final Random _rng;
 
   double _timeToNext = 3.0;
 
@@ -24,7 +23,8 @@ class CollectibleManager extends Component {
     required this.onPickup,
     this.onPotionBonus,
     this.sizeScale = 1.0,
-  });
+    Random? rng,
+  }) : _rng = rng ?? Random();
 
   @override
   void update(double dt) {
@@ -32,19 +32,24 @@ class CollectibleManager extends Component {
     _timeToNext -= dt;
     if (_timeToNext <= 0) {
       _spawn();
-      // Gaps tuned so there's usually 1-3 obstacles between each collectible.
       final speed = scrollSpeedProvider();
       final speedNorm = speed / 280.0;
       _timeToNext = (2.4 + _rng.nextDouble() * 2.0) / speedNorm;
     }
   }
 
-  /// Weighted kind roll: fruitCommon 70%, fruitMedium 25%, potion 5%.
-  /// Task 6 expands to a 5-way roll including fruitRare and crystal.
+  /// Weighted kind roll:
+  ///   fruitCommon  55%
+  ///   fruitMedium  25%
+  ///   fruitRare    10%
+  ///   crystal       5%
+  ///   potion        5%
   CollectibleKind _rollKind() {
     final r = _rng.nextDouble();
-    if (r < 0.70) return CollectibleKind.fruitCommon;
-    if (r < 0.95) return CollectibleKind.fruitMedium;
+    if (r < 0.55) return CollectibleKind.fruitCommon;
+    if (r < 0.80) return CollectibleKind.fruitMedium;
+    if (r < 0.90) return CollectibleKind.fruitRare;
+    if (r < 0.95) return CollectibleKind.crystal;
     return CollectibleKind.potion;
   }
 
@@ -68,8 +73,8 @@ class CollectibleManager extends Component {
 
   void _spawn() {
     final kind = _rollKind();
-    final paths = Collectible.spritePathsFor(kind);
-    final spritePath = paths[_rng.nextInt(paths.length)];
+    final variants = Collectible.spritePathsFor(kind);
+    final spritePath = variants[_rng.nextInt(variants.length)];
     final c = Collectible(
       kind: kind,
       spritePath: spritePath,
